@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ایندکس‌های دیتابیس — Database Indexes | مسیر یادگیری برای توسعه‌دهنده‌های ‎.NET</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F7A52'/%3E%3Cpath d='M32 14 L18 22 V34 L32 42 L46 34 V22 Z' fill='none' stroke='%23F6F2E9' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='28' r='3' fill='%23F6F2E9'/%3E%3Ccircle cx='22' cy='36' r='2.5' fill='%23F6F2E9' opacity='.75'/%3E%3Ccircle cx='42' cy='36' r='2.5' fill='%23F6F2E9' opacity='.75'/%3E%3Cpath d='M20 47 H44 M24 51 H40' stroke='%23F6F2E9' stroke-width='2.5' stroke-linecap='round' opacity='.6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F2E9;--bg2:#EFEADD;--surface:#FDFBF5;--surface2:#F3EFE3;
+  --line:#E0D8C3;--line2:#CDC3A8;
+  --ink:#242920;--mut:#5F624F;--dim:#8F8C74;
+  --acc:#1F7A52;--acc-soft:rgba(31,122,82,.10);--acc-line:rgba(31,122,82,.40);
+  --grn:#1F7A52;--grn-soft:rgba(31,122,82,.10);
+  --amb:#C27803;--amb-soft:rgba(194,120,3,.12);
+  --red:#C2492F;--red-soft:rgba(194,73,47,.09);
+  --vio:#A05B2C;--vio-soft:rgba(160,91,44,.10);
+  --code-bg:#1C241E;--code-ink:#D8E2D4;
+  --dot:rgba(36,41,32,.06);
+  --shadow:0 1px 2px rgba(36,41,32,.05);
+  --mono:'JetBrains Mono',Consolas,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#171A14;--bg2:#121510;--surface:#1F231B;--surface2:#1A1E16;
+  --line:#31362A;--line2:#424836;
+  --ink:#EAE7D9;--mut:#B3B29C;--dim:#83846E;
+  --acc:#5CC08F;--acc-soft:rgba(92,192,143,.13);--acc-line:rgba(92,192,143,.45);
+  --grn:#5CC08F;--grn-soft:rgba(92,192,143,.13);
+  --amb:#E3A63C;--amb-soft:rgba(227,166,60,.13);
+  --red:#E5745A;--red-soft:rgba(229,116,90,.11);
+  --vio:#D08B4F;--vio-soft:rgba(208,139,79,.12);
+  --code-bg:#121813;--code-ink:#D5E0D2;
+  --dot:rgba(234,231,217,.05);
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background-color:var(--bg);background-image:radial-gradient(var(--dot) .8px,transparent .8px);background-size:22px 22px;color:var(--ink);font-family:'Vazirmatn',Tahoma,system-ui,sans-serif;line-height:1.95;font-size:16.5px;transition:background-color .3s,color .3s}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:3px;background:var(--acc);z-index:60}
+html[lang="fa"] .en{display:none!important}
+html[lang="en"] .fa{display:none!important}
+html[lang="en"] body{line-height:1.75}
+a{color:var(--acc);text-decoration:none}
+a:hover{text-decoration:underline}
+::selection{background:var(--acc-soft)}
+code,.mono{font-family:var(--mono);direction:ltr;unicode-bidi:embed}
+p code,li code,td code{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:.05em .45em;font-size:.86em;color:var(--acc)}
+img,svg{max-width:100%}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.en{font-size:.86em;}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ic.sm{width:14px;height:14px}.ic.lg{width:22px;height:22px}.ic.fill{fill:currentColor;stroke:none}
+.topbar{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--line)}
+.topbar-in{display:flex;align-items:center;gap:12px;height:58px}
+.brand{font-weight:900;font-size:15px;white-space:nowrap;display:flex;align-items:center;gap:9px;color:var(--ink)}
+.brand-logo{width:30px;height:30px;border-radius:8px;overflow:hidden;flex-shrink:0}
+.brand-logo svg{width:100%;height:100%;display:block}
+.stops-nav{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none}
+.stops-nav::-webkit-scrollbar{display:none}
+.stops-nav a{font-size:12px;color:var(--mut);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;white-space:nowrap;transition:.2s}
+.stops-nav a:hover{border-color:var(--acc-line);color:var(--acc);text-decoration:none}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit}
+.btn:hover{border-color:var(--acc-line);color:var(--acc);text-decoration:none}
+.btn.primary{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--bg);transform:translateY(-1px)}
+.btn.sm{padding:6px 12px;font-size:12.5px}
+.btn.iconb{padding:8px;width:36px;height:36px;display:grid;place-items:center;border-radius:8px}
+html[data-theme="dark"] .iconb svg.sun{display:none}
+html[data-theme="light"] .iconb svg.moon{display:none}
+.iconb:hover{background:var(--surface2)}
+.iconb svg{width:18px;height:18px;color:var(--mut)}
+.gh-link{gap:6px}
+.hero{position:relative;overflow:hidden;padding:56px 0 64px;border-bottom:1px solid var(--line)}
+.hero .wrap{position:relative}
+.hero-head{display:flex;align-items:center;gap:20px;margin-bottom:34px;animation:fadeUp .6s ease-out}
+.logo-mark{flex-shrink:0;width:56px;height:56px;border-radius:14px;overflow:hidden}
+.logo-mark svg{width:100%;height:100%;display:block}
+.hero-title-block{flex:1}
+.hero-title-block .h1{font-size:clamp(28px,4vw,44px);font-weight:900;line-height:1.3;margin:0;letter-spacing:-.01em}
+.uword{position:relative;display:inline-block;white-space:nowrap}
+.uscribble{position:absolute;left:0;right:0;bottom:-7px;width:100%;height:9px;overflow:visible}
+.hero-title-block .hero-sub{font-size:clamp(15px,2vw,18px);color:var(--mut);margin:14px 0 0;font-weight:400;line-height:1.7}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.hero-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:40px;align-items:start;animation:fadeUp .6s .1s ease-out both}
+.hero-left{display:flex;flex-direction:column;gap:22px}
+.hero-desc{font-size:16px;line-height:1.85;color:var(--ink);max-width:52ch}
+.hero-desc p{margin:0}
+.author-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-inline-start:3px solid var(--acc);border-radius:10px;padding:13px 18px}
+.author-avatar{width:48px;height:48px;border-radius:10px;object-fit:cover;flex-shrink:0;border:2px solid var(--line)}
+.author-avatar-fallback{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;background:var(--acc);flex-shrink:0}
+.author-info{flex:1;min-width:0}
+.author-name{font-weight:700;font-size:15px;line-height:1.4}
+.author-role{font-size:13px;color:var(--mut);line-height:1.5}
+.author-links{display:flex;gap:8px}
+.hero-chips{display:flex;flex-wrap:wrap;gap:8px}
+.hero-chips a{font-size:12.5px;color:var(--mut);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;display:inline-flex;gap:7px;align-items:center;transition:all .2s ease;text-decoration:none}
+.hero-chips a b{color:var(--acc);font-weight:700;font-family:var(--mono);font-size:11px}
+.hero-chips a:hover{border-color:var(--acc-line);color:var(--ink);text-decoration:none}
+.hero-cta{align-self:flex-start;padding:12px 26px;font-size:15px;font-weight:700}
+.hero-right{position:sticky;top:80px}
+.qwin{background:#1A201B;border:1px solid #2E372F;border-radius:12px;overflow:hidden;box-shadow:0 28px 64px -26px rgba(26,32,27,.6)}
+.qwin-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:#212823;border-bottom:1px solid #2E372F}
+.qwin-bar i{width:12px;height:12px;border-radius:50%}
+.qwin-bar i:nth-child(1){background:#E0655A}
+.qwin-bar i:nth-child(2){background:#E5B45A}
+.qwin-bar i:nth-child(3){background:#58B78C}
+.qwin-bar span{margin-inline-start:10px;font-family:var(--mono);font-size:12.5px;color:#8CA08E}
+.qc{font-family:var(--mono);font-size:14.5px;direction:ltr;text-align:left;color:#CFE0CF;padding:18px 20px;min-height:100px;white-space:pre-wrap;background:transparent;margin:0;line-height:1.7}
+.qc .cursor{color:#5CC08F;animation:cursorBlink 1s steps(1) infinite}
+@keyframes cursorBlink{50%{opacity:0}}
+.lanes{padding:16px;display:grid;gap:14px}
+.lane{background:#212823;border:1px solid #2E372F;border-radius:10px;padding:14px}
+.lane-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.lane-label{font-family:var(--mono);font-size:11px;font-weight:600;color:#8CA08E;letter-spacing:.08em;text-transform:uppercase}
+.cnt{font-family:var(--mono);font-size:14px;color:#CFE0CF;display:flex;align-items:baseline;gap:4px}
+.cnt small{font-size:10px;color:#77897A;text-transform:uppercase;letter-spacing:.05em}
+.cells{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;margin-bottom:8px}
+.cells i{aspect-ratio:1;background:#2E372F;border-radius:2px;transition:background .1s}
+.cells i.scan{background:#C27803}
+.cells i.done{background:#C2492F}
+.seekpath{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:#CFE0CF;padding:8px 0;flex-wrap:wrap}
+.snode{padding:4px 10px;background:#2E372F;border-radius:6px;transition:all .3s}
+.snode.walk{background:#2E8F63;color:#fff}
+.snode.done{background:#1F7A52;color:#fff;box-shadow:0 0 0 2px rgba(92,192,143,.35)}
+.sarrow{color:#5C6B5E}
+.lane-result{font-size:12px;color:#77897A;padding:6px 0;margin-top:4px}
+.lane-result.highlight{color:#5CC08F;font-weight:600}
+.hero-banner{display:none;align-items:center;gap:10px;padding:14px 18px;margin:0 16px 16px;background:#1F7A52;border-radius:10px;font-size:13.5px;font-weight:700;color:#F6F2E9;animation:bannerPop .4s ease-out}
+.hero-banner.show{display:flex}
+.hero-banner svg{flex-shrink:0;color:#F6F2E9}
+@keyframes bannerPop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.stop{padding:40px 0;border-top:1px dashed var(--line2);scroll-margin-top:72px}
+.stop-head{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.stop-num{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--acc);background:var(--acc-soft);border:1px solid var(--acc-line);padding:5px 11px;border-radius:7px}
+.stop h2{font-size:clamp(22px,3.2vw,30px);font-weight:800;line-height:1.4;letter-spacing:-.01em}
+.srcs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.srcs a{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 14px;transition:.2s}
+.srcs a:hover{border-color:var(--acc-line);color:var(--acc);text-decoration:none}
+.srcs a svg{color:var(--acc)}
+.lead{font-size:17px;line-height:1.95;color:var(--ink);margin-bottom:26px;max-width:72ch}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;box-shadow:var(--shadow);transition:border-color .2s}
+.card:hover{border-color:var(--acc-line)}
+.card h3{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.card p{font-size:14px;line-height:1.85;color:var(--mut)}
+.cico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+.cico svg{width:18px;height:18px}
+.cico.blue{background:var(--acc-soft);color:var(--acc)}
+.cico.green{background:var(--grn-soft);color:var(--grn)}
+.cico.amber{background:var(--amb-soft);color:var(--amb)}
+.cico.violet{background:var(--vio-soft);color:var(--vio)}
+.cico.red{background:var(--red-soft);color:var(--red)}
+.defcard{position:relative;overflow:hidden}
+.defcard::before{content:"";position:absolute;top:0;inset-inline-start:0;width:4px;height:100%;background:var(--acc);opacity:.7}
+.defcard h3{margin-bottom:12px}
+.defcard p{font-size:15px;line-height:1.9}
+.netnote{background:var(--grn-soft);border:1px solid var(--acc-line);border-radius:10px;padding:18px 20px;position:relative;padding-inline-start:24px}
+.netnote::before{content:"";position:absolute;top:18px;inset-inline-start:0;width:3px;height:calc(100% - 36px);background:var(--grn);border-radius:2px}
+.netnote .badge{display:inline-block;background:var(--grn);color:var(--bg);font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:10px;letter-spacing:.05em}
+.netnote p{font-size:14px;line-height:1.85;color:var(--ink);margin:0}
+.codebox{background:var(--code-bg);border-radius:10px;overflow:hidden;margin:24px 0;border:1px solid rgba(0,0,0,.15)}
+.cb-h{padding:10px 18px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);font-family:var(--mono);font-size:12px;color:#8CA08E;text-transform:uppercase;letter-spacing:.08em}
+.codebox pre{padding:18px 20px;font-family:var(--mono);font-size:13.5px;line-height:1.7;color:var(--code-ink);overflow-x:auto;direction:ltr;text-align:left}
+.codebox .cm{color:#6E7F70}
+.codebox .kw{color:#7FC79F}
+.codebox .st{color:#E5B45A}
+.codebox .fn{color:#E5B45A}
+.rulethumb{display:flex;gap:14px;align-items:flex-start;background:var(--amb-soft);border:1px solid rgba(194,120,3,.3);border-radius:10px;padding:18px 20px;margin:28px 0}
+.rulethumb svg{flex-shrink:0;color:var(--amb);margin-top:4px}
+.rulethumb p{font-size:14.5px;line-height:1.85;color:var(--ink);margin:0}
+.rulethumb b{color:var(--amb)}
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;margin:28px 0;box-shadow:var(--shadow)}
+.demo-t{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px dashed var(--line2)}
+.demo-t svg{color:var(--acc)}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.status-line{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-size:14px;line-height:1.8;color:var(--mut);margin-top:14px;min-height:52px}
+.status-line b{color:var(--acc)}
+.race-grid{display:grid;gap:20px}
+.race-col{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:18px}
+.race-col h4{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.race-col h4 svg{color:var(--acc)}
+.race-col.scan h4 svg{color:var(--amb)}
+.race-cells{display:grid;grid-template-columns:repeat(22,1fr);gap:3px;margin:14px 0}
+.race-cells i{aspect-ratio:1;background:var(--line);border-radius:3px;transition:all .1s}
+.race-cells i.hit{background:var(--amb)}
+.race-cells i.path{background:var(--acc)}
+.race-cells i.found{background:var(--grn)}
+.race-stat{font-family:var(--mono);font-size:13px;color:var(--mut);margin-top:10px}
+.race-stat b{color:var(--ink);font-size:18px}
+.race-msg{font-size:12.5px;color:var(--dim);margin-top:8px;min-height:20px}
+.race-banner{display:none;align-items:center;gap:10px;background:var(--grn-soft);border:1px solid var(--acc-line);border-radius:10px;padding:12px 16px;margin-top:16px;font-size:13px;font-weight:600;color:var(--grn)}
+.race-banner.show{display:flex}
+.race-banner svg{flex-shrink:0}
+.hash-demo{display:grid;gap:18px}
+.hash-input{display:flex;gap:10px;flex-wrap:wrap}
+.hash-input input{flex:1;min-width:180px;padding:10px 16px;border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:14px;background:var(--surface);color:var(--ink)}
+.hash-input input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+.hash-steps{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.hash-step{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)}
+.hash-step .num{font-family:var(--mono);color:var(--acc);font-weight:600}
+.hash-arrow{color:var(--dim);font-size:16px}
+.buckets{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:18px}
+.bucket{background:var(--surface2);border:2px solid var(--line);border-radius:10px;padding:10px;min-height:80px;transition:all .3s;text-align:center}
+.bucket .bn{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:8px}
+.bucket .bkey{font-family:var(--mono);font-size:11px;color:var(--mut);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 8px;margin:3px 0;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bucket.hit{border-color:var(--grn);background:var(--grn-soft);transform:scale(1.05)}
+.bucket.hit .bn{color:var(--grn);font-weight:700}
+.bucket.bad{border-color:var(--red);background:var(--red-soft)}
+.hash-result{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--mut);margin-top:14px;min-height:44px}
+.hash-result.found{color:var(--grn);font-weight:600}
+.hash-result.nope{color:var(--red)}
+.lsm-demo{display:grid;gap:18px}
+.lsm-stage{display:grid;grid-template-columns:1fr 40px 1fr;gap:16px;align-items:stretch}
+.lsm-col{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:16px;min-height:200px}
+.lsm-col h4{font-size:13px;font-weight:700;color:var(--mut);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.lsm-col h4 svg{color:var(--acc)}
+.lsm-col.ram h4 svg{color:var(--grn)}
+.lsm-col.disk h4 svg{color:var(--vio)}
+.wal-box{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;font-family:var(--mono);font-size:12px;color:var(--mut)}
+.wal-box b{color:var(--grn)}
+.memtable{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px}
+.memtable .mt-label{font-size:11px;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.mt-row{font-family:var(--mono);font-size:11px;color:var(--mut);padding:4px 8px;background:var(--surface2);border-radius:4px;margin:4px 0;opacity:0;transform:translateX(-10px);transition:all .4s}
+.mt-row.on{opacity:1;transform:none}
+.lsm-arrow{display:flex;align-items:center;justify-content:center;color:var(--acc);font-size:24px}
+.sst-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sst{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:var(--mono);font-size:11px;color:var(--mut);opacity:0;transform:translateY(-8px);transition:all .4s}
+.sst.on{opacity:1;transform:none}
+.sst.merged{background:var(--vio-soft);border-color:var(--vio)}
+.sst .sst-label{font-size:10px;color:var(--dim);margin-bottom:4px}
+.sst .sst-row{font-size:10px;padding:2px 0}
+.lsm-cap{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:16px 20px;font-size:14px;line-height:1.85;color:var(--mut);margin-top:16px;min-height:60px}
+.lsm-cap b{color:var(--acc)}
+.lsm-dots{display:flex;gap:6px;justify-content:center;margin-top:12px}
+.lsm-dots i{width:10px;height:10px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s}
+.lsm-dots i.on{background:var(--acc);transform:scale(1.2)}
+.bloom-chip{display:none;align-items:center;gap:8px;background:var(--grn-soft);border:1px solid var(--acc-line);border-radius:999px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--grn);margin-top:12px}
+.bloom-chip.show{display:inline-flex}
+.bloom-chip svg{flex-shrink:0}
+#btreeSvg{width:100%;min-width:640px;height:auto;display:block}
+#btreeSvg .bnode rect{fill:var(--surface);stroke:var(--line2);stroke-width:1.4;transition:.3s}
+#btreeSvg .bnode.walk rect{stroke:var(--acc);fill:var(--acc-soft)}
+#btreeSvg .bnode.done rect{stroke:var(--grn)}
+#btreeSvg .bnode text{fill:var(--mut);font-family:var(--mono);font-size:14px;text-anchor:middle;transition:.3s}
+#btreeSvg .bnode.walk text{fill:var(--ink);font-weight:600}
+#btreeSvg .bnode text.found{fill:var(--grn);font-weight:700}
+#btreeSvg .bnode text.rng{fill:var(--amb);font-weight:600}
+#btreeSvg .sep{stroke:var(--line);stroke-width:1}
+#btreeSvg .edge{stroke:var(--line2);stroke-width:1.3;transition:.3s}
+#btreeSvg .edge.walk{stroke:var(--acc);stroke-width:2.5}
+#btreeSvg .chain{stroke:var(--vio);stroke-width:2;stroke-dasharray:5 5;opacity:.5;transition:.3s}
+#btreeSvg .chain.walk{stroke:var(--amb);opacity:1;stroke-width:2.5}
+.bt-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-top:10px}
+.bt-legend span{display:inline-flex;align-items:center;gap:6px}
+.lg-sw{width:13px;height:13px;border-radius:4px;border:1px solid var(--line2);display:inline-block}
+.lg-sw.path{background:var(--acc-soft);border-color:var(--acc)}
+.lg-sw.found{background:var(--grn-soft);border-color:var(--grn)}
+.lg-sw.range{background:var(--amb-soft);border-color:var(--amb)}
+.lg-sw.chain{background:none;border:none;border-top:2px dashed var(--vio);border-radius:0;height:0}
+.bt-result{display:flex;gap:6px;flex-wrap:wrap;direction:ltr;margin-top:10px}
+.bt-result .kv{font-family:var(--mono);font-size:12px;background:var(--grn-soft);color:var(--grn);padding:3px 10px;border-radius:6px}
+.fanout{display:grid;grid-template-columns:auto 1fr auto;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:18px 0;box-shadow:var(--shadow)}
+.fanout>div{padding:12px 18px;border-bottom:1px solid var(--line);font-size:14px;background:var(--surface)}
+.fanout>div:nth-last-child(-n+3){border-bottom:none}
+.fanout .lv{color:var(--dim);font-size:12.5px}
+.fanout .val{font-family:var(--mono);direction:ltr;text-align:left;color:var(--grn);font-weight:600}
+.meters{display:grid;gap:14px;margin:20px 0}
+.meter-row{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.meter-row h4{font-size:14px;margin-bottom:14px;display:flex;gap:10px;align-items:center}
+.meter{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;margin-bottom:10px;font-size:12.5px}
+.meter .who{font-family:var(--mono);color:var(--dim);direction:ltr}
+.meter .track{height:12px;background:var(--surface2);border-radius:99px;border:1px solid var(--line);overflow:hidden}
+.meter .fill{height:100%;width:0;border-radius:99px;transition:width 1.4s cubic-bezier(.2,.7,.2,1)}
+.fill.lsm-w{background:var(--grn)}
+.fill.bt-w{background:var(--red)}
+.fill.lsm-r{background:var(--amb)}
+.fill.bt-r{background:var(--grn)}
+.meter small{grid-column:2;color:var(--dim);font-size:11.5px;line-height:1.8}
+.cmp-table{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px}
+.cmp-table th,.cmp-table td{border:1px solid var(--line);padding:12px 16px;text-align:start;vertical-align:top;background:var(--surface)}
+.cmp-table th{background:var(--surface2);font-weight:700;font-size:12px;color:var(--mut)}
+.cmp-table .good{color:var(--grn)}
+.cmp-table .bad{color:var(--red)}
+.inc-demo{display:grid;gap:20px}
+.inc-toggle{display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+.inc-toggle label{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;font-size:14px}
+.inc-toggle input{width:20px;height:20px;accent-color:var(--acc)}
+.inc-tag{display:none;font-family:var(--mono);font-size:11px;background:var(--grn-soft);color:var(--grn);padding:3px 9px;border-radius:6px;margin-inline-start:8px}
+.inc-visual{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.inc-panel{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.inc-panel h5{font-size:12px;font-weight:700;color:var(--mut);margin-bottom:10px;font-family:var(--mono)}
+.inc-keys{display:flex;flex-wrap:wrap;gap:4px}
+.inc-keys .kv{font-family:var(--mono);font-size:11px;background:var(--acc-soft);color:var(--acc);padding:3px 8px;border-radius:4px}
+.inc-rows{display:grid;grid-template-columns:repeat(14,1fr);gap:2px}
+.inc-rows i{aspect-ratio:1;background:var(--line);border-radius:2px;transition:background .4s}
+.inc-rows i.hot{background:var(--amb)}
+.inc-rows.covering i.hot{background:var(--line)}
+.inc-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.inc-stat{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+.inc-stat .label{font-size:11px;color:var(--dim);font-family:var(--mono);margin-bottom:4px}
+.inc-stat .val{font-size:24px;font-weight:800;font-family:var(--mono);color:var(--ink)}
+.cmp-demo{display:grid;gap:18px}
+.cmp-ctrl{display:flex;gap:8px;flex-wrap:wrap}
+.cmp-ctrl .cbtn{padding:8px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit}
+.cmp-ctrl .cbtn:hover{border-color:var(--acc-line)}
+.cmp-ctrl .cbtn.primary{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.cmp-visual{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.cmp-col{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.cmp-col h5{font-size:12px;font-weight:700;color:var(--mut);margin-bottom:12px}
+.cmp-col .col-label{display:inline-block;background:var(--acc-soft);color:var(--acc);font-size:11px;padding:3px 10px;border-radius:6px;margin:0 4px 8px 0;font-family:var(--mono)}
+.cmp-col .col-num{color:var(--dim);font-size:10px}
+.q-list{list-style:none;padding:0;margin:0}
+.q-list li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:12.5px;direction:ltr;text-align:left}
+.q-list li .qtext{flex:1;color:var(--ink)}
+.q-list li .qbadge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;flex-shrink:0}
+.qbadge.hit{background:var(--grn-soft);color:var(--grn)}
+.qbadge.miss{background:var(--red-soft);color:var(--red)}
+.sel-demo{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:18px;margin:20px 0}
+.sel-demo h4{font-size:14px;font-weight:700;margin-bottom:14px}
+.sel-bars{display:grid;gap:12px}
+.sel-row{display:grid;grid-template-columns:100px 1fr auto;gap:12px;align-items:center;font-size:13px}
+.sel-row .col-name{font-family:var(--mono);color:var(--ink);font-weight:600}
+.sel-row .track{height:10px;background:var(--surface);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.sel-row .bar{height:100%;width:0;border-radius:99px;transition:width 1s ease}
+.sel-row .bar.low{background:var(--red)}
+.sel-row .bar.high{background:var(--grn)}
+.sel-row .val{font-family:var(--mono);color:var(--mut);font-size:12px}
+.qa{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+.qa .q{width:100%;background:none;border:none;text-align:start;display:flex;gap:14px;align-items:flex-start;padding:18px 22px;font-size:15px;font-weight:600;color:var(--ink);line-height:1.7;cursor:pointer;font-family:inherit}
+.qa .q .no{font-family:var(--mono);color:var(--acc);font-size:13px;padding-top:3px}
+.qa .q::after{content:"+";margin-inline-start:auto;font-weight:400;font-size:20px;color:var(--acc);transition:.3s}
+.qa.open .q::after{transform:rotate(45deg)}
+.qa .a{max-height:0;overflow:hidden;transition:max-height .4s;font-size:14px;line-height:1.85;color:var(--mut)}
+.qa.open .a{max-height:400px}
+.qa .a div{padding:0 22px 18px;padding-inline-start:50px;border-top:1px dashed var(--line2)}
+footer{border-top:1px dashed var(--line2);padding:48px 0;margin-top:48px}
+.foot-grid{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.foot-profile{display:flex;align-items:center;gap:14px}
+.foot-profile img{width:42px;height:42px;border-radius:10px;border:2px solid var(--line)}
+.foot-profile .name{font-weight:700;font-size:14px}
+.foot-profile .role{font-size:12px;color:var(--mut)}
+.foot-links{display:flex;gap:8px}
+.foot-meta{text-align:center;color:var(--dim);font-size:13px;line-height:2;margin-top:24px;padding-top:24px;border-top:1px dashed var(--line2)}
+.foot-meta a{color:var(--acc)}
+.reveal{opacity:0;transform:translateY(20px);transition:all .6s ease}
+.reveal.in{opacity:1;transform:none}
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:32px}
+  .hero-right{position:static}
+  .hero-head{margin-bottom:28px}
+  .logo-mark{width:48px;height:48px;border-radius:12px}
+  .hero-title-block .h1{font-size:clamp(26px,5vw,36px)}
+  .grid2,.grid3,.lsm-stage,.inc-visual,.cmp-visual{grid-template-columns:1fr}
+  .race-cells{grid-template-columns:repeat(18,1fr)}
+  .buckets{grid-template-columns:repeat(4,1fr)}
+  .stops-nav{display:none}
+  .foot-grid{grid-template-columns:1fr;text-align:center}
+  .foot-profile{justify-content:center}
+  .foot-links{justify-content:center}
+}
+@media(max-width:600px){
+  .hero{padding:36px 0 48px}
+  .hero-head{gap:14px;margin-bottom:24px}
+  .logo-mark{width:44px;height:44px}
+  .hero-grid{gap:24px}
+  .hero-chips{gap:6px}
+  .hero-chips a{padding:5px 12px;font-size:12px}
+  .author-card{padding:12px 14px}
+  .author-avatar,.author-avatar-fallback{width:42px;height:42px;border-radius:10px}
+  .lanes{padding:12px}
+  .cells{grid-template-columns:repeat(16,1fr)}
+  .stop{padding:48px 0}
+  .demo{padding:18px}
+  .buckets{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<svg style="display:none">
+<symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.2 1.9 1.2 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8 0 3.2.8.8 1.3 1.9 1.3 3.1 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.3v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3"/></symbol>
+<symbol id="i-branch" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 8.5V15.5M8.5 6H15.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+<symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+<symbol id="i-pen" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></symbol>
+<symbol id="i-drive" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4"/><path d="M15.09 14c.58-.45 1-1.12 1-1.93V12a6 6 0 0 0-8.18-5.58A6 6 0 0 0 8 12v.07c0 .81.42 1.48 1 1.93"/><path d="M9 18h6v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1z"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+<symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
+<symbol id="i-tree" viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="4" cy="20" r="2"/><circle cx="12" cy="20" r="2"/><circle cx="20" cy="20" r="2"/><path d="M12 6v4M8 11l-2 7M16 11l2 7M12 14v4"/></symbol>
+<symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 16V4m0 12-4-4m4 4 4-4M17 8v12m0-12 4 4m-4-4-4 4"/></symbol>
+<symbol id="i-server" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="18" r="1" fill="currentColor"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+<symbol id="i-quiz" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z" fill="currentColor"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></symbol>
+<symbol id="i-flower" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M12 9.5c-1.5-1.5-1.5-4 0-5.5 1.5 1.5 1.5 4 0 5.5zM12 14.5c1.5 1.5 1.5 4 0 5.5-1.5-1.5-1.5-4 0-5.5zM9.5 12c-1.5 1.5-4 1.5-5.5 0 1.5-1.5 4-1.5 5.5 0zM14.5 12c1.5-1.5 4-1.5 5.5 0-1.5 1.5-4 1.5-5.5 0z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 4v14M6.5 13.5 12 19l5.5-5.5"/></symbol>
+<symbol id="i-merge" viewBox="0 0 24 24"><circle cx="6" cy="4" r="2"/><circle cx="18" cy="4" r="2"/><circle cx="12" cy="20" r="2"/><path d="M6 6v2c0 3.31 2.69 6 6 6s6-2.69 6-6V6M12 14v4"/></symbol>
+</svg>
+
+<nav class="topbar">
+  <div class="wrap topbar-in">
+    <span class="brand">
+      <span class="brand-logo"><svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="14" fill="var(--acc)"/><path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5" stroke-linejoin="round" fill="none"/><circle cx="32" cy="28" r="3" fill="var(--bg)"/><circle cx="22" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><circle cx="42" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6"/></svg></span>
+      <span class="fa">ایندکس‌های دیتابیس</span><span class="en">Database Indexes</span>
+    </span>
+    <div class="stops-nav">
+      <a href="#s1"><span class="fa">۰۱ چیست و چرا</span><span class="en">01 What & why</span></a>
+      <a href="#s2"><span class="fa">۰۲ اسکن و seek</span><span class="en">02 Scan vs seek</span></a>
+      <a href="#s3"><span class="fa">۰۳ ایندکس هش</span><span class="en">03 Hash</span></a>
+      <a href="#s4"><span class="fa">۰۴ SSTable و LSM</span><span class="en">04 LSM</span></a>
+      <a href="#s5"><span class="fa">۰۵ درخت B</span><span class="en">05 B-Trees</span></a>
+      <a href="#s6"><span class="fa">۰۶ LSM و B-Tree</span><span class="en">06 LSM vs B-Tree</span></a>
+      <a href="#s7"><span class="fa">۰۷ SQL Server</span><span class="en">07 SQL Server</span></a>
+      <a href="#s8"><span class="fa">۰۸ ایندکس ترکیبی</span><span class="en">08 Composite</span></a>
+      <a href="#s9"><span class="fa">خودآزمایی</span><span class="en">Self-check</span></a>
+    </div>
+    <a class="btn sm gh-link" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
+      <svg class="ic sm fill"><use href="#i-github"/></svg>
+      <span class="fa">ریپازیتوری</span><span class="en">Repository</span>
+    </a>
+    <button class="btn iconb" id="themeBtn" title="تغییر تم">
+      <svg class="ic sm sun"><use href="#i-sun"/></svg>
+      <svg class="ic sm moon"><use href="#i-moon"/></svg>
+    </button>
+    <button class="btn iconb" id="langBtn" title="English / فارسی">
+      <span class="fa" style="font-size:12px;font-weight:700">EN</span>
+      <span class="en" style="font-size:12px;font-weight:700">فا</span>
+    </button>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-head">
+      <div class="logo-mark">
+        <svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="var(--acc)"/><path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5" stroke-linejoin="round" fill="none"/><circle cx="32" cy="28" r="3" fill="var(--bg)"/><circle cx="22" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><circle cx="42" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6"/></svg>
+      </div>
+      <div class="hero-title-block">
+        <h1 class="h1">
+          <span class="fa">ایندکس‌های <span class="uword">دیتابیس<svg class="uscribble" viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M2 7 Q 20 2 40 6 T 80 6 T 118 4" fill="none" stroke="var(--amb)" stroke-width="3" stroke-linecap="round"/></svg></span></span>
+          <span class="en">Database <span class="uword">Indexes<svg class="uscribble" viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M2 7 Q 20 2 40 6 T 80 6 T 118 4" fill="none" stroke="var(--amb)" stroke-width="3" stroke-linecap="round"/></svg></span></span>
+        </h1>
+        <p class="hero-sub">
+          <span class="fa">چطور دیتابیس بین یک میلیون سطر، یک سطر را پیدا می‌کند — بدون اینکه کل جدول را بخواند؟ و این ترفند چه هزینه‌ای دارد؟</span>
+          <span class="en">How does a database find one row in a million without reading the whole table — and what does that trick cost?</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="hero-grid">
+      <div class="hero-left">
+       <div class="hero-desc">
+<p><span class="fa">این مسیر یادگیری برای توسعه‌دهنده‌های بک‌اند <span class="mono">.NET</span> طراحی شده — بدون حاشیه، با مثالِ واقعی، و زبانی که سرِ موضوع می‌رود. از تشبیه‌های ساده شروع می‌کنیم و قدم‌به‌قدم شما را به عمقِ موتورِ SQL Server می‌بریم.</span>
+<span class="en">This learning path is built for .NET backend developers — no fluff, real examples, and straight to the point. We start with simple analogies and take you step by step into the engine of SQL Server.</span></p></div>
+
+<div class="author-card">
+  <img class="author-avatar" src="https://github.com/alireza-haeri.png" alt="Alireza Haeri" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+  <span class="author-avatar-fallback" style="display:none">ع</span>
+  <div class="author-info">
+    <div class="author-name"><span class="fa">علیرضا حایری</span><span class="en">Alireza Haeri</span></div>
+    <div class="author-role"><span class="fa">توسعه‌دهندهٔ بک‌اند ‎.NET</span><span class="en">.NET Backend Developer · Author of this path</span></div>
+  </div>
+  <div class="author-links">
+    <a class="btn sm" href="https://github.com/alireza-haeri" target="_blank" rel="noopener">
+      <svg class="ic sm fill"><use href="#i-github"/></svg><span>GitHub</span>
+    </a>
+  </div>
+</div>
+
+        <div class="hero-chips">
+          <a href="#s1"><b>01</b><span class="fa">چیست و چرا</span><span class="en">What & why</span></a>
+          <a href="#s2"><b>02</b><span class="fa">اسکن و seek</span><span class="en">Scan vs seek</span></a>
+          <a href="#s3"><b>03</b><span class="fa">ایندکس هش</span><span class="en">Hash indexes</span></a>
+          <a href="#s4"><b>04</b><span class="fa">SSTable و LSM</span><span class="en">SSTables · LSM</span></a>
+          <a href="#s5"><b>05</b><span class="fa">درخت B</span><span class="en">B-Trees</span></a>
+          <a href="#s6"><b>06</b><span class="fa">LSM و B-Tree</span><span class="en">LSM vs B-Tree</span></a>
+          <a href="#s7"><b>07</b><span class="fa">SQL Server</span><span class="en">SQL Server</span></a>
+          <a href="#s8"><b>08</b><span class="fa">ایندکس ترکیبی</span><span class="en">Composite idx</span></a>
+          <a href="#s9"><b>✓</b><span class="fa">خودآزمایی</span><span class="en">Self-check</span></a>
+        </div>
+
+        <a class="btn primary hero-cta" href="#s1">
+          <span class="fa">شروع مسیر</span><span class="en">Start the path</span>
+          <svg class="ic sm"><use href="#i-down"/></svg>
+        </a>
+      </div>
+
+      <div class="hero-right">
+        <div class="qwin" aria-hidden="true">
+          <div class="qwin-bar"><i></i><i></i><i></i><span>query window — Orders</span></div>
+          <pre class="qc"><span id="hl1"></span>
+<span id="hl2"></span>
+<span id="hl3"></span><span class="cursor" id="heroCur">▍</span></pre>
+          <div class="lanes">
+            <div class="lane">
+              <div class="lane-head">
+                <span class="lane-label">FULL SCAN</span>
+                <span class="cnt"><span id="heroScanCnt">0</span> <small>rows examined</small></span>
+              </div>
+              <div class="cells" id="heroScanCells"></div>
+              <div class="lane-result"><span class="fa">نتیجه: کند، تمام جدول خوانده شد</span><span class="en">Result: slow, full table scanned</span></div>
+            </div>
+            <div class="lane">
+              <div class="lane-head">
+                <span class="lane-label">INDEX SEEK</span>
+                <span class="cnt"><span id="heroSeekCnt">0</span> <small>pages</small></span>
+              </div>
+              <div class="seekpath" id="heroSeekPath">
+                <span class="snode">root</span><span class="sarrow">→</span>
+                <span class="snode">branch</span><span class="sarrow">→</span>
+                <span class="snode">leaf</span><span class="sarrow">→</span>
+                <span class="snode">row ✓</span>
+              </div>
+              <div class="lane-result highlight"><span class="fa">نتیجه: <b>۴ صفحه</b> — ≈ 1 ms ⚡</span><span class="en">Result: <b>4 pages</b> — ≈ 1 ms ⚡</span></div>
+            </div>
+          </div>
+          <div class="hero-banner" id="heroBanner">
+            <svg class="ic sm"><use href="#i-zap"/></svg>
+            <span class="fa"><b>۴ صفحه</b> به‌جای <b>۱٬۰۰۰٬۰۰۰ سطر</b> — این قدرت ایندکس است</span>
+            <span class="en"><b>4 pages</b> instead of <b>1,000,000 rows</b> — that is the power of an index</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ═══ 01 ═══ -->
+<section id="s1" class="stop reveal">
+  <div class="stop-head"><span class="stop-num">01</span>
+    <h2><span class="fa">ایندکس چیست — و چه هزینه‌ای دارد</span><span class="en">What an index is — and what it costs you</span></h2>
+  </div>
+  <div class="srcs">
+    <a href="https://www.databass.dev/part-i" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">منبع: Database Internals، فصل ۱–۲</span><span class="en">Database Internals, Ch. 1–2</span></a>
+    <a href="https://dataintensive.net/" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">DDIA ویرایش ۲، فصل ۴</span><span class="en">DDIA 2e, Ch. 4</span></a>
+  </div>
+  <p class="lead"><span class="fa">به یک کتاب چاپی فکر کنید. برای پیدا کردن یک موضوع، همهٔ صفحه‌ها را نمی‌خوانید — می‌روید سراغ فهرست پایان کتاب: موضوع، شمارهٔ صفحه، و یک‌راست می‌پرید همان‌جا. ایندکس دیتابیس دقیقاً همین کار را با جدول شما می‌کند.</span>
+  <span class="en">Think of a paper book. To find one topic, you don't read every page — you flip to the index at the back: topic, page number, jump straight there. A database index does exactly this for your table.</span></p>
+
+  <div class="grid2">
+    <div class="card defcard">
+      <h3><span class="cico blue"><svg class="ic"><use href="#i-book"/></svg></span><span class="fa">تعریف</span><span class="en">Definition</span></h3>
+      <p><span class="fa">ایندکس یک کپی کوچک‌تر و مرتب از ستون‌های انتخابی جدول است که دیتابیس آن را نگه می‌دارد تا جست‌وجو در آن سریع باشد. هر خانهٔ ایندکس، مقدار ستون را دارد به‌همراه اشاره‌ای به سطر واقعی.</span>
+      <span class="en">An index is a smaller, sorted copy of chosen columns from your table, kept so the database can search them quickly. Each entry holds the column's value and a pointer back to the real row.</span></p>
+    </div>
+    <div class="netnote">
+      <span class="badge">.NET</span>
+      <p><span class="fa">وقتی یک API با رشد جدول کند می‌شود، معمولاً اولین متهم نبودِ ایندکس است — حتی جلوتر از خودِ کد. در EF Core ایندکس‌ها را با <code>builder.HasIndex(...)</code> داخل <code>OnModelCreating</code> می‌سازید و مثل بقیهٔ تغییرات با Migration ارسال می‌شوند.</span>
+      <span class="en">When an API endpoint slows down as the table grows, a missing index is usually the first suspect — ahead of the code itself. In EF Core you create them with <code>builder.HasIndex(...)</code> inside <code>OnModelCreating</code>, shipped as migrations.</span></p>
+    </div>
+  </div>
+
+  <div class="grid3" style="margin-top:20px">
+    <div class="card"><h3><span class="cico green"><svg class="ic"><use href="#i-zap"/></svg></span><span class="fa">خواندن‌ها سریع می‌شوند</span><span class="en">Reads speed up</span></h3>
+      <p><span class="fa">موتور به‌جای خواندن کل جدول فقط چند صفحه را لمس می‌کند. معمولاً ۱۰۰ تا ۱۰٬۰۰۰ برابر سطرِ کمتر.</span><span class="en">The engine touches a handful of pages instead of the whole table. Often 100 to 10,000 times fewer rows.</span></p></div>
+    <div class="card"><h3><span class="cico amber"><svg class="ic"><use href="#i-pen"/></svg></span><span class="fa">نوشتن‌ها کند می‌شوند</span><span class="en">Writes slow down</span></h3>
+      <p><span class="fa">هر INSERT، UPDATE یا DELETE باید همهٔ ایندکس‌های آن جدول را هم به‌روز کند. ایندکس بیشتر = نوشتن کندتر.</span><span class="en">Every INSERT, UPDATE or DELETE must also update every index on that table. More indexes, slower writes.</span></p></div>
+    <div class="card"><h3><span class="cico violet"><svg class="ic"><use href="#i-drive"/></svg></span><span class="fa">دیسک و حافظه باد می‌کنند</span><span class="en">Disk and memory grow</span></h3>
+      <p><span class="fa">ایندکس یک ساختار واقعی روی دیسک است و بخش‌های پرمصرفش در RAM نگه داشته می‌شوند. هر دو پول دارند.</span><span class="en">An index is a real structure on disk, and hot parts are kept in RAM. Both cost money.</span></p></div>
+  </div>
+
+  <div class="codebox"><div class="cb-h">sql — the whole feature in one line</div>
+<pre><code><span class="cm">-- one column, one line</span>
+<span class="kw">CREATE INDEX</span> IX_Products_Name
+    <span class="kw">ON</span> dbo.Products(Name);</code></pre></div>
+
+  <div class="grid3">
+    <div class="card"><h3><span class="cico blue"><svg class="ic"><use href="#i-db"/></svg></span><span class="fa">جدول <span class="mono">Products</span></span><span class="en">table <span class="mono">Products</span></span></h3>
+      <p><span class="fa">۱٬۰۰۰٬۰۰۰ سطر.</span><span class="en">1,000,000 rows.</span></p></div>
+    <div class="card"><h3><span class="cico red"><svg class="ic"><use href="#i-x"/></svg></span><span class="fa">بدون ایندکس</span><span class="en">no index</span></h3>
+      <p><span class="fa"><code>WHERE Name = 'Kettle'</code> ← بررسی ۱٬۰۰۰٬۰۰۰ سطر <b style="color:var(--red)">(ثانیه‌ها)</b></span><span class="en"><code>WHERE Name = 'Kettle'</code> → examines 1,000,000 rows, <b style="color:var(--red)">seconds</b></span></p></div>
+    <div class="card"><h3><span class="cico green"><svg class="ic"><use href="#i-check"/></svg></span><span class="fa">ایندکس روی Name</span><span class="en">index on Name</span></h3>
+      <p><span class="fa">جست‌وجو: <b style="color:var(--grn)">~۴ صفحه (≈ 1 ms)</b></span><span class="en">Lookup: <b style="color:var(--grn)">~4 pages (≈ 1 ms)</b></span></p>
+      <p style="margin-top:10px;font-size:.88em"><span class="fa"> صورت‌حساب: اگر ۳ ایندکس داشته باشید، هر INSERT می‌شود <br/><code style="
+    direction: rtl;
+">1 سطر + 3 ایندکس = 4 نوشتن</code></span><span class="en">The bill: with 3 indexes, each INSERT becomes <br/><code>1 row + 3 indexes = 4 writes</code></span></p></div>
+  </div>
+
+  <div class="rulethumb">
+    <svg class="ic"><use href="#i-bulb"/></svg>
+    <p><span class="fa"><b>قاعدهٔ سرانگشتی:</b> برای کوئری‌هایی ایندکس بسازید که واقعاً اجرا می‌شوند، نه «برای احتیاط». ایندکسی که استفاده نشود فقط خرج می‌تراشد.</span>
+    <span class="en"><b>Rule of thumb:</b> index for the queries you actually run, not "just in case". An unused index only costs you.</span></p>
+  </div>
+</section>
+
+<!-- ═══ 02 ═══ -->
+<section id="s2" class="stop reveal">
+  <div class="stop-head"><span class="stop-num">02</span>
+    <h2><span class="fa">اسکن کامل در برابر جست‌وجوی ایندکسی — تفاوت را تماشا کنید</span><span class="en">Full scan vs indexed lookup — watch the difference</span></h2>
+  </div>
+  <div class="srcs">
+    <a href="https://www.databass.dev/part-i/ch-2-b-tree-indexes" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">منبع: Database Internals، فصل ۲</span><span class="en">Database Internals, Ch. 2</span></a>
+    <a href="https://learn.microsoft.com/sql/relational-databases/performance/display-an-actual-execution-plan" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">MS Learn: برنامه‌های اجرا</span><span class="en">MS Learn: execution plans</span></a>
+  </div>
+  <p class="lead"><span class="fa">دیتابیس‌ها حافظه را در تکه‌هایی با اندازه ثابت می‌خوانند که به آن‌ها <b>صفحه</b> می‌گویند — در SQL Server هر صفحه ۸ کیلوبایت. برای جواب دادن به یک کوئری دو راه اساسی وجود دارد:</span>
+  <span class="en">Databases read storage in fixed-size chunks called <b>pages</b> — 8 KB each in SQL Server. There are two basic ways to answer a query:</span></p>
+  <p><span class="fa"><b>اسکن کامل</b> همهٔ صفحه‌ها را پشت‌سرهم می‌خواند و هر سطر را چک می‌کند. ساده است، اما هزینه‌اش با اندازهٔ جدول رشد می‌کند. <br/><b>جست‌وجوی ایندکسی (seek)</b> از روی چند صفحهٔ ایندکس عبور می‌کند و یک‌راست به سطرهای منطبق می‌پرد. هزینه‌اش حتی روی جدول‌های غول‌پیکر به‌زحمت رشد می‌کند.</span>
+  <span class="en">A <b>full scan</b> reads every page, one after another, and checks every row. Simple, but the cost grows with the table. An <br/><b>index seek</b> walks a few pages of the index, then jumps straight to the matching rows. Its cost barely grows, even on huge tables.</span></p>
+
+  <div class="demo">
+    <div class="demo-t"><svg class="ic"><use href="#i-play"/></svg><span class="fa">امتحان کنید — مسابقه</span><span class="en">Try it — the race</span></div>
+    <p style="font-size:14px;color:var(--mut);margin-bottom:16px"><span class="fa">هر مربع کوچک یک صفحهٔ جدول است. هر دو موتور را اجرا کنید و ببینید کدام زودتر تمام می‌کند.</span><span class="en">Each little square is one table page. Run both engines and watch who finishes first.</span></p>
+    <div class="race-grid">
+      <div class="race-col scan">
+        <h4><svg class="ic"><use href="#i-scan"/></svg><span class="fa">اسکن کامل</span><span class="en">Full scan</span></h4>
+        <div class="race-cells" id="raceScanCells"></div>
+        <div class="race-stat"><span class="fa">صفحه‌های خوانده‌شده:</span><span class="en">Pages read:</span> <b id="raceScanStat">0</b></div>
+        <div class="race-msg" id="raceScanMsg"></div>
+      </div>
+      <div class="race-col">
+        <h4><svg class="ic"><use href="#i-target"/></svg><span class="fa">جست‌وجوی ایندکسی</span><span class="en">Index seek</span></h4>
+        <div class="race-cells" id="raceSeekCells"></div>
+        <div class="race-stat"><span class="fa">صفحه‌های خوانده‌شده:</span><span class="en">Pages read:</span> <b id="raceSeekStat">0</b></div>
+        <div class="race-msg" id="raceSeekMsg"></div>
+      </div>
+    </div>
+    <div class="race-banner" id="raceBanner">
+      <svg class="ic"><use href="#i-zap"/></svg>
+      <span class="fa">جست‌وجوی ایندکسی تمام کرد در حالی که اسکن هنوز صفحه‌ها را می‌خواند. این فاصله با بزرگ‌شدن جدول <b>بیشتر</b> می‌شود.</span>
+      <span class="en">The seek finished while the scan was still reading pages. That gap gets <b>wider</b> as the table grows.</span>
+    </div>
+    <div class="ctrl" style="margin-top:16px">
+      <button class="btn" id="raceScanBtn"><span class="fa">اجرای اسکن کامل</span><span class="en">Run full scan</span></button>
+      <button class="btn" id="raceSeekBtn"><span class="fa">اجرای seek ایندکس</span><span class="en">Run index seek</span></button>
+      <button class="btn primary" id="raceBtn"><span class="fa">مسابقه</span><span class="en">Race them</span></button>
+      <button class="btn" id="raceResetBtn"><svg class="ic sm"><use href="#i-reset"/></svg><span class="fa">ریست</span><span class="en">Reset</span></button>
+    </div>
+  </div>
+
+  <div class="netnote" style="margin-top:24px">
+    <span class="badge">.NET</span>
+    <p><span class="fa">در SSMS گزینهٔ <code>SET STATISTICS IO ON</code> را روشن کنید و <code>logical reads</code> را قبل و بعد از افزودن ایندکس مقایسه کنید. دیدنِ اینکه ۱۲٬۰۴۵ خواندن می‌شود ۹، نسخهٔ روزمرهٔ همین برد است؛ و برنامهٔ اجرا هم از <code>Table Scan</code> به <code>Index Seek</code> تغییر می‌کند.</span>
+    <span class="en">Turn on <code>SET STATISTICS IO ON</code> in SSMS and compare <code>logical reads</code> before and after adding an index. Watching 12,045 reads drop to 9 is the everyday version of this win, and the plan switches from <code>Table Scan</code> to <code>Index Seek</code>.</span></p>
+  </div>
+
+  <div class="codebox"><div class="cb-h">sql — real numbers you can reproduce</div>
+<pre><code><span class="kw">SET</span> STATISTICS IO <span class="kw">ON</span>;
+
+<span class="kw">SELECT</span> Id, Total <span class="kw">FROM</span> dbo.Orders
+<span class="kw">WHERE</span> CustomerId = <span class="st">1042</span>;
+<span class="cm">-- before: Table 'Orders'. Scan count 1, logical reads 12045</span>
+
+<span class="kw">CREATE INDEX</span> IX_Orders_CustomerId
+    <span class="kw">ON</span> dbo.Orders(CustomerId);
+
+<span class="cm">-- same query again:</span>
+<span class="cm">-- after:  Table 'Orders'. Scan count 1, logical reads 9</span></code></pre></div>
+</section>
+
+<!-- ═══ 03 ═══ -->
+<section id="s3" class="stop reveal">
+  <div class="stop-head"><span class="stop-num">03</span>
+    <h2><span class="fa">ایندکس هش — رختکنِ جست‌وجوها</span><span class="en">Hash indexes — the coat-check of lookups</span></h2>
+  </div>
+  <div class="srcs">
+    <a href="https://www.databass.dev/part-i/ch-2-b-tree-indexes" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">منبع: Database Internals، فصل ۲</span><span class="en">Database Internals, Ch. 2</span></a>
+    <a href="https://learn.microsoft.com/sql/relational-databases/in-memory-oltp/hash-indexes-for-memory-optimized-tables" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">MS Learn: ایندکس‌های هش</span><span class="en">MS Learn: hash indexes</span></a>
+  </div>
+  <p class="lead"><span class="fa">در رختکن، کت‌تان را تحویل می‌دهید و یک شماره می‌گیرید. بعداً همان شماره را نشان می‌دهید و کت‌تان را بی‌درنگ پس می‌گیرید — کسی دنبال چیزی نمی‌گردد. شماره، مستقیم به قلابِ درست می‌رسد. ایندکس هش هم دقیقاً همین‌طور کار می‌کند.</span>
+  <span class="en">At a coat check, you hand over your coat and get a number. Later, that number leads straight to the right hook — no searching. A hash index works exactly like this.</span></p>
+ <p><span class="fa">یک <b>تابع هش</b>، کلید شما مثلاً <code>user:42</code> را می‌گیرد و یک عدد از آن می‌سازد. دیتابیس این عدد را روی تعداد سطل‌ها تقسیم می‌کند و باقیماندهٔ آن مشخص می‌کند که کلید در کدام سطل می‌نشیند؛ مثلاً سطل شمارهٔ ۵ از ۸. خودِ مقدار (یا اشاره‌گر به سطر) دقیقاً در همان سطل ذخیره می‌شود.</span>
+<span class="en">A <b>hash function</b> takes your key say <code>user:42</code> and produces a number. The database divides this number by the bucket count and uses the remainder to decide which bucket the key lands in — for instance, bucket 5 out of 8. The value (or a pointer to the row) is stored right there in that bucket.</span></p>
+<p><span class="fa">پیدا کردنِ یک کلیدِ مشخص با این روش، <b>سرعت ثابتی</b> دارد (<code>O(1)</code>). یعنی فرقی نمی‌کند جدول شما ۱۰۰ سطر داشته باشد یا ۱۰۰ میلیون — موتور همیشه فقط یک سطل را باز می‌کند و جواب را می‌گیرد.</span>
+<span class="en">Finding one exact key with this method is <b>constant time</b> (<code>O(1)</code>). Whether your table has 100 rows or 100 million, the engine always opens just one bucket and retrieves the answer.</span></p>
+
+  <div class="demo">
+    <div class="demo-t"><svg class="ic"><use href="#i-hash"/></svg><span class="fa">امتحان کنید — سفرِ یک کلید تا سطلش</span><span class="en">Try it — a key's journey to its bucket</span></div>
+    <p style="font-size:14px;color:var(--mut);margin-bottom:16px"><span class="fa">این دموی همان فرمول است: تابع هش کلید را به عدد تبدیل می‌کند و باقی‌ماندهٔ تقسیم بر ۸ مشخص می‌کند کلید در کدام سطل بنشیند. یک کلید بنویسید و جست‌وجو را بزنید؛ بعد دکمهٔ range را بزنید تا ببینید چرا برای محدوده‌ها به درد نمی‌خورد.</span>
+    <span class="en">This demo is the formula in action: hash turns a key into a number, and that number modulo 8 picks the bucket. Type a key and press look up; then press range to see why it fails for ranges.</span></p>
+    <div class="hash-demo">
+      <div class="hash-input">
+        <input type="text" id="hashInput" value="user:42" placeholder="key..." list="hashKeys">
+        <datalist id="hashKeys"><option value="user:42"><option value="user:7"><option value="user:113"><option value="sku:A-900"><option value="sku:B-205"><option value="order:8841"></datalist>
+        <button class="btn" id="hashGoBtn"><span class="fa">جست‌وجو کن</span><span class="en">Look up</span></button>
+        <button class="btn" id="hashRangeBtn"><span class="fa">یک range بخواه</span><span class="en">Try a range query</span></button>
+      </div>
+     <div class="hash-steps" style="direction: ltr;">
+  <div class="hash-step"><span class="fa">۱</span><span class="en">1</span> · key → <span class="num" id="hs1">?</span></div>
+  <span class="hash-arrow">→</span>
+  <div class="hash-step"><span class="fa">۲</span><span class="en">2</span> · hash → <span class="num" id="hs2">?</span></div>
+  <span class="hash-arrow">→</span>
+  <div class="hash-step"><span class="fa">۳</span><span class="en">3</span> · mod 8 <span class="fa">(باقیماندهٔ تقسیم بر ۸)</span><span class="en">(remainder of division by 8)</span> → bucket <span class="num" id="hs3">?</span></div>
+</div>
+      <div class="buckets" id="hashBuckets"></div>
+      <div class="hash-result" id="hashResult"></div>
+    </div>
+  </div>
+
+  <p style="font-size:14px;color:var(--mut);margin:20px 0"><span class="fa">۸ سطل — هر کلید فقط در یکی می‌نشیند و هیچ ترتیبی بین سطل‌ها نیست.</span>
+  <span class="en">8 buckets — every key lands in exactly one, and there is no order between buckets.</span></p>
+  <p><span class="fa">اما یک <b>گرفتاری بزرگ</b> دارد: ایندکس هش نمی‌تواند کوئری‌های range را جواب بدهد. پرسیدنِ «هر کلیدی بین ۱۰ تا ۲۰ را بده» نیاز دارد داده مرتب باشد، و تابع هش همین ترتیب را دور می‌ریزد. سطل ۳ به هیچ معنای مفیدی «کنار» سطل ۴ نیست. یعنی نه <code>&gt;</code> و نه <code>&lt;</code>، نه <code>BETWEEN</code>، نه <code>ORDER BY</code> و نه پیشوندی مثل <code>LIKE 'ab%'</code>.</span>
+  <span class="en">The big catch: hash indexes cannot answer range queries. Asking "every key between 10 and 20" needs sorted data, and hashing throws that order away. Bucket 3 is not "next to" bucket 4 in any useful sense — no <code>&gt;</code>, no <code>&lt;</code>, no <code>BETWEEN</code>, no <code>ORDER BY</code>, no <code>LIKE 'ab%'</code>.</span></p>
+
+  <div class="netnote" style="margin-top:24px">
+    <span class="badge">.NET</span>
+    <p><span class="fa">این ساختار را هر روز استفاده می‌کنید: <code>Dictionary&lt;TKey,TValue&gt;</code> یعنی ایندکس هش در RAM. همان محدودیت را هم دارد — برای «همهٔ کلیدهای بزرگ‌تر از X» باید همهٔ خانه‌ها را بگردید. در SQL Server ایندکس <code>HASH</code> فقط روی جدول‌های حافظه‌محور (In-Memory OLTP) وجود دارد؛ جدول‌های دیسکی معمولی از درخت B استفاده می‌کنند که در ایستگاه ۰۵ می‌رسیم.</span>
+    <span class="en">You already use this structure daily: <code>Dictionary&lt;TKey,TValue&gt;</code> is a hash index in RAM, with the same limit. In SQL Server, <code>HASH</code> indexes exist only on memory-optimized tables; ordinary disk tables use B-trees (stop 05).</span></p>
+  </div>
+
+  <div class="grid2" style="margin-top:20px">
+    <div class="codebox" style="margin:0"><div class="cb-h">c# — you already know this structure</div>
+<pre><code><span class="cm">// Dictionary is a hash index in RAM</span>
+<span class="kw">var</span> price = <span class="kw">new</span> Dictionary&lt;<span class="kw">string</span>, <span class="kw">decimal</span>&gt;();
+price[<span class="st">"SKU-42"</span>] = <span class="st">19.99m</span>;     <span class="cm">// write: O(1)</span>
+<span class="kw">var</span> p = price[<span class="st">"SKU-42"</span>];      <span class="cm">// read:  O(1)</span>
+
+<span class="cm">// "all keys greater than SKU-42"?</span>
+<span class="cm">// → no order stored. Walk EVERY entry.</span></code></pre></div>
+    <div class="codebox" style="margin:0"><div class="cb-h">sql server — hash, memory-only</div>
+<pre><code><span class="cm">-- only on MEMORY_OPTIMIZED tables</span>
+<span class="kw">CREATE TABLE</span> dbo.SessionCache (
+  SessionId <span class="kw">UNIQUEIDENTIFIER NOT NULL</span>,
+  Payload   <span class="kw">NVARCHAR</span>(<span class="st">4000</span>),
+
+  <span class="kw">INDEX</span> IX_Session <span class="kw">HASH</span> (SessionId)
+      <span class="kw">WITH</span> (BUCKET_COUNT = <span class="st">131072</span>)
+) <span class="kw">WITH</span> (MEMORY_OPTIMIZED = <span class="kw">ON</span>);</code></pre></div>
+  </div>
+</section>
+
+<!-- ═══ 04 ═══ -->
+<section id="s4" class="stop reveal">
+  <div class="stop-head"><span class="stop-num">04</span>
+    <h2><span class="fa">SSTable و درخت LSM — ساخته‌شده برای طوفانِ نوشتن</span><span class="en">SSTables & LSM-Trees — built for write storms</span></h2>
+  </div>
+  <div class="srcs">
+    <a href="https://dataintensive.net/" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">منبع: DDIA ویرایش ۲، فصل ۴</span><span class="en">DDIA 2e, Ch. 4</span></a>
+    <a href="https://en.wikipedia.org/wiki/Log-structured_merge-tree" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">مرجع: درخت LSM</span><span class="en">Reference: LSM-tree</span></a>
+  </div>
+  <p class="lead"><span class="fa">اینجا سه اصطلاح یاد می‌گیرید:</span><span class="en">Three terms to learn here:</span></p>
+  <div class="grid3">
+  <div class="card">
+    <h3><span class="cico blue"><svg class="ic"><use href="#i-layers"/></svg></span>SSTable</h3>
+    <p><span class="fa"><b>SSTable</b> مخفف <em>Sorted String Table</em> است؛ یعنی فایلی روی دیسک که کلیدهایش را <b>مرتب</b> نگه می‌دارد. این فایل یک‌بار نوشته می‌شود و بعد از آن، هیچ‌کس آن را تغییر نمی‌دهد — به همین دلیل به آن <b>تغییرناپذیر (Immutable)</b> می‌گویند. هر SSTable مثل یک جلد کتاب است که بعد از چاپ، دیگر صفحه‌ای به آن اضافه یا کم نمی‌شود.</span>
+    <span class="en"><b>SSTable</b> stands for <em>Sorted String Table</em> — a file on disk that keeps its keys in <b>sorted order</b>. Once written, it is never modified — that's why it's called <b>immutable</b>. Think of each SSTable as a printed book: no pages are added or removed after printing.</span></p>
+  </div>
+  <div class="card">
+    <h3><span class="cico green"><svg class="ic"><use href="#i-db"/></svg></span>Memtable</h3>
+    <p><span class="fa"><b>Memtable</b> یک ساختار مرتب در RAM (حافظهٔ اصلی) است. هر نوشتنِ جدید، اول در اینجا می‌نشیند تا وقتی که به اندازهٔ کافی پر شود. در این لحظه، موتور تمام محتوای آن را یکجا به‌صورت یک SSTable روی دیسک می‌نویسد. به این کار <b>Flush</b> می‌گویند. مزیتش: هیچ نوشته‌ای مستقیماً به دیسک نمی‌رود، پس دیسک از شرِ عملیاتِ تصادفیِ پرهزینه در امان است.</span>
+    <span class="en"><b>Memtable</b> is a sorted structure kept in RAM. Every new write lands here first, until it fills up. When it's full, the engine flushes its entire content to disk as a single SSTable. This keeps random disk writes away — writes are cheap and sequential.</span></p>
+  </div>
+  <div class="card">
+    <h3><span class="cico violet"><svg class="ic"><use href="#i-merge"/></svg></span>Compaction</h3>
+    <p><span class="fa"><b>Compaction</b> یک فرایندِ همیشگی و پس‌زمینه است که چند SSTable را با هم ادغام می‌کند — درست مثل الگوریتم merge-sort. نتیجهٔ آن یک SSTableِ تازه و مرتب‌تر است که سطرهای بازنویسی‌شده یا حذف‌شده را ندارد. بدون compaction، تعداد فایل‌ها روی دیسک مدام زیاد می‌شود و خواندن‌ها کند می‌شوند. compaction باعث می‌شود دیسک مرتب و خواندن‌ها سریع بمانند.</span>
+    <span class="en"><b>Compaction</b> is a continuous background process that merges several SSTables — exactly like merge-sort — into one fresh, compact SSTable. It discards overwritten or deleted rows. Without compaction, files would pile up and reads would slow down. Compaction keeps the disk tidy and reads fast.</span></p>
+  </div>
+</div>
+
+  <div class="demo">
+    <div class="demo-t"><svg class="ic"><use href="#i-play"/></svg><span class="fa">امتحان کنید — مسیر نوشتن LSM، قدم‌به‌قدم</span><span class="en">Try it — an LSM write path, step by step</span></div>
+    <div class="lsm-demo">
+      <div class="lsm-stage">
+        <div class="lsm-col ram">
+          <h4><svg class="ic"><use href="#i-zap"/></svg>RAM — Memtable</h4>
+          <div class="wal-box">WAL: <b id="lsmWal">0</b> <span class="fa">رکورد</span><span class="en">entries</span></div>
+          <div class="memtable">
+            <div class="mt-label">sorted entries:</div>
+            <div id="lsmMtRows">
+              <div class="mt-row">key 42 → cart: 2 items</div>
+              <div class="mt-row">key 57 → cart: 1 item</div>
+              <div class="mt-row">key 91 → cart: 4 items</div>
+            </div>
+          </div>
+        </div>
+        <div class="lsm-arrow"><svg class="ic lg"><use href="#i-arrow"/></svg></div>
+        <div class="lsm-col disk">
+          <h4><svg class="ic"><use href="#i-layers"/></svg><span class="fa">دیسک — SSTableها (تغییرناپذیر)</span><span class="en">Disk — SSTables (immutable)</span></h4>
+          <div class="sst-list">
+            <div class="sst" id="lsmSst1"><div class="sst-label">SSTable 1</div><div class="sst-row">sorted · immutable</div></div>
+            <div class="sst" id="lsmSst2"><div class="sst-label">SSTable 2</div><div class="sst-row">newer wins</div></div>
+            <div class="sst" id="lsmSst3"><div class="sst-label">SSTable 3</div><div class="sst-row">...</div></div>
+            <div class="sst merged" id="lsmSstM"><div class="sst-label">compacted ✓</div><div class="sst-row">merged, old dropped</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="bloom-chip" id="lsmBloom">
+        <svg class="ic sm"><use href="#i-flower"/></svg>
+        <span class="fa">bloom filter: «قطعاً در SSTable 1 نیست» ← بدون خواندن دیسک، ردش کن</span>
+        <span class="en">bloom filter: "definitely not in SSTable 1" → skip it, no disk read</span>
+      </div>
+      <div class="lsm-cap" id="lsmCap"></div>
+      <div class="ctrl" style="justify-content:center;margin-top:16px">
+        <button class="btn" id="lsmPrevBtn"><span class="fa">قبلی</span><span class="en">Back</span></button>
+        <button class="btn primary" id="lsmNextBtn"><span class="fa">بعدی</span><span class="en">Next</span></button>
+      </div>
+      <div class="lsm-dots" id="lsmDots"></div>
+    </div>
+  </div>
+
+<div class="netnote" style="margin:24px 0;background:var(--amb-soft);border-color:rgba(194,120,3,.35)">
+  <span class="badge" style="background:var(--amb)">scenario</span>
+  <p><span class="fa">جمعهٔ سیاه، ساعت ۲۱:۰۰ — ۵۰٬۰۰۰ نوشتنِ سبد خرید در ثانیه. در روش‌های سنتی که هر نوشتن را مستقیم روی دیسک می‌نویسند، موتور باید صفحه‌ی مربوطه را پیدا کند: یعنی IO تصادفی، صف دیسک، و جهشِ تأخیر. اما در LSM، نوشتن‌ها اول در RAM می‌نشینند و بعد به‌شکل یک جاروی ترتیبیِ بلند روی دیسک flush می‌شوند — و دیسک‌ها عاشق نوشتنِ ترتیبی‌اند.</span>
+  <span class="en">Black Friday, 21:00 — 50,000 cart writes per second. In traditional approaches that write directly to disk, the engine must locate the right page: random IO, disk queues, latency spikes. In LSM, writes land in RAM first, then flush as one long sequential sweep — and disks love sequential writes.</span></p>
+</div>
+
+ <p><span class="fa">به‌همین دلیل، سیستم‌هایی که نوشتن در آنها حرف اول را می‌زند، از این خانواده استفاده می‌کنند. نام‌هایی مثل <b>Cassandra، HBase، ScyllaDB، RocksDB و LevelDB</b> را ممکن است شنیده باشید — همه‌ی آنها موتورهایی LSM-محور هستند. نقطه‌ضعفشان خواندن است، چون یک مقدار ممکن است در هرکدام از چندین SSTable باشد؛ پس هر خواندن شاید چند فایل را جست‌وجو کند. دو ترفند این مشکل را کم می‌کند: <b>۱</b> همیشه اول جدیدترین فایل را چک کن (چون داده‌ی جدیدتر برنده است)؛ <b>۲</b> از <b>Bloom Filter</b> استفاده کن — ساختاری کوچک که جواب می‌دهد «قطعاً این کلید در این فایل نیست» تا موتور بدون اینکه دیسک را لمس کند، آن فایل را رد کند.</span>
+<span class="en">This is why write-heavy systems use this family. You may have heard names like <b>Cassandra, HBase, ScyllaDB, RocksDB and LevelDB</b> — all are LSM-based engines. Their weak spot is reads, because a value might be in any of several SSTables. Two tricks help: <b>1</b> always check the newest file first (newer data wins); <b>2</b> use a <b>Bloom Filter</b> — a tiny structure that says "this key is definitely not here", so the engine skips that file without touching disk.</span></p>
+<p><span class="fa">برای اینکه در هنگامِ خرابی (crash) داده‌ای از دست نرود، هر نوشتن، علاوه بر memtable، به یک لاگِ کوچک و فقط-اضافه‌شونده (append-only) هم اضافه می‌شود. به این لاگ، <b>WAL</b> (Write-Ahead Log) می‌گویند. اگر برق برود، موتور هنگام راه‌اندازی مجدد، این لاگ را دوباره اجرا می‌کند و داده‌های ازدست‌رفته‌ی RAM را بازیابی می‌کند. در ایستگاه ۰۵ (درخت B) دوباره با همین مفهوم WAL آشنا می‌شوید.</span>
+<span class="en">For durability, every write is also appended to a small, append-only log called the <b>WAL</b> (Write-Ahead Log). If power fails, the engine replays this log on startup to recover any data lost from RAM. You'll meet the same WAL concept again at stop 05 (B-Trees).</span></p>
+<div class="netnote" style="margin-top:24px">
+  <span class="badge">.NET</span>
+  <p><span class="fa">در SQL Server خودتان، خبری از تنظیمات LSM نیست. اما همین بخش به شما نشان می‌دهد که چرا یک تیم برای سرویس ورودیِ عظیمِ IoT سراغ Cassandra می‌رود، یا چرا استورهای مبتنی بر RocksDB برای کش‌های محلی با نوشتن‌های سنگین، حسِ «آنِی» دارند. هدف این است که با شکلِ هر موتور آشنا شوید تا بتوانید برای هر نیاز، دیتابیسِ مناسب را انتخاب کنید.</span>
+  <span class="en">Inside SQL Server itself, you won't be configuring LSM. But this section explains why teams choose Cassandra for massive IoT ingestion, and why RocksDB-based stores feel instant for write-heavy local caches. Understand the shape of each engine so you can pick the right database for the right job.</span></p>
+</div>
+</section>
+
+<!-- ═══ 05 ═══ -->
+<section id="s5" class="stop reveal">
+ <div class="stop-head"><span class="stop-num">05</span>
+  <h2><span class="fa">درخت B — اسبِ کاری دیتابیس‌های رابطه‌ای</span><span class="en">B-Trees — the workhorse of relational databases</span></h2>
+</div>
+<div class="srcs">
+  <a href="https://en.wikipedia.org/wiki/B-tree" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">مرجع: درخت B</span><span class="en">Reference: B-tree</span></a>
+  <a href="https://dataintensive.net/" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">DDIA ویرایش ۲، فصل ۴</span><span class="en">DDIA 2e, Ch. 4</span></a>
+</div>
+
+<p class="lead"><span class="fa">درخت B یک درخت است که از <b>صفحه</b> ساخته شده. هر گره، چند کلیدِ مرتب و چند اشاره‌گر به گره‌های فرزند دارد. دو ویژگی، آن را از بقیهٔ ساختارها جدا می‌کند:</span>
+<span class="en">A B-tree is a tree made of <b>pages</b>. Each node holds several sorted keys and pointers to child nodes. Two features set it apart:</span></p>
+
+<div class="grid2">
+  <div class="card">
+    <h3><span class="cico green"><svg class="ic"><use href="#i-check"/></svg></span><span class="fa">همیشه متعادل</span><span class="en">Always balanced</span></h3>
+    <p><span class="fa">همهٔ برگ‌ها در یک عمق هستند. وقتی گره‌ای پر شد، به دو نیم تقسیم می‌شود و کلیدِ میانی به گرهٔ پدر می‌رود. درخت به‌جای اینکه کج شود، <b>از ریشه بلندتر می‌شود</b>. هیچ‌وقت نیازی به متعادل‌سازی دستی نیست — خودش همیشه مرتب است.</span>
+    <span class="en">All leaves are at the same depth. When a node fills up, it splits in two and the middle key moves up to the parent. Instead of tilting, the tree <b>grows from the root</b>. No manual rebalancing — ever.</span></p>
+  </div>
+  <div class="card">
+    <h3><span class="cico blue"><svg class="ic"><use href="#i-tree"/></svg></span><span class="fa">شاخه‌های پرشمار (fan-out بالا)</span><span class="en">High fan-out</span></h3>
+    <p><span class="fa"><b>Fan-out</b> یعنی تعداد فرزندانی که هر گره می‌تواند داشته باشد. در یک صفحهٔ ۸ کیلوبایتی SQL Server، این عدد معمولاً در حد <b>چند صد</b> است. همین باعث می‌شود درخت با وجود میلیاردها سطر، عمقِ بسیار کمی داشته باشد.</span>
+    <span class="en"><b>Fan-out</b> is how many children each node can have. On an 8 KB SQL Server page, this number is typically in the <b>hundreds</b>. That's why the tree stays shallow even with billions of rows.</span></p>
+  </div>
+</div>
+
+<div class="fanout">
+  <div style="grid-column:span 3;font-weight:700;font-size:15px;padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:8px">
+    <span class="fa">یک درخت B با fan-out = ۳۰۰ — هر سطح، ۳۰۰ برابر بزرگ‌تر از سطح قبل</span>
+    <span class="en">A B-tree with fan-out = 300 — each level is 300× larger than the last</span>
+  </div>
+  
+  <div><span class="fa">سطح ۱ (ریشه)</span><span class="en">level 1 (root)</span></div>
+  <div class="val">۳۰۰</div>
+  <div><span class="fa">۳۰۰ کلید در ریشه</span><span class="en">300 keys in the root</span></div>
+
+  <div><span class="fa">سطح ۲</span><span class="en">level 2</span></div>
+  <div class="val">۹۰,۰۰۰</div>
+  <div><span class="fa">۳۰۰ × ۳۰۰ = ۹۰ هزار کلید</span><span class="en">300 × 300 = 90 thousand keys</span></div>
+
+  <div><span class="fa">سطح ۳</span><span class="en">level 3</span></div>
+  <div class="val">۲۷,۰۰۰,۰۰۰</div>
+  <div><span class="fa">۹۰ هزار × ۳۰۰ = ۲۷ میلیون کلید</span><span class="en">90k × 300 = 27 million keys</span></div>
+
+  <div><span class="fa">سطح ۴</span><span class="en">level 4</span></div>
+  <div class="val">۸,۱۰۰,۰۰۰,۰۰۰</div>
+  <div><span class="fa">۲۷ میلیون × ۳۰۰ = ۸٫۱ میلیارد کلید</span><span class="en">27M × 300 = 8.1 billion keys</span></div>
+</div>
+
+<p style="font-size:15px;color:var(--mut);margin-top:16px;line-height:2">
+  <span class="fa"><b>پس با فقط ۴ سطح، می‌توانیم ۸ میلیارد کلید را پوشش دهیم.</b> این یعنی برای پیدا کردن هر کلیدی، فقط کافی است از <b>ریشه شروع کنیم، ۳ بار تصمیم بگیریم، و به برگ برسیم</b> — یعنی <b>حداکثر ۴ صفحه خواندن</b>. این همان جادویِ درخت B است: عمق با لگاریتمِ تعداد سطرها رشد می‌کند، نه با خودِ تعداد سطرها.</span>
+  <span class="en"><b>So with just 4 levels, we can cover 8 billion keys.</b> That means to find any key, we just <b>start at the root, make 3 decisions, and reach the leaf</b> — at most <b>4 page reads</b>. That's the magic of the B-tree: depth grows with the logarithm of the row count, not with the row count itself.</span>
+</p>
+
+<p style="font-size:15px;color:var(--mut);margin-top:16px">
+  <span class="fa"><b>فقط ۳ تا ۴ صفحه</b> کافی است تا از ریشه به هر سطری در یک جدولِ میلیاردی برسید. هر سطح، تعداد کلیدها را در <b>fan-out</b> ضرب می‌کند — به همین دلیل عمقِ درخت با بزرگ‌شدن جدول، <b>خیلی کم</b> رشد می‌کند.</span>
+  <span class="en">Just <b>3 to 4 pages</b> are enough to go from the root to any row in a billion-row table. Each level multiplies the total by the <b>fan-out</b> — that's why the depth grows so <b>slowly</b> as the table grows.</span>
+</p>
+
+  <div class="demo">
+    <div class="demo-t"><svg class="ic"><use href="#i-tree"/></svg><span class="fa">امتحان کنید — درخت را قدم بزنید</span><span class="en">Try it — walk the tree</span></div>
+    <div class="ctrl">
+      <button class="btn" id="btFind6"><span class="fa">کلید ۶ را پیدا کن</span><span class="en">Find key 6</span></button>
+      <button class="btn" id="btFind52"><span class="fa">کلید ۵۲ را پیدا کن</span><span class="en">Find key 52</span></button>
+      <button class="btn primary" id="btRange"><span class="fa">محدودهٔ ۲۲ تا ۴۵</span><span class="en">Range 22 – 45</span></button>
+      <button class="btn" id="btReset"><svg class="ic sm"><use href="#i-reset"/></svg><span class="fa">ریست</span><span class="en">Reset</span></button>
+    </div>
+    <div style="overflow-x:auto;margin-top:14px">
+      <svg id="btreeSvg" viewBox="0 0 1280 380"></svg>
+    </div>
+    <div class="bt-legend">
+      <span><i class="lg-sw path"></i><span class="fa">مسیر پیمایش</span><span class="en">walk path</span></span>
+      <span><i class="lg-sw found"></i><span class="fa">کلید پیدا شده</span><span class="en">found key</span></span>
+      <span><i class="lg-sw range"></i><span class="fa">کلیدهای محدوده</span><span class="en">range keys</span></span>
+      <span><i class="lg-sw chain"></i><span class="fa">زنجیرهٔ برگ‌ها</span><span class="en">leaf chain</span></span>
+    </div>
+    <div class="status-line" id="btStatus"><span class="fa">یکی از دکمه‌ها را بزنید تا پیمایش شروع شود.</span><span class="en">Press a button to start walking the tree.</span></div>
+    <div class="bt-result" id="btResult"></div>
+  </div>
+
+ <p><span class="fa"><b>کوئری‌های محدوده (Range) چطور کار می‌کنند؟</b><br>
+فرض کنید می‌خواهید همهٔ سفارش‌های بین تاریخ ۱ تا ۱۵ مرداد را پیدا کنید. موتور اول از ریشه شروع می‌کند و تا <b>برگی</b> پایین می‌رود که شروعِ محدوده (۱ مرداد) در آن قرار دارد. بعد از آن، به‌جای اینکه دوباره از ریشه بالا برود، از <b>زنجیرهٔ برگ‌ها</b> (همان خط‌چین‌هایی که در شکل دیدید) به سمت راست حرکت می‌کند و برگ‌ها را یکی‌یکی می‌خواند تا به انتهای محدوده (۱۵ مرداد) برسد. این زنجیره است که درخت B را برای <code>BETWEEN</code>، <code>&gt;</code>، <code>&lt;</code> و <code>ORDER BY</code> به یک ابزارِ بی‌نظیر تبدیل می‌کند.</span>
+<span class="en"><b>How range queries work:</b><br>
+Suppose you want all orders between August 1st and 15th. The engine starts at the root, descends to the <b>leaf</b> that holds the start of the range (Aug 1). Then, instead of climbing back up, it walks right along the <b>leaf chain</b> (the dashed lines you saw in the diagram), reading leaves one by one until it reaches the end of the range (Aug 15). This chain is what makes B-trees excellent at <code>BETWEEN</code>, <code>&gt;</code>, <code>&lt;</code>, and <code>ORDER BY</code>.</span></p>
+
+<p><span class="fa">یک نکتهٔ حیاتی: درخت B صفحه‌ها را <b>درجا</b> به‌روز می‌کند — یعنی تغییر را مستقیماً روی همان صفحهٔ دیسک می‌نویسد. اگر در حین نوشتن، برق برود یا سیستم crash کند، آن صفحه ممکن است نصفه‌نیمه باقی بماند و خراب شود. برای جلوگیری از این اتفاق، دیتابیس <b>قبل از</b> اینکه هر صفحه‌ای را تغییر دهد، آن تغییر را به یک فایلِ فقط-اضافه‌شونده به نام <b>WAL</b> (Write-Ahead Log) اضافه می‌کند. اگر crash رخ دهد، موتور هنگام راه‌اندازی مجدد، این لاگ را از اول می‌خواند و تغییراتِ ناتمام را دوباره اعمال می‌کند. در SQL Server به این لاگ، <b>لاگ تراکنش</b> (Transaction Log) می‌گویند — همان فایلی که گاهی بزرگ می‌شود و حالا می‌دانید که دقیقاً برای چیست.</span>
+<span class="en">A critical point: B-trees update pages <b>in place</b> — they write changes directly to the disk page. If power fails mid-write, that page could be left half-finished and corrupted. To prevent this, the database appends every change to an append-only file called the <b>WAL</b> (Write-Ahead Log) <b>before</b> touching the actual page. If a crash occurs, the engine replays this log on startup to reapply any incomplete changes. In SQL Server, this is the <b>transaction log</b> — the file that sometimes grows large, and now you know exactly why.</span></p>
+<div class="netnote" style="margin-top:24px">
+  <span class="badge">.NET</span>
+  <p><span class="fa"><b>هر ایندکسی که در SQL Server می‌سازید، یک درخت B است.</b> فرقی نمی‌کند ایندکس خوشه‌ای (Clustered) باشد یا غیرخوشه‌ای (Non-Clustered) — همه درخت B هستند. حتی کلید اصلی (Primary Key) هم در SQL Server به‌صورت پیش‌فرض یک ایندکس خوشه‌ای از جنس درخت B است.</span>
+  <span class="en"><b>Every index you create in SQL Server is a B-tree.</b> Whether it's clustered or non-clustered — all of them are B-trees. Even the Primary Key is, by default, a clustered B-tree index in SQL Server.</span></p>
+  
+  <p style="margin-top:12px"><span class="fa">وقتی در EF Core با <code>builder.HasIndex(x => x.CustomerId)</code> یک ایندکس تعریف می‌کنید، دقیقاً همین ساختار در پشت‌صحنه ساخته می‌شود. عمقِ این درخت معمولاً بین ۳ تا ۴ سطح است — حتی اگر جدول شما میلیون‌ها سطر داشته باشد. به همین دلیل است که یک <b>Index Seek</b> همیشه سریع است، بدون توجه به بزرگیِ جدول.</span>
+  <span class="en">When you define an index in EF Core with <code>builder.HasIndex(x => x.CustomerId)</code>, this exact structure is built behind the scenes. The depth of this tree is typically 3 to 4 levels — even if your table has millions of rows. That's why an <b>Index Seek</b> is always fast, regardless of table size.</span></p>
+  
+  <p style="margin-top:12px"><span class="fa">یک نکتهٔ ظریف: اگر کلید اصلی را از نوع <code>GUID</code> انتخاب کنید، به‌خاطر تصادفی بودنِ مقادیر، درجِ جدید می‌تواند باعث <b>Page Split</b> (شکافتنِ صفحه) شود و کارایی را کاهش دهد. به‌همین دلیل است که توصیه می‌شود برای کلید اصلی از اعداد ترتیبی (مانند <code>int</code> یا <code>bigint</code> با <code>IDENTITY</code>) یا <code>GUID</code>های ترتیبی (مانند <code>NEWSEQUENTIALID()</code>) استفاده کنید.</span>
+  <span class="en">A subtle point: if you choose a <code>GUID</code> as your Primary Key, random values can cause <b>Page Splits</b> and hurt performance. That's why it's recommended to use sequential keys like <code>int</code> or <code>bigint</code> with <code>IDENTITY</code>, or sequential GUIDs like <code>NEWSEQUENTIALID()</code>.</span></p>
+</div>
+</section>
+
+<!-- ═══ 06 ═══ -->
+<section id="s6" class="stop reveal">
+  <div class="stop-head"><span class="stop-num">06</span>
+    <h2><span class="fa">LSM در برابر درخت B — دو معیارِ کلیدی</span><span class="en">LSM vs B-Tree — two key metrics</span></h2>
+  </div>
+  <div class="srcs">
+    <a href="https://dataintensive.net/" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">منبع: DDIA ویرایش ۲، فصل ۴</span><span class="en">DDIA 2e, Ch. 4</span></a>
+  </div>
+
+  <p class="lead"><span class="fa">دو مفهوم، بیشترِ بحث‌های انتخابِ موتور را شکل می‌دهند: <b>Write Amplification</b> (هزینه‌ی نوشتن) و <b>Read Amplification</b> (هزینه‌ی خواندن). نوارهای زیر نشان می‌دهند که هر موتور در این دو معیار، چطور عمل می‌کند.</span>
+  <span class="en">Two concepts shape most engine-selection debates: <b>Write Amplification</b> (write cost) and <b>Read Amplification</b> (read cost). The bars below show how each engine performs on these two metrics.</span></p>
+
+  <div class="meters" id="meters">
+    <div class="meter-row">
+      <h4><span class="fa">Write Amplification — هر نوشتنِ شما چقدر روی دیسک اثر می‌گذارد؟</span><span class="en">Write amplification — how much disk work per write?</span></h4>
+      <div class="meter"><span class="who">LSM</span><div class="track"><div class="fill lsm-w" data-w="25" style="width:0"></div></div></div>
+      <small><span class="fa">نوشتن‌ها اول در RAM می‌نشینند و به‌صورت ترتیبی فلش می‌شوند؛ اما compaction در طول عمر داده، آن را ۱۰–۳۰ بار بازنویسی می‌کند.</span><span class="en">Writes land in RAM and flush sequentially; but compaction rewrites data 10–30 times over its lifetime.</span></small>
+      <div class="meter" style="margin-top:10px"><span class="who">B-Tree</span><div class="track"><div class="fill bt-w" data-w="75" style="width:0"></div></div></div>
+      <small><span class="fa">تغییرِ ۱۰۰ بایت، کلِ یک صفحهٔ ۸ کیلوبایتی را بازنویسی می‌کند، به‌علاوهٔ یک رکورد در لاگ.</span><span class="en">Changing 100 bytes rewrites a whole 8 KB page, plus a log entry.</span></small>
+    </div>
+    <div class="meter-row">
+      <h4><span class="fa">Read Amplification — هر خواندنِ شما چند بررسی فیزیکی می‌شود؟</span><span class="en">Read amplification — how many physical checks per read?</span></h4>
+      <div class="meter"><span class="who">LSM</span><div class="track"><div class="fill lsm-r" data-w="65" style="width:0"></div></div></div>
+      <small><span class="fa">یک کلید ممکن است در هرکدام از چندین SSTable باشد؛ Bloom filter تا حدی این هزینه را کم می‌کند.</span><span class="en">A key may be in any of several SSTables; Bloom filters reduce this cost somewhat.</span></small>
+      <div class="meter" style="margin-top:10px"><span class="who">B-Tree</span><div class="track"><div class="fill bt-r" data-w="20" style="width:0"></div></div></div>
+      <small><span class="fa">دقیقاً یک مسیر از ریشه تا برگ — تأخیر همیشه قابل‌پیش‌بینی است.</span><span class="en">Exactly one path from root to leaf — latency is always predictable.</span></small>
+    </div>
+  </div>
+
+  <table class="cmp-table">
+    <tr><th></th><th>LSM-Tree</th><th>B-Tree</th></tr>
+    <tr>
+      <td><span class="fa">الگوی دیسک</span><span class="en">Disk pattern</span></td>
+      <td class="good"><span class="fa">نوشتن ترتیبی، توانِ عالی در فشارِ بالا</span><span class="en">Sequential writes, great throughput under load</span></td>
+      <td><span class="fa">نوشتن تصادفی، صف‌های دیسک در فشارِ بالا</span><span class="en">Random writes, disk queues under load</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">کوئری‌های Range</span><span class="en">Range queries</span></td>
+      <td><span class="fa">ممکن، اما کندتر — چند فایل باید ادغام شوند</span><span class="en">Possible but slower — several files must be merged</span></td>
+      <td class="good"><span class="fa">بومی و سریع — به‌برکت زنجیرهٔ برگ‌ها</span><span class="en">Native and fast — thanks to the leaf chain</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">کاربران معروف</span><span class="en">Famous users</span></td>
+      <td>Cassandra, HBase, ScyllaDB, RocksDB</td>
+      <td>SQL Server, PostgreSQL, MySQL, Oracle</td>
+    </tr>
+  </table>
+
+  <div class="grid2" style="margin-top:28px">
+    <div class="card" style="border-right:4px solid var(--amb)">
+      <h3><span class="cico amber"><svg class="ic"><use href="#i-zap"/></svg></span><span class="fa">LSM را انتخاب کنید وقتی…</span><span class="en">Choose LSM when…</span></h3>
+      <p><span class="fa">نوشتن غالب است: لاگ‌ها، فیدهای IoT، سری‌زمانی، سبدهای جمعه‌سیاه. می‌پذیرید که خواندن کمی کندتر و کم‌قابل‌پیش‌بینی‌تر باشد.</span>
+      <span class="en">Writes dominate: logs, IoT, time-series, Black-Friday carts. You accept slightly slower, less predictable reads.</span></p>
+    </div>
+    <div class="card" style="border-right:4px solid var(--acc)">
+      <h3><span class="cico green"><svg class="ic"><use href="#i-book"/></svg></span><span class="fa">درخت B را انتخاب کنید وقتی…</span><span class="en">Choose B-Tree when…</span></h3>
+      <p><span class="fa">خواندن و نوشتن متعادل است، تراکنش‌ها مهم‌اند، کوئری‌های Range زیاد دارید، و به تأخیرِ قابل‌پیش‌بینی نیاز دارید — درست مثل SQL Server خودتان.</span>
+      <span class="en">Reads and writes are balanced, transactions matter, range queries are common, and you need predictable latency — just like your SQL Server.</span></p>
+    </div>
+  </div>
+
+ <div style="margin-top:28px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:20px 24px">
+  <p style="font-size:15px;line-height:2;margin:0">
+     <span class="fa"><b>یک مثالِ عینی:</b> یک رکورد ۱۰۰ بایتی را <code>UPDATE</code> می‌کنید.</span>
+      <span class="en"><b>A concrete example:</b> you <code>UPDATE</code> a 100-byte record.</span>
+  </p>
+  <div class="codebox" style="margin:12px 0 0;border-radius:8px">
+    <div class="cb-h">what happens behind the scenes</div>
+    <pre><code><span class="cm">-- B-Tree</span>
+B-Tree:  Changing 100 bytes -> rewrites an entire 8 KB page + a log entry
+         -> Write Amplification, visible right here
+
+<span class="cm">-- LSM</span>
+LSM:     Changing 100 bytes -> appended to memtable in RAM (cheap)
+         ... but this data will be rewritten 10–30 times later during compaction
+         The bill arrives in installments over time.</code></pre>
+  </div>
+</div>
+
+ <div class="netnote" style="margin-top:28px">
+  <span class="badge">.NET</span>
+  <p><span class="fa"><b>قاعده‌ی طلایی برای شما:</b> SQL Server شما همان درخت B است — همین. وقتی صحبت از LSM می‌شود، یعنی برای آن کارِ خاص، باید سراغ یک دیتابیسِ دیگر بروید. مثلاً Cassandra برای جذب کردنِ حجمِ عظیمِ نوشتن، یا کش‌های مبتنی بر RocksDB برای سرعتِ محلی. <b>یک برنامه، چند موتور — هرکدام برای وظیفه‌ی خودش.</b></span>
+  <span class="en"><b>The golden rule for you:</b> your SQL Server is B-Tree — that's it. When we talk about LSM, it means for that specific job, you should pick a different database. Like Cassandra for ingesting massive writes, or RocksDB-based caches for local speed. <b>One app, multiple engines — each for its own task.</b></span></p>
+</div>
+</section>
+
+<!-- ═══ 07 ═══ -->
+<section id="s7" class="stop reveal">
+  <div class="stop-head"><span class="stop-num">07</span>
+  <h2><span class="fa">خوشه‌ای در برابر غیرخوشه‌ای — زمینِ خانگیِ شما</span><span class="en">Clustered vs non-clustered — your home turf</span></h2>
+</div>
+<div class="srcs">
+  <a href="https://aboutsqlserver.com/" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">منبع: Pro SQL Server Internals، فصل ۱–۲</span><span class="en">Pro SQL Server Internals, Ch. 1–2</span></a>
+  <a href="https://learn.microsoft.com/sql/relational-databases/indexes/clustered-and-nonclustered-indexes-described" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">MS Learn: خوشه‌ای و غیرخوشه‌ای</span><span class="en">MS Learn: clustered & nonclustered</span></a>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <h3><span class="cico blue"><svg class="ic"><use href="#i-db"/></svg></span><span class="fa">ایندکس خوشه‌ای (Clustered)</span><span class="en">Clustered index</span></h3>
+    <p><span class="fa"><b>خودِ جدول است.</b> صفحه‌های داده، همان سطح برگِ درخت B هستند و داده‌ها به‌طور فیزیکی بر اساس کلید خوشه‌بندی مرتب شده‌اند. چون داده فقط یک‌جور می‌تواند مرتب باشد، هر جدول <b>دقیقاً یک</b> ایندکس خوشه‌ای دارد. در SQL Server، کلید اصلی (Primary Key) به‌صورت پیش‌فرض، همان ایندکس خوشه‌ای می‌شود.</span>
+    <span class="en"><b>It IS the table.</b> Data pages are the B-tree leaf level, physically sorted by the clustering key. Data can only be sorted one way, so each table has <b>exactly one</b> clustered index. In SQL Server, the Primary Key becomes the clustered index by default.</span></p>
+  </div>
+  <div class="card">
+    <h3><span class="cico violet"><svg class="ic"><use href="#i-tree"/></svg></span><span class="fa">ایندکس غیرخوشه‌ای (Non-Clustered)</span><span class="en">Non-clustered index</span></h3>
+    <p><span class="fa"><b>یک درخت B جداگانه و کوچک‌تر.</b> برگ‌هایش کلید ایندکس را دارند، به‌همراه یک اشاره‌گر به سطرِ متناظر در جدول اصلی. این اشاره‌گر، یا مقدارِ کلید خوشه‌بندی است (اگر جدول ایندکس خوشه‌ای داشته باشد)، یا شناسهٔ فیزیکیِ سطر (اگر جدول <b>Heap</b> باشد — یعنی بدون ایندکس خوشه‌ای).</span>
+    <span class="en"><b>A separate, smaller B-tree.</b> Its leaves hold the index key plus a pointer to the corresponding row in the main table. This pointer is either the clustering key (if the table has a clustered index) or a physical row ID (if the table is a <b>Heap</b> — no clustered index).</span></p>
+  </div>
+</div>
+
+<p style="margin-top:20px;font-size:16px;line-height:1.9">
+  <span class="fa">حالا یک <b>هزینهٔ پنهان</b> اینجا وجود دارد: وقتی یک ایندکس غیرخوشه‌ای را می‌خوانید، برگِ آن به شما می‌گوید «این کلید را پیدا کردم، حالا برو به جدول اصلی تا بقیه‌ی داده‌ها را بیاوری». به این پرشِ اضافی، <b>Key Lookup</b> (یا در کتاب‌های قدیمی‌تر، <b>Bookmark Lookup</b>) می‌گویند. برای پیدا کردنِ چند سطر، این پرش ارزان است؛ اما اگر کوئری شما صدها یا هزاران سطر برگرداند، این پرش‌ها جمع می‌شوند و هزینه‌ی سنگینی ایجاد می‌کنند.</span>
+  <span class="en">Now there's a <b>hidden cost</b>: when you read a non-clustered index, its leaf tells you "I found this key — now go to the main table to get the rest of the data." This extra hop is called a <b>Key Lookup</b> (or <b>Bookmark Lookup</b> in older books). For a few rows, this hop is cheap; but if your query returns hundreds or thousands of rows, these lookups add up and become expensive.</span>
+</p>
+
+<div class="card" style="margin:24px 0;background:var(--surface2);border:2px solid var(--acc-line)">
+  <p style="font-size:15px;line-height:1.9;margin:0">
+    <span class="fa"><b>تشبیه با دفتر تلفن:</b><br>
+    ایندکس خوشه‌ای، خودِ دفتر تلفن است که بر اساسِ اسم مرتب شده — خودِ داده، به‌ترتیبِ الفبا.<br>
+    ایندکس غیرخوشه‌ای، یک فهرستِ جداگانه است، مثلاً «شماره‌ی تلفن ← اسم». شما شماره را پیدا می‌کنید، بعد باید بروید توی دفتر تلفن (جدول اصلی) و بقیهٔ اطلاعات را از همان سطر پیدا کنید. این رفت‌وبرگشت، همان <b>Key Lookup</b> است.<br>
+    اما اگر همان فهرستِ جداگانه، از قبل همهٔ ستون‌هایی را که نیاز دارید داشته باشد، دیگر نیازی به برگشت به دفتر تلفن نیست. به این می‌گویند <b>ایندکس پوششی (Covering Index)</b>. در SQL Server، ستون‌های اضافی را با <code>INCLUDE</code> به ایندکس اضافه می‌کنید تا پوششی شود. در این حالت، موتور اصلاً به جدول اصلی دست نمی‌زند — جواب یک‌راست از همان درختِ کوچکِ غیرخوشه‌ای می‌آید.</span>
+    <span class="en"><b>Phone book analogy:</b><br>
+    The clustered index is the phone book itself — sorted by name. The data is physically in that order.<br>
+    A non-clustered index is a separate list, like "phone number → name". You find the number, then you have to go back into the phone book (the main table) to get the rest of the info from that row. That round-trip is the <b>Key Lookup</b>.<br>
+    But if that separate list already has all the columns you need, there's no need to go back to the phone book. That's a <b>Covering Index</b>. In SQL Server, you add extra columns with <code>INCLUDE</code> to make it covering. In this case, the engine never touches the main table — the answer comes straight from the smaller non-clustered tree.</span>
+  </p>
+</div>
+<div class="demo">
+  <div class="demo-t"><svg class="ic"><use href="#i-swap"/></svg><span class="fa">Orders: پنج میلیون سطر — سوییچ INCLUDE را بزنید</span><span class="en">Orders: 5,000,000 rows — flip the INCLUDE switch</span></div>
+  
+  <p style="font-size:14px;color:var(--mut);margin-bottom:16px">
+    <span class="fa"><b>سناریو:</b> کوئریِ <code>SELECT CustomerId, Total FROM Orders WHERE CustomerId = 1042</code>. مشتری ۱۰۴۲، <b>۲۷ سفارش</b> در جدول دارد. ایندکسی روی <code>CustomerId</code> ساخته‌ایم، اما ستون <code>Total</code> را <b>ندارد</b>. پس موتور باید برای هر کدام از این ۲۷ سفارش، به جدول اصلی برگردد و <code>Total</code> را بخواند — این همان <b>Key Lookup</b> است.</span>
+    <span class="en"><b>Scenario:</b> the query <code>SELECT CustomerId, Total FROM Orders WHERE CustomerId = 1042</code>. Customer 1042 has <b>27 orders</b> in the table. We have an index on <code>CustomerId</code>, but it does <b>not</b> include <code>Total</code>. So the engine must go back to the main table for each of these 27 orders to read <code>Total</code> — that's the <b>Key Lookup</b>.</span>
+  </p>
+
+  <div class="inc-demo">
+    <div class="inc-toggle">
+      <label>
+        <input type="checkbox" id="incToggle">
+        <span><b>INCLUDE (Total)</b> — <span class="fa">ایندکس پوششی بساز</span><span class="en">make it covering</span></span>
+      </label>
+    </div>
+
+    <div class="inc-visual">
+      <div class="inc-panel">
+        <h5><span class="mono">IX_Orders_CustomerId</span><span class="inc-tag" id="incTag">+ INCLUDE (Total)</span></h5>
+        <p style="font-size:12px;color:var(--dim);margin-bottom:8px">
+          <span class="fa">۲۷ کلید <code>CustomerId = 1042</code> در ایندکس غیرخوشه‌ای</span>
+          <span class="en">27 keys <code>CustomerId = 1042</code> in the non-clustered index</span>
+        </p>
+        <div class="inc-keys" id="incKeysContainer"></div>
+        <p style="font-size:11px;color:var(--dim);margin-top:8px">
+          <span class="fa">هر کلید، یک اشاره‌گر به جدول اصلی دارد</span>
+          <span class="en">Each key has a pointer to the main table</span>
+        </p>
+      </div>
+
+      <div class="inc-panel">
+        <h5><span class="fa">جدول اصلی (خوشه‌ای) — <span class="mono">Orders</span> · ۵٬۰۰۰٬۰۰۰ سطر</span><span class="en">Main table (clustered) — <span class="mono">Orders</span> · 5,000,000 rows</span></h5>
+        <div class="inc-rows" id="incRows"></div>
+        <p style="font-size:12px;color:var(--dim);margin-top:10px">
+          <span class="fa"><b id="incLookupDesc">۲۷ بار Key Lookup:</b> موتور باید برای هر کدام از ۲۷ سفارش، به جدول اصلی برگردد و <code>Total</code> را بخواند.</span>
+          <span class="en"><b id="incLookupDescEn">27 Key Lookups:</b> the engine must go back to the main table for each of the 27 orders to read <code>Total</code>.</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="inc-stats">
+      <div class="inc-stat">
+        <div class="label"><span class="fa">Logical Reads (تقریبی)</span><span class="en">Approx. Logical Reads</span></div>
+        <div class="val" id="incReads">54</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:4px">
+          <span class="fa">۲۷ تا از ایندکس + ۲۷ تا Key Lookup</span>
+          <span class="en">27 from the index + 27 Key Lookups</span>
+        </div>
+      </div>
+      <div class="inc-stat">
+        <div class="label"><span class="fa">تعداد Key Lookup</span><span class="en">Key Lookups</span></div>
+        <div class="val" id="incLookups">27</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:4px">
+          <span class="fa">هر سفارش = یک برگشت به جدول</span>
+          <span class="en">Each order = one trip back to the table</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px 18px;background:var(--surface2);border-radius:8px;border:1px solid var(--line)">
+      <p style="font-size:13px;line-height:1.8;margin:0;color:var(--mut)">
+        <span class="fa"><b>سوییچ را بزنید و تغییر را ببینید:</b><br>
+        وقتی <b>INCLUDE (Total)</b> را فعال می‌کنید، ستون <code>Total</code> به‌همراه کلیدهای ایندکس ذخیره می‌شود. حالا موتور <b>بدون برگشت به جدول اصلی</b>، همه‌ی داده‌ها را از همان ایندکسِ کوچک می‌خواند. Logical Reads تقریباً نصف می‌شود و تعداد Key Lookup به <b>صفر</b> می‌رسد.</span>
+        <span class="en"><b>Flip the switch and watch the change:</b><br>
+        When you enable <b>INCLUDE (Total)</b>, the <code>Total</code> column is stored alongside the index keys. Now the engine reads all the data from the small index itself — <b>no trip back to the main table</b>. Logical Reads roughly halve, and Key Lookups drop to <b>zero</b>.</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+  <div class="grid2" style="margin-top:20px">
+    <div class="codebox" style="margin:0"><div class="cb-h">c# / ef core</div>
+<pre><code>b.Entity&lt;Order&gt;(o =&gt;
+{
+    <span class="cm">// PK → clustered by default</span>
+    o.HasKey(x =&gt; x.Id);
+
+    o.HasIndex(x =&gt; x.CustomerId)
+     .Include(x =&gt; <span class="kw">new</span> { x.Total }); <span class="cm">// covering</span>
+});</code></pre></div>
+    <div class="codebox" style="margin:0"><div class="cb-h">sql — what that generates, roughly</div>
+<pre><code><span class="kw">CREATE INDEX</span> IX_Orders_CustomerId
+    <span class="kw">ON</span> dbo.Orders(CustomerId)
+    <span class="kw">INCLUDE</span> (Total);
+
+<span class="cm">-- need a different sort for the table?</span>
+<span class="kw">CREATE CLUSTERED INDEX</span> CX_Orders
+    <span class="kw">ON</span> dbo.Orders(OrderDate);</code></pre></div>
+  </div>
+
+<div class="grid2" style="margin-top:24px">
+  <div class="card" style="border-right:4px solid var(--red)">
+    <h3><span class="cico red"><svg class="ic"><use href="#i-x"/></svg></span><span class="fa">بدون <code>INCLUDE (Total)</code></span><span class="en">Without <code>INCLUDE (Total)</code></span></h3>
+    <p><span class="fa">ایندکس، ۲۷ کلیدِ <code>CustomerId = 1042</code> را پیدا می‌کند. اما چون <code>Total</code> را ندارد، موتور <b>برای هر کدام از این ۲۷ سطر</b>، یک بار به جدول اصلی (درختِ بزرگِ خوشه‌ای) برمی‌گردد و <code>Total</code> را می‌خواند. <b>۲۷ بار Key Lookup = ۲۷ رفت‌وبرگشتِ اضافی.</b></span>
+    <span class="en">The index finds 27 keys for <code>CustomerId = 1042</code>. But since it doesn't have <code>Total</code>, the engine goes back to the main table (the big clustered tree) <b>for each of these 27 rows</b> to read <code>Total</code>. <b>27 Key Lookups = 27 extra round-trips.</b></span></p>
+  </div>
+  <div class="card" style="border-right:4px solid var(--grn)">
+    <h3><span class="cico green"><svg class="ic"><use href="#i-check"/></svg></span><span class="fa">با <code>INCLUDE (Total)</code></span><span class="en">With <code>INCLUDE (Total)</code></span></h3>
+    <p><span class="fa">حالا ستون <code>Total</code> هم در همان ایندکسِ کوچکِ غیرخوشه‌ای ذخیره شده است. موتور ۲۷ کلید را پیدا می‌کند و <b>بدون حتی یک برگشت به جدول اصلی</b>، همه‌ی داده‌ها را از همان جا می‌خواند. <b>Key Lookup به صفر رسید؛ Logical Reads تقریباً نصف شد.</b></span>
+    <span class="en">Now <code>Total</code> is stored inside the small non-clustered index. The engine finds the 27 keys and reads all the data from there — <b>without a single trip back to the main table</b>. <b>Key Lookups dropped to zero; Logical Reads roughly halved.</b></span></p>
+  </div>
+</div>
+
+<div class="netnote" style="margin-top:28px">
+  <span class="badge">.NET</span>
+  <p><span class="fa"><b>این بخش، سه معمای روزمره‌ی شما را یک‌جا حل می‌کند:</b><br><br>
+  
+  <b>۱. چرا کلید اصلی (PK) پیش‌فرض خوشه‌ای است؟</b><br>
+  در دیتابیسِ <code>SQL Server</code>، به‌صورت پیش‌فرض، کلید اصلی (Primary Key) همان ایندکس خوشه‌ای (Clustered) می‌شود. در <code>EF Core</code>، متد <code>HasKey()</code> دقیقاً همین کار را می‌کند. اگر بخواهید این رفتار را تغییر دهید، از <code>.IsClustered(false)</code> استفاده کنید — اما معمولاً نیازی به این کار نیست.<br><br>
+  
+  <b>۲. چرا کلید اصلی از نوع <code>GUID</code> ضرر دارد؟</b><br>
+  چون <code>GUID</code>ها تصادفی هستند، هر سطرِ جدید در جایی تصادفی از جدول درج می‌شود و باعث <b>Page Split</b> (شکافتنِ صفحه) و به‌هم‌ریختگیِ فیزیکیِ دیسک می‌شود. بهترین راه‌حل، استفاده از اعداد ترتیبی مانند <code>int</code> یا <code>bigint</code> با <code>IDENTITY</code> است. اگر به <code>GUID</code> نیاز دارید، از نوعِ ترتیبیِ آن یعنی <code>NEWSEQUENTIALID()</code> در <code>SQL Server</code> استفاده کنید.<br><br>
+  
+  <b>۳. چرا پلن اجرا هشدار <code>Key Lookup</code> می‌دهد و چطور رفعش کنم؟</b><br>
+  این هشدار زمانی رخ می‌دهد که ایندکسِ غیرخوشه‌ای، همه‌ی ستون‌های موردنیازِ کوئری را ندارد و موتور مجبور می‌شود برای گرفتنِ بقیهٔ ستون‌ها به جدول اصلی برگردد. راه‌حل: در <code>SQL Server</code> با دستور <code>INCLUDE</code>، ستون‌های جاافتاده را به ایندکس اضافه کنید تا «پوششی» (<b>Covering</b>) شود. در <code>EF Core</code>، این کار را با متد <code>.Include(x => new { x.Total })</code> در تعریفِ ایندکس انجام دهید.</span>
+
+  <span class="en"><b>This section solves three everyday mysteries for you:</b><br><br>
+  <b>1. Why is the PK clustered by default?</b><br>
+  In <code>SQL Server</code>, the Primary Key becomes the clustered index by default. In <code>EF Core</code>, <code>HasKey()</code> does exactly this. To change it, use <code>.IsClustered(false)</code> — but you rarely need to.<br><br>
+  <b>2. Why is a <code>GUID</code> PK a bad idea?</b><br>
+  Because <code>GUID</code>s are random, each new row lands in a random spot, causing <b>Page Splits</b> and physical fragmentation. Use sequential keys like <code>int</code> or <code>bigint</code> with <code>IDENTITY</code>. If you must use <code>GUID</code>, use the sequential version, <code>NEWSEQUENTIALID()</code> in <code>SQL Server</code>.<br><br>
+  <b>3. Why does the plan warn about <code>Key Lookup</code> and how do I fix it?</b><br>
+  This happens when a non-clustered index is missing columns from your query. The fix: use <code>INCLUDE</code> in <code>SQL Server</code> to add the missing columns and make it <b>Covering</b>. In <code>EF Core</code>, use <code>.Include(x => new { x.Total })</code> in your index definition.</span></p>
+</div>
+</section>
+
+<!-- ═══ 08 ═══ -->
+<section id="s8" class="stop reveal">
+  <div class="stop-head"><span class="stop-num">08</span>
+    <h2><span class="fa">ایندکس‌های ترکیبی و انتخاب‌گری — هوشمندانه انتخاب کنید</span><span class="en">Composite indexes & selectivity — choosing wisely</span></h2>
+  </div>
+  <div class="srcs">
+    <a href="https://aboutsqlserver.com/" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">منبع: Pro SQL Server Internals، فصل ۴ و ۶</span><span class="en">Pro SQL Server Internals, Ch. 4 & 6</span></a>
+    <a href="https://learn.microsoft.com/sql/relational-databases/sql-server-index-design-guide" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-award"/></svg><span class="fa">MS Learn: راهنمای طراحی ایندکس</span><span class="en">MS Learn: index design guide</span></a>
+  </div>
+
+  <p class="lead"><span class="fa">یک ایندکس ترکیبی، بیش از یک ستون را به‌عنوان کلید دارد — مثلاً <code>(Status, OrderDate)</code>. اما ترتیبِ این ستون‌ها <b>بسیار مهم</b> است، به‌خاطر <b>قاعدهٔ پیشوند چپ‌ترین</b>: ایندکس ابتدا بر اساسِ ستونِ اول مرتب می‌شود، سپس درونِ هر گروه، بر اساسِ ستونِ دوم، و به‌همین ترتیب. اگر ستونِ اول را در کوئری‌تان <b>رد کنید</b>، ترتیبِ بقیه‌ی ستون‌ها برای موتور بی‌فایده خواهد بود.</span>
+  <span class="en">A composite index uses more than one column as the key — e.g. <code>(Status, OrderDate)</code>. But the order of these columns <b>matters enormously</b>, because of the <b>leftmost-prefix rule</b>: the index is sorted by the first column, then within each group by the second, and so on. If you <b>skip</b> the first column in your query, the rest of the sort becomes useless to the engine.</span></p>
+
+  <div style="margin:20px 0;padding:16px 20px;background:var(--surface2);border-radius:10px;border:1px solid var(--line)">
+    <p style="font-size:14px;line-height:1.9;margin:0">
+      <span class="fa"><b>تشبیه با دفتر تلفن:</b> فرض کنید دفتر تلفن بر اساسِ <b>نام‌خانوادگی</b> مرتب شده، و درونِ هر نام‌خانوادگی، بر اساسِ <b>نام</b>. اگر بخواهید همه‌ی «علی»ها را پیدا کنید، بدون اینکه نام‌خانوادگی را مشخص کنید، باید کلِ دفتر را ورق بزنید — چون ترتیبِ نام، درونِ هر نام‌خانوادگی معنا دارد، نه در کلِ دفتر. قاعدهٔ پیشوند چپ‌ترین دقیقاً همین است.</span>
+      <span class="en"><b>Phone book analogy:</b> imagine a phone book sorted by <b>last name</b>, then within each last name, sorted by <b>first name</b>. If you want to find all "John"s without specifying a last name, you'd have to flip through the entire book — because the first-name order only makes sense within each last-name group. That's exactly the leftmost-prefix rule.</span>
+    </p>
+  </div>
+
+  <p style="margin-top:24px"><span class="fa"><b>انتخاب‌گری (Selectivity)</b> یعنی: «یک ستون، چقدر جست‌وجو را محدود می‌کند؟» فرمولش ساده است: <b>تعدادِ مقادیرِ متمایز ÷ تعدادِ کلِ سطرها</b>. هرچه این عدد به <b>۱</b> نزدیک‌تر باشد، ستون <b>انتخاب‌گریِ بالاتری</b> دارد (یعنی تقریباً یکتا است و خوب فیلتر می‌کند). هرچه به <b>۰</b> نزدیک‌تر باشد، <b>انتخاب‌گریِ پایین‌تری</b> دارد (یعنی خیلی ضعیف فیلتر می‌کند).</span>
+  <span class="en"><b>Selectivity</b> measures: "how much does this column narrow down the search?" The formula is simple: <b>distinct values ÷ total rows</b>. The closer to <b>1</b>, the <b>higher the selectivity</b> (nearly unique, great for filtering). The closer to <b>0</b>, the <b>lower the selectivity</b> (barely filters, weak alone).</span></p>
+
+  <div class="sel-demo">
+    <h4><span class="fa">انتخاب‌گری روی جدول Orders با ۱۰٬۰۰۰٬۰۰۰ سطر (نمایش تقریبی)</span><span class="en">Selectivity on a 10,000,000-row Orders table (illustrative)</span></h4>
+    <div class="sel-bars">
+      <div class="sel-row"><span class="col-name">Status</span><div class="track"><div class="bar low" data-w="4"></div></div><span class="val"><span class="fa">۴ مقدار متمایز — انتخاب‌گریِ پایین (ضعیف)</span><span class="en">4 distinct — low selectivity (weak)</span></span></div>
+      <div class="sel-row"><span class="col-name">CustomerId</span><div class="track"><div class="bar high" data-w="60"></div></div><span class="val"><span class="fa">۲۰۰٬۰۰۰ مقدار متمایز — انتخاب‌گریِ بالا (عالی)</span><span class="en">200,000 distinct — high selectivity (great)</span></span></div>
+    </div>
+    <p style="margin-top:16px;font-family:var(--mono);font-size:13px;color:var(--mut);direction:ltr;text-align:left">
+      <span class="fa">مثال: <code>WHERE Status = 'Paid' AND CustomerId = 1042</code></span>
+      <span class="en">Example: <code>WHERE Status = 'Paid' AND CustomerId = 1042</code></span><br>
+      ۱۰,۰۰۰,۰۰۰ ÷ ۴ ÷ ۲۰۰,۰۰۰ ≈ <b style="color:var(--grn)">۱۲ سطر</b> <br> <span class="fa">(بعد از اعمال هر دو فیلتر، فقط ۱۲ سطر باقی می‌مانند)</span>
+      <span class="en">(after applying both filters, only about 12 rows remain)</span>
+    </p>
+  </div>
+
+  <div class="demo">
+    <div class="demo-t"><svg class="ic"><use href="#i-swap"/></svg><span class="fa">امتحان کنید — ترتیب ستون‌ها را عوض کنید</span><span class="en">Try it — swap the column order</span></div>
+    
+    <p style="font-size:14px;color:var(--mut);margin-bottom:16px">
+      <span class="fa">با کلیک روی هر دکمه، ترتیبِ ستون‌های ایندکس عوض می‌شود. ببینید که هر ترتیب، کدام کوئری‌ها را <b>HIT</b> (می‌خورد) و کدام را <b>MISS</b> (از دست می‌دهد).</span>
+      <span class="en">Click each button to change the index column order. Watch which queries <b>HIT</b> and which <b>MISS</b> with each order.</span>
+    </p>
+    <div style="margin:16px 0;padding:14px 18px;background:var(--acc-soft);border-radius:8px;border:1px solid var(--acc-line)">
+  <p style="font-size:14px;line-height:1.8;margin:0;color:var(--ink)">
+    <span class="fa"><b>نکتهٔ مهم:</b> «HIT» و «MISS» در این دمو به معنی <b>سرعتِ اجرا</b> هستند، نه <b>دقتِ نتایج</b>. کوئری همیشه داده‌های درست را برمی‌گرداند. تفاوت فقط در این است که موتور می‌تواند از ایندکس برای <b>سریع‌تر</b> پیدا کردنِ آنها استفاده کند یا نه.</span>
+    <span class="en"><b>Important:</b> "HIT" and "MISS" in this demo refer to <b>execution speed</b>, not <b>result correctness</b>. The query always returns the right data. The only difference is whether the engine can use the index to find it <b>faster</b> or not.</span>
+  </p>
+</div>
+    <div class="cmp-demo">
+      <div class="cmp-ctrl">
+        <button class="cbtn primary" data-order="sd" id="cbtnSD"><span class="mono">(Status, OrderDate)</span></button>
+        <button class="cbtn" data-order="ds" id="cbtnDS"><span class="mono">(OrderDate, Status)</span></button>
+      </div>
+      <div class="cmp-visual">
+        <div class="cmp-col">
+          <h5><span class="fa">ترتیب فعلی</span><span class="en">Current order</span></h5>
+          <span class="col-label" id="cc1">Status</span><span class="col-num">1</span>
+          <span class="col-label" id="cc2">OrderDate</span><span class="col-num">2</span>
+        </div>
+        <div class="cmp-col">
+          <h5><span class="fa">نتایج کوئری</span><span class="en">Query results</span></h5>
+          <ul class="q-list" id="qList">
+            <li data-sd="hit" data-ds="hit"><span class="qtext">WHERE Status = 'Paid' AND OrderDate >= '2026-08-01'</span><span class="qbadge hit">HIT ✓</span></li>
+            <li data-sd="hit" data-ds="miss"><span class="qtext">WHERE Status = 'Paid'</span><span class="qbadge hit">HIT ✓</span></li>
+            <li data-sd="miss" data-ds="hit"><span class="qtext">WHERE OrderDate >= '2026-08-01'</span><span class="qbadge miss">MISS ✗</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="codebox"><div class="cb-h">sql — which queries hit, which miss</div>
+<pre><code><span class="kw">CREATE INDEX</span> IX_Orders_Status_Date
+    <span class="kw">ON</span> dbo.Orders(Status, OrderDate) <span class="kw">INCLUDE</span> (Total);
+
+<span class="cm">-- HIT: equality on leftmost, then range</span>
+<span class="kw">WHERE</span> Status = <span class="st">'Paid'</span> <span class="kw">AND</span> OrderDate &gt;= <span class="st">'2026-08-01'</span>
+
+<span class="cm">-- HIT: leftmost alone is fine</span>
+<span class="kw">WHERE</span> Status = <span class="st">'Paid'</span>
+
+<span class="cm">-- MISS: leftmost column skipped</span>
+<span class="kw">WHERE</span> OrderDate &gt;= <span class="st">'2026-08-01'</span></code></pre></div>
+
+  <div class="codebox"><div class="cb-h">c# / ef core — order here = key order</div>
+<pre><code>o.HasIndex(x =&gt; <span class="kw">new</span> { x.Status, x.OrderDate });
+<span class="cm">// first property = leftmost key column.</span>
+<span class="cm">// Swap them, and you built a different index.</span>
+</code></pre></div>
+
+  <div style="margin:20px 0;padding:14px 18px;background:var(--amb-soft);border-radius:8px;border:1px solid rgba(194,120,3,.3)">
+    <p style="font-size:13px;line-height:1.8;margin:0;color:var(--mut)">
+      <span class="fa"><b>نکته‌ی تکمیلی:</b> نسخه‌های جدید <code dir="ltr">SQL Server</code> گاهی می‌توانند با <b>Skip-Scan</b> از روی ستونِ اولِ ردشده بپرند — اما این کار <b>فقط</b> وقتی ممکن است که تعدادِ مقادیرِ متمایزِ آن ستون <b>کم</b> باشد. برنامه‌هایتان را روی این قابلیت <b>بنا نکنید</b>؛ آن را یک <b>پاداشِ احتمالی</b> در نظر بگیرید، نه یک تضمین.</span>
+      <span class="en"><b>Bonus note:</b> newer <code>SQL Server</code> versions can sometimes <b>Skip-Scan</b> past a skipped first column — but only when that column has <b>few</b> distinct values. <b>Don't build your plans around it</b>; treat it as a possible bonus, not a guarantee.</span>
+    </p>
+  </div>
+
+  <div class="grid2" style="margin-top:24px">
+    <div class="card" style="border-right:4px solid var(--grn)">
+      <h3><span class="cico green"><svg class="ic"><use href="#i-check"/></svg></span><span class="fa">دستور پختِ ایندکس‌سازی</span><span class="en">The index recipe</span></h3>
+      <p><span class="fa">
+        <b>۱.</b> اول، ستون‌های <b>برابری (Equality)</b> را قرار دهید.<br>
+        <b>۲.</b> بعد، ستون‌های <b>محدوده (Range)</b> یا <b>مرتب‌سازی (ORDER BY)</b> را بیاورید.<br>
+        <b>۳.</b> بقیه‌ی ستون‌هایی که در <code>SELECT</code> نیاز دارید را با <code>INCLUDE</code> اضافه کنید تا ایندکس <b>پوششی (Covering)</b> شود.<br>
+        <b>۴.</b> به‌خاطر داشته باشید: <b>چند ایندکسِ پهن (با ستون‌های زیاد)</b>، بهتر از <b>ایندکس‌های باریک و زیاد</b> است.
+      </span>
+      <span class="en">
+        <b>1.</b> Start with <b>equality</b> columns first.<br>
+        <b>2.</b> Then add the <b>range</b> or <b>ORDER BY</b> column.<br>
+        <b>3.</b> <code>INCLUDE</code> the rest of the columns from your <code>SELECT</code> to make it <b>covering</b>.<br>
+        <b>4.</b> Remember: <b>fewer wide indexes</b> are better than <b>many narrow ones</b>.
+      </span></p>
+    </div>
+  <div class="card" style="border-right:4px solid var(--acc)">
+  <h3><span class="cico blue"><svg class="ic"><use href="#i-target"/></svg></span><span class="fa">کجا دنبال کوئری‌ها بگردیم؟</span><span class="en">Where to find the queries</span></h3>
+  <p><span class="fa">
+    ابزار <code>EF Core</code> لاگ‌هایی تولید می‌کند که دستورات <code>SQL</code> واقعی اجرا شده توسط برنامه را نشان می‌دهند. 
+    در این لاگ‌ها دقیقاً ببینید که کوئری‌ها از چه ستون‌هایی در بخش <code>WHERE</code> و <code>ORDER BY</code> استفاده کرده‌اند و همان ستون‌ها را ایندکس کنید.
+    <br><br>
+    در دیتابیس <code>SQL Server</code>، ابزاری وجود دارد که به آن <b>Query Store</b> می‌گویند. 
+    این ابزار، کوئری‌های پرمصرف و ایندکس‌های گم‌شده را بر اساس داده‌های واقعی به شما نشان می‌دهد، نه بر اساس حدس و گمان.
+  </span>
+  <span class="en">
+    <code>EF Core</code> logs show you the <b>real SQL</b> your app runs. 
+    Look at them carefully to see which columns are used in <code>WHERE</code> and <code>ORDER BY</code>, and index those.
+    <br><br>
+    In <code>SQL Server</code>, there's a tool called <b>Query Store</b> that shows you the top queries and missing indexes based on actual data — not guesses.
+  </span></p>
+</div>
+  </div>
+
+  <div class="netnote" style="margin-top:28px">
+    <span class="badge">.NET</span>
+    <p><span class="fa"><b>یک قانون ساده:</b> قبل از اینکه هر ایندکسی را به جدول اضافه کنید، از خودتان بپرسید: «این ایندکس، کدام کوئریِ واقعی را سریع‌تر می‌کند؟» ایندکسی که هیچ کوئری‌ای از آن استفاده نکند، فقط نوشتن‌ها را کند می‌کند و فضای دیسک را اشغال می‌کند. ایندکس‌های استفاده‌نشده را حذف کنید — <code>sys.dm_db_index_usage_stats</code> در <code dir="ltr">SQL Server</code> دقیقاً به شما نشان می‌دهد کدام‌ها بلااستفاده‌اند.</span>
+    <span class="en"><b>A simple rule:</b> before adding any index, ask yourself: "Which real query does this make faster?" An index that no query uses only slows down writes and wastes disk space. Drop unused indexes — <code>sys.dm_db_index_usage_stats</code> in <code>SQL Server</code> shows you exactly which ones are unused.</span></p>
+  </div>
+</section>
+
+<!-- ═══ 09 ═══ -->
+<section id="s9" class="stop reveal">
+  <div class="stop-head"><span class="stop-num">✓</span>
+    <h2><span class="fa">خودآزمایی — می‌توانید این‌ها را بلند جواب بدهید؟</span><span class="en">Self-check — can you answer these out loud?</span></h2>
+  </div>
+  <p class="lead"><span class="fa">صفحه را ببندید و با کلمات خودتان جواب بدهید، بعد کلیک کنید و مقایسه کنید. اگر سوالی شما را گیر انداخت، به ایستگاه همان سوال بپرید.</span>
+  <span class="en">Close the page, answer in your own words, then click to compare. If one stumps you, hop back to its stop.</span></p>
+  <button class="btn" id="qaAll" style="margin-bottom:20px"><span class="fa">باز/بسته کردن همه</span><span class="en">Toggle all</span></button>
+
+  <div class="qa">
+    <button class="q"><span class="no">Q1</span><span class="fa">چرا ایندکس‌های زیاد، نوشتن‌ها را کند می‌کنند؟</span><span class="en">Why do extra indexes slow down writes?</span></button>
+    <div class="a"><div>
+      <span class="fa">هر بار که یک سطر را <code>INSERT</code>، <code>UPDATE</code> یا <code>DELETE</code> می‌کنید، موتور باید <b>همهٔ ایندکس‌های آن جدول</b> را هم به‌روز کند. هر ایندکس، یک درخت B جداگانه است که باید کلید جدید در آن درج شود، یا کلید قدیمی حذف شود. پس ایندکس بیشتر یعنی کارِ بیشتر برای هر نوشتن، به‌علاوهٔ فضای دیسکِ بیشتر برای نگهداریِ همهٔ آن درخت‌ها.</span>
+      <span class="en">Every time you <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> a row, the engine must also update <b>every index</b> on that table. Each index is a separate B-tree that needs its keys inserted or removed. More indexes mean more work per write, plus more disk space to store all those trees.</span>
+    </div></div>
+  </div>
+
+  <div class="qa">
+    <button class="q"><span class="no">Q2</span><span class="fa">یک گزارش <code>WHERE Price BETWEEN 10 AND 20</code> می‌خواهد. چرا ایندکس هش به درد نمی‌خورد؟</span><span class="en">A report needs <code>WHERE Price BETWEEN 10 AND 20</code>. Why can't a hash index help?</span></button>
+    <div class="a"><div>
+      <span class="fa">ایندکس هش، کلیدها را با تابع هش به سطل‌های مختلف می‌فرستد و <b>ترتیبِ اصلیِ کلیدها را کاملاً نابود می‌کند</b>. برای کوئری‌های محدوده (Range)، موتور باید کلیدها را به‌ترتیب بخواند — مثلاً از ۱۰ شروع کند و تا ۲۰ برود. درخت B این کار را با <b>زنجیرهٔ برگ‌ها</b> به‌راحتی انجام می‌دهد، اما هش هیچ‌اطلاعی از «بعدی» و «قبلی» ندارد.</span>
+      <span class="en">A hash index destroys the original order of keys by scattering them into buckets. For range queries, the engine needs to read keys in order — starting from 10 and going up to 20. B-trees do this easily with their <b>leaf chain</b>, but hash indexes have no concept of "next" or "previous".</span>
+    </div></div>
+  </div>
+
+  <div class="qa">
+    <button class="q"><span class="no">Q3</span><span class="fa">Compaction در درخت LSM چه می‌کند و اصلاً چرا وجود دارد؟</span><span class="en">What does compaction do in an LSM-tree, and why does it exist?</span></button>
+    <div class="a"><div>
+      <span class="fa">در LSM، نوشتن‌ها اول در <b>memtable</b> (حافظه) جمع می‌شوند و بعد به‌صورت فایل‌های مرتب و تغییرناپذیر به نام <b>SSTable</b> روی دیسک می‌روند. با گذشت زمان، این فایل‌ها زیاد می‌شوند و خواندن، کند می‌شود. <b>Compaction</b> در پس‌زمینه، چند SSTable را با هم ادغام می‌کند (دقیقاً مثل merge-sort)، سطرهای تکراری یا حذف‌شده را دور می‌ریزد و یک فایلِ مرتبِ تازه تحویل می‌دهد. بدون compaction، تعداد فایل‌ها روی دیسک مدام زیاد می‌شود و هر خواندن باید جای بیشتری را جست‌وجو کند.</span>
+      <span class="en">In LSM, writes first accumulate in the <b>memtable</b> (in memory), then flush to disk as sorted, immutable <b>SSTable</b> files. Over time, these files pile up and reads slow down. <b>Compaction</b> runs in the background, merging several SSTables (like merge-sort), dropping duplicate or deleted rows, and producing a fresh sorted file. Without compaction, files would keep growing and reads would check more and more places.</span>
+    </div></div>
+  </div>
+
+  <div class="qa">
+    <button class="q"><span class="no">Q4</span><span class="fa">درخت B با fan-out حدود ۳۰۰، بیست‌وهفت میلیون سطر دارد. برای رسیدن به یک سطر چند خواندن صفحه لازم است و چرا این‌قدر کم؟</span><span class="en">A fan-out-300 B-tree holds 27M rows. How many page reads to reach one row, and why so few?</span></button>
+    <div class="a"><div>
+      <span class="fa">تنها <b>۳ خواندن صفحه</b> کافی است — یکی در هر سطح (ریشه، شاخه، برگ). دلیلش این است که هر سطح، ظرفیتِ کل را در <b>fan-out</b> ضرب می‌کند: ۳۰۰ × ۳۰۰ × ۳۰۰ = ۲۷ میلیون. به‌همین دلیل، عمقِ درخت با <b>لگاریتمِ تعداد سطرها</b> رشد می‌کند، نه با خودِ تعداد سطرها. برای میلیاردها سطر هم عمق فقط به ۴ یا ۵ می‌رسد.</span>
+      <span class="en">Only <b>3 page reads</b> — one per level (root, branch, leaf). Each level multiplies the total capacity by the <b>fan-out</b>: 300 × 300 × 300 = 27 million. That's why the tree depth grows with the <b>logarithm</b> of the row count, not the row count itself. Even for billions of rows, depth only reaches 4 or 5.</span>
+    </div></div>
+  </div>
+
+  <div class="qa">
+    <button class="q"><span class="no">Q5</span><span class="fa">در <code>SQL Server</code> برگِ ایندکس غیرخوشه‌ای چه دارد — و «key lookup» چیست؟</span><span class="en">In <code>SQL Server</code>, what does a non-clustered leaf contain — and what is a "key lookup"?</span></button>
+    <div class="a"><div>
+      <span class="fa">برگِ ایندکس غیرخوشه‌ای، خودِ کلیدِ ایندکس را دارد، به‌همراه یک <b>اشاره‌گر به سطرِ متناظر</b> در جدول اصلی. این اشاره‌گر یا مقدارِ کلید خوشه‌بندی است (اگر جدول ایندکس خوشه‌ای داشته باشد) یا شناسهٔ فیزیکیِ سطر (اگر جدول <b>Heap</b> باشد). به‌علاوه، ستون‌هایی که با <code>INCLUDE</code> اضافه شده‌اند هم در برگ ذخیره می‌شوند.<br><br>
+      <b>Key Lookup</b> یعنی وقتی موتور از ایندکس غیرخوشه‌ای استفاده می‌کند و به ستونی نیاز دارد که در برگ نیست، باید یک پرشِ اضافی به جدول اصلی بزند و آن ستون را از آنجا بخواند. این پرش برای چند سطر، ارزان است؛ اما اگر کوئری شما صدها یا هزاران سطر برگرداند، این رفت‌وبرگشت‌ها جمع می‌شوند و هزینه‌ی سنگینی ایجاد می‌کنند. ایندکس پوششی (Covering) با <code>INCLUDE</code> این پرش را حذف می‌کند.</span>
+      <span class="en">A non-clustered index leaf contains the index key itself, plus a <b>pointer to the corresponding row</b> in the main table. This pointer is either the clustering key (if the table has a clustered index) or a physical row ID (if the table is a <b>Heap</b>). Also, any columns added with <code>INCLUDE</code> are stored at the leaf level.<br><br>
+      A <b>Key Lookup</b> is when the engine uses a non-clustered index but needs a column that isn't in the leaf — so it makes an extra jump to the main table to read it. This is cheap for a few rows, but if your query returns hundreds or thousands, these round-trips add up and become expensive. A covering index (with <code>INCLUDE</code>) removes this extra hop.</span>
+    </div></div>
+  </div>
+<div class="qa">
+  <button class="q">
+    <span class="no">Q6</span>
+    <span class="fa">کوئری زیر را در نظر بگیرید: <code>WHERE Status='Paid' AND OrderDate بزرگ‌تر یا مساوی @d</code>. کدام ایندکس عملکرد بهتری دارد؟ ایندکس <code>(OrderDate, Status)</code> یا ایندکس <code>(Status, OrderDate)</code>؟</span>
+    <span class="en">Consider this query: <code>WHERE Status='Paid' AND OrderDate >= @d</code>. Which index performs better: <code>(OrderDate, Status)</code> or <code>(Status, OrderDate)</code>?</span>
+  </button>
+  <div class="a"><div>
+    <span class="fa">
+      ایندکس <code>(Status, OrderDate)</code> برنده است. دلیلش <b>قاعدهٔ پیشوند چپ‌ترین</b> است: ستون‌های برابری (<code>=</code>) باید جلوتر از ستون‌های محدوده‌ای (مانند «بزرگ‌تر یا مساوی» یا «کوچک‌تر یا مساوی») قرار بگیرند. در این کوئری، <code>Status</code> یک مقدار مشخص دارد، پس باید <b>اولین</b> کلید ایندکس باشد تا موتور بتواند سریعاً به آن بخش از درخت برود. سپس <code>OrderDate</code> به‌عنوان محدوده می‌آید. اگر ترتیب برعکس باشد (اول <code>OrderDate</code>، بعد <code>Status</code>)، چون درخت بر اساس <code>OrderDate</code> مرتب شده، موتور نمی‌تواند از <code>Status</code> برای محدود کردن جست‌وجو استفاده کند و مجبور می‌شود محدوده‌ی بسیار بزرگ‌تری را اسکن کند.
+    </span>
+    <span class="en">
+      The index <code>(Status, OrderDate)</code> wins. The reason is the <b>leftmost-prefix rule</b>: equality columns (<code>=</code>) must come before range columns (<code>&gt;=</code>, <code>&lt;=</code>). In this query, <code>Status</code> has an exact value, so it should be the <b>first</b> key column, allowing the engine to quickly navigate to the right part of the tree. Then <code>OrderDate</code> comes next as the range. If the order is reversed — <code>OrderDate</code> first, then <code>Status</code> — the tree is sorted by <code>OrderDate</code>, and the engine cannot use <code>Status</code> to narrow the search, so it ends up scanning a much wider range.
+    </span>
+  </div></div>
+</div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-profile">
+        <img src="https://github.com/alireza-haeri.png" alt="Alireza Haeri" onerror="this.style.display='none'">
+        <div>
+          <div class="name"><span class="fa">علیرضا حایری</span><span class="en">Alireza Haeri</span></div>
+          <div class="role"><span class="fa">توسعه‌دهندهٔ بک‌اند ‎.NET · پروژهٔ آموزش مبانی عمیق برنامه‌نویسی</span><span class="en">.NET Backend Developer · deep programming fundamentals</span></div>
+        </div>
+      </div>
+      <div class="foot-links">
+        <a class="btn sm gh-link" href="https://github.com/alireza-haeri" target="_blank" rel="noopener">
+          <svg class="ic sm fill"><use href="#i-github"/></svg>
+          <span class="fa">گیت‌هاب من</span><span class="en">My GitHub</span>
+        </a>
+        <a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
+          <svg class="ic sm"><use href="#i-branch"/></svg>
+          <span class="fa">ریپازیتوری پروژه</span><span class="en">Project Repo</span>
+        </a>
+      </div>
+    </div>
+</footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+
+/* ===== Theme & language ===== */
+(function(){
+  const saved=localStorage.getItem('theme');
+  if(saved)document.documentElement.dataset.theme=saved;
+  $('#themeBtn').addEventListener('click',()=>{
+    const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem('theme',next);
+  });
+  const sl=localStorage.getItem('lang');
+  if(sl){document.documentElement.lang=sl;document.documentElement.dir=sl==='fa'?'rtl':'ltr';}
+  $('#langBtn').addEventListener('click',()=>{
+    const next=document.documentElement.lang==='fa'?'en':'fa';
+    document.documentElement.lang=next;
+    document.documentElement.dir=next==='fa'?'rtl':'ltr';
+    localStorage.setItem('lang',next);
+  });
+})();
+
+/* ===== Inline SVG icons ===== */
+$$('svg use').forEach(u=>{
+  const sym=document.querySelector(u.getAttribute('href'));
+  if(sym){
+    const host=u.closest('svg');
+    const s2=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    s2.setAttribute('viewBox',sym.getAttribute('viewBox')||'0 0 24 24');
+    s2.innerHTML=sym.innerHTML;
+    s2.setAttribute('class',host.getAttribute('class')||'');
+    host.replaceWith(s2);
+  }
+});
+
+/* ===== Hero animation ===== */
+(function(){
+  const box=$('#heroScanCells');
+  for(let i=0;i<24;i++)box.appendChild(document.createElement('i'));
+  const lines=["SELECT Id, Total","FROM dbo.Orders","WHERE CustomerId = 1042;"];
+  const L=[$('#hl1'),$('#hl2'),$('#hl3')],cur=$('#heroCur');
+  const cells=$$('#heroScanCells i'),nodes=$$('#heroSeekPath .snode');
+  async function cycle(){
+    $('#heroBanner').classList.remove('show');
+    L.forEach(l=>l.textContent='');
+    cells.forEach(c=>c.classList.remove('scan','done'));
+    nodes.forEach(n=>n.classList.remove('walk','done'));
+    $('#heroScanCnt').textContent='0';$('#heroSeekCnt').textContent='0';
+    await sleep(600);
+    for(let i=0;i<lines.length;i++){
+      for(let j=1;j<=lines[i].length;j++){
+        L[i].textContent=lines[i].slice(0,j);
+        L[i].appendChild(cur);
+        await sleep(24);
+      }
+      await sleep(140);
+    }
+    await sleep(420);
+    const scan=(async()=>{
+      for(let i=0;i<cells.length;i++){
+        cells[i].classList.add('scan');
+        $('#heroScanCnt').textContent=fmt((i+1)*1000000/cells.length);
+        await sleep(96);
+      }
+      cells.forEach(c=>c.classList.add('done'));
+    })();
+    const seek=(async()=>{
+      for(let i=0;i<nodes.length;i++){
+        nodes[i].classList.add('walk');
+        $('#heroSeekCnt').textContent=String(i+1);
+        await sleep(340);
+        nodes[i].classList.add('done');
+      }
+    })();
+    await seek;
+    await sleep(320);
+    $('#heroBanner').classList.add('show');
+    await scan;
+    await sleep(3000);
+    $('#heroBanner').classList.remove('show');
+    await sleep(700);
+  }
+  (async()=>{while(true){try{await cycle()}catch(e){await sleep(1000)}}})();
+})();
+
+/* ===== S2: race ===== */
+(function(){
+  const scanBox=$('#raceScanCells'),seekBox=$('#raceSeekCells');
+  for(let i=0;i<22;i++){scanBox.appendChild(document.createElement('i'));seekBox.appendChild(document.createElement('i'));}
+  const scanCells=$$('#raceScanCells i'),seekCells=$$('#raceSeekCells i');
+  const seekPath=[4,10,16];
+  let busy=false;
+  function clear(){
+    scanCells.forEach(c=>c.classList.remove('hit'));
+    seekCells.forEach(c=>c.classList.remove('path','found'));
+    $('#raceScanStat').textContent='0';$('#raceSeekStat').textContent='0';
+    $('#raceScanMsg').textContent='';$('#raceSeekMsg').textContent='';
+    $('#raceBanner').classList.remove('show');
+  }
+  async function runScan(){
+    for(let i=0;i<scanCells.length;i++){
+      if(!busy)return;
+      scanCells[i].classList.add('hit');
+      $('#raceScanStat').textContent=i+1;
+      await sleep(60);
+    }
+    $('#raceScanMsg').innerHTML='<span class="fa">کند — همه صفحات خوانده شد</span><span class="en">Slow — all pages scanned</span>';
+  }
+  async function runSeek(){
+    for(let i=0;i<seekPath.length;i++){
+      if(!busy)return;
+      seekCells[seekPath[i]].classList.add('path');
+      $('#raceSeekStat').textContent=i+1;
+      await sleep(200);
+    }
+    seekCells[seekPath[seekPath.length-1]].classList.add('found');
+    $('#raceSeekMsg').innerHTML='<span class="fa">سریع — فقط ۳ صفحه!</span><span class="en">Fast — only 3 pages!</span>';
+  }
+  $('#raceScanBtn').addEventListener('click',async()=>{if(busy)return;busy=true;clear();await runScan();busy=false;});
+  $('#raceSeekBtn').addEventListener('click',async()=>{if(busy)return;busy=true;clear();await runSeek();busy=false;});
+  $('#raceBtn').addEventListener('click',async()=>{
+    if(busy)return;busy=true;clear();
+    const s1=runScan(),s2=runSeek();
+    await s2;
+    $('#raceBanner').classList.add('show');
+    await s1;busy=false;
+  });
+  $('#raceResetBtn').addEventListener('click',()=>{busy=false;clear();});
+})();
+
+/* ===== S3: hash ===== */
+(function(){
+  const input=$('#hashInput'),result=$('#hashResult'),bucketsEl=$('#hashBuckets');
+  const HDATA={'user:42':'→ page 812, row 3','user:7':'→ page 95, row 14','user:113':'→ page 402, row 1','sku:A-900':'→ page 66, row 9','sku:B-205':'→ page 121, row 2','order:8841':'→ page 233, row 7'};
+  const B=8;
+  for(let i=0;i<B;i++){
+    const b=document.createElement('div');b.className='bucket';
+    b.innerHTML='<div class="bn">bucket '+i+'</div>';
+    bucketsEl.appendChild(b);
+  }
+  const buckets=$$('.bucket');
+  function hfun(s){let h=5381;for(let i=0;i<s.length;i++)h=((h*33)+s.charCodeAt(i))>>>0;return h;}
+  Object.keys(HDATA).forEach(k=>{
+    const tag=document.createElement('span');tag.className='bkey';tag.textContent=k;
+    buckets[hfun(k)%B].appendChild(tag);
+  });
+  function clearB(){buckets.forEach(b=>b.classList.remove('hit','bad'));}
+  $('#hashGoBtn').addEventListener('click',()=>{
+    clearB();
+    const k=input.value.trim();if(!k)return;
+    const h=hfun(k),b=h%B;
+    $('#hs1').textContent=k;$('#hs2').textContent=h.toLocaleString('en-US');$('#hs3').textContent=b;
+    buckets[b].classList.add('hit');
+    if(HDATA[k]){
+      result.className='hash-result found';
+      result.innerHTML='<span class="fa">✓ پیدا شد: '+HDATA[k]+'</span><span class="en">✓ Found: '+HDATA[k]+'</span>';
+    }else{
+      result.className='hash-result nope';
+      result.innerHTML='<span class="fa">✗ اینجا نیست — ولی فقط یک سطل را باز کردیم!</span><span class="en">✗ Not here — but we only opened ONE bucket!</span>';
+    }
+  });
+  $('#hashRangeBtn').addEventListener('click',()=>{
+    clearB();
+    buckets.forEach(b=>b.classList.add('bad'));
+    $('#hs1').textContent='id > 40';$('#hs2').textContent='?';$('#hs3').textContent='ALL';
+    result.className='hash-result nope';
+    result.innerHTML='<span class="fa">Range نیاز به ترتیب دارد. هش ترتیب را نابود می‌کند — باید همه سطل‌ها را باز کنید!</span><span class="en">Ranges need sorted data. Hashing destroys order — you must check ALL buckets!</span>';
+  });
+})();
+
+/* ===== S4: LSM ===== */
+(function(){
+ const caps = [
+  '<span class="fa">نوشتن‌ها می‌رسند. اول در <b>memtable</b> نوشته می‌شوند — یک ساختار مرتب در RAM. در این مرحله، هیچ نوشته‌ای به دیسک نمی‌رود، پس نوشتن‌ها بسیار سریع است.</span><span class="en">Writes arrive. They are first written to the <b>memtable</b> — a sorted structure in RAM. At this point, nothing hits the disk, so writes are extremely fast.</span>',
+
+  '<span class="fa"><b>memtable</b> همه‌ی کلیدها را مرتب نگه می‌دارد. هر خواندنِ جدید، اول memtable را چک می‌کند. تا اینجا: هیچ‌گونه نوشتنِ تصادفی روی دیسک نداشته‌ایم.</span><span class="en">The <b>memtable</b> keeps all keys sorted. Every new read checks the memtable first. So far: zero random disk writes.</span>',
+
+  '<span class="fa">memtable به حد نصاب رسید (معمولاً ~۶۴ MB)؟ زمان <b>Flush</b> است: تمام محتوا را یکجا به‌صورت یک فایل مرتب و تغییرناپذیر روی دیسک می‌نویسیم — یک <b>SSTable</b>. این یک نوشتنِ پشت‌سرهم (ترتیبی) است، نه تصادفی.</span><span class="en">Memtable full (typically ~64 MB)? Time to <b>Flush</b>: write all its content to disk as one sorted, immutable file — an <b>SSTable</b>. This is a sequential write, not random.</span>',
+
+  '<span class="fa">با گذشت زمان، SSTableهای بیشتری روی دیسک جمع می‌شوند. برای خواندن یک کلید، ابتدا memtable را چک می‌کنیم، سپس SSTableها را به‌ترتیب <b>از جدیدترین به قدیمی‌ترین</b> بررسی می‌کنیم (چون داده‌ی جدیدتر، نسخه‌ی معتبر است).</span><span class="en">Over time, more SSTables pile up on disk. To read a key, we first check the memtable, then SSTables <b>from newest to oldest</b> (newer data wins).</span>',
+
+  '<span class="fa"><b>Compaction</b> در پس‌زمینه، چند SSTable را با هم ادغام می‌کند — دقیقاً مثل merge-sort — و ورودی‌های تکراری یا منسوخ را حذف می‌کند. این کار باعث می‌شود تعداد فایل‌ها روی دیسک زیاد نشود.</span><span class="en"><b>Compaction</b> merges several SSTables in the background — exactly like merge-sort — and removes duplicate or obsolete entries. This keeps the number of files on disk from growing endlessly.</span>',
+
+  '<span class="fa"><b>Bloom filter</b> به موتور می‌گوید «قطعاً این کلید در این SSTable نیست» تا بدون اینکه دیسک را لمس کند، آن فایل را رد کند. نتیجه: نوشتن‌ها حتی در مقیاس جمعه‌ی سیاه هم ارزان و سریع می‌مانند.</span><span class="en">A <b>Bloom filter</b> tells the engine "this key is definitely not in this SSTable", so it can skip that file without touching disk. Writes stay cheap and fast, even at Black-Friday scale.</span>'
+];
+  const cap=$('#lsmCap'),dots=$('#lsmDots');
+  for(let i=0;i<6;i++)dots.appendChild(document.createElement('i'));
+  let step=0;
+  function apply(n){
+    step=Math.max(0,Math.min(5,n));
+    const on=(id,v)=>{const e=$('#'+id);e&&e.classList.toggle('on',v);};
+    $$('#lsmMtRows .mt-row').forEach(r=>r.classList.toggle('on',step>=1));
+    $('#lsmWal').textContent=step>=1?'3':'0';
+    on('lsmSst1',step===2||step===3);
+    on('lsmSst2',step===3);
+    on('lsmSst3',step>=3);
+    on('lsmSstM',step>=4);
+    $('#lsmBloom').classList.toggle('show',step===5);
+    cap.innerHTML='<b>'+(step+1)+'/6.</b> '+caps[step];
+    $$('#lsmDots i').forEach((d,i)=>d.classList.toggle('on',i<=step));
+  }
+  $('#lsmPrevBtn').addEventListener('click',()=>apply(step-1));
+  $('#lsmNextBtn').addEventListener('click',()=>apply(step+1));
+  $$('#lsmDots i').forEach((d,i)=>d.addEventListener('click',()=>apply(i)));
+  apply(0);
+})();
+
+/* ===== S5: B-tree walk (fixed range path + edge highlighting) ===== */
+(function(){
+  const svg=$('#btreeSvg');if(!svg)return;
+  const NS='http://www.w3.org/2000/svg';
+  const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+
+  const ROOT={id:'root',keys:[30,70],cx:640,y:24,h:42,cw:40};
+  const MIDS=[
+    {id:'A',keys:[10,20],cx:206,y:150,h:40,cw:38},
+    {id:'B',keys:[40,50,60],cx:640,y:150,h:40,cw:38},
+    {id:'C',keys:[80,90],cx:1074,y:150,h:40,cw:38}
+  ];
+  const LK=[[2,4,6,8],[11,13,16,18],[22,24,26,28],[31,34,37,39],[41,43,45,47],[52,54,56,58],[62,64,66,68],[72,74,76,78],[82,84,86,88],[92,94,96,98]];
+  const leafW=4*26+12;
+  const LEAVES=LK.map((k,i)=>({id:'L'+(i+1),keys:k,cx:82+i*124,y:300,h:38,cw:26}));
+  const EDGES=[['root','A'],['root','B'],['root','C'],['A','L1'],['A','L2'],['A','L3'],['B','L4'],['B','L5'],['B','L6'],['B','L7'],['C','L8'],['C','L9'],['C','L10']];
+  const ALL={root:ROOT};MIDS.forEach(m=>ALL[m.id]=m);LEAVES.forEach(l=>ALL[l.id]=l);
+
+  const chainSegs={};
+  for(let i=0;i<LEAVES.length-1;i++){
+    const a=LEAVES[i],b=LEAVES[i+1];
+    const ln=el('line',{x1:a.cx,y1:a.y+a.h/2,x2:b.cx,y2:b.y+b.h/2,class:'chain'});
+    svg.appendChild(ln);
+    chainSegs[a.id+'-'+b.id]=ln;
+  }
+  const edgeEls={};
+  EDGES.forEach(([p,c])=>{
+    const P=ALL[p],C=ALL[c];
+    const ln=el('line',{x1:P.cx,y1:P.y+P.h,x2:C.cx,y2:C.y,class:'edge'});
+    svg.appendChild(ln);edgeEls[p+'-'+c]=ln;
+  });
+  const nodeEls={};
+  function draw(n){
+    const w=n.keys.length*n.cw+12,x=n.cx-w/2;
+    const g=el('g',{class:'bnode'});g.setAttribute('data-id',n.id);
+    g.appendChild(el('rect',{x:x,y:n.y,width:w,height:n.h,rx:9}));
+    n.keys.forEach((k,i)=>{
+      if(i>0)g.appendChild(el('line',{x1:x+6+i*n.cw,y1:n.y+7,x2:x+6+i*n.cw,y2:n.y+n.h-7,class:'sep'}));
+      const t=el('text',{x:x+6+i*n.cw+n.cw/2,y:n.y+n.h/2+5,'data-k':k});
+      t.textContent=k;g.appendChild(t);
+    });
+    svg.appendChild(g);nodeEls[n.id]=g;
+  }
+  draw(ROOT);MIDS.forEach(draw);LEAVES.forEach(draw);
+
+  const status=$('#btStatus'),res=$('#btResult');
+  let busy=false;
+  function clear(){
+    $$('#btreeSvg .bnode').forEach(n=>n.classList.remove('walk','done'));
+    $$('#btreeSvg text').forEach(t=>t.classList.remove('found','rng'));
+    $$('#btreeSvg .edge').forEach(e=>e.classList.remove('walk'));
+    $$('#btreeSvg .chain').forEach(e=>e.classList.remove('walk'));
+    res.innerHTML='';
+  }
+  function say(fa,en){status.innerHTML='<span class="fa">'+fa+'</span><span class="en">'+en+'</span>';}
+  function walkEdge(p,c){const e=edgeEls[p+'-'+c];if(e)e.classList.add('walk');}
+  function markKey(node,k,cls){const t=nodeEls[node].querySelector('text[data-k="'+k+'"]');if(t)t.classList.add(cls);}
+  function chip(k){const s=document.createElement('span');s.className='kv';s.textContent=k;res.appendChild(s);}
+
+  async function find(key,path){
+    if(busy)return;busy=true;clear();
+    let prev=null;
+    for(const [node,fa,en] of path){
+      if(prev)walkEdge(prev,node);
+      nodeEls[node].classList.add('walk');
+      say(fa,en);
+      prev=node;
+      await sleep(850);
+    }
+    const leaf=path[path.length-1][0];
+    nodeEls[leaf].classList.add('done');
+    markKey(leaf,key,'found');
+    say('کلید '+key+' پیدا شد — فقط ۳ خواندن صفحه.','Key '+key+' found — only 3 page reads.');
+    chip(key);
+    busy=false;
+  }
+
+  $('#btFind6').addEventListener('click',()=>find(6,[
+    ['root','ریشه: ۶ < ۳۰ → شاخهٔ چپ','root: 6 < 30 → left branch'],
+    ['A','گره A: ۶ < ۱۰ → باز هم چپ','node A: 6 < 10 → left again'],
+    ['L1','برگ! ۶ همین‌جاست','leaf! 6 is right here']
+  ]));
+  $('#btFind52').addEventListener('click',()=>find(52,[
+    ['root','ریشه: ۳۰ < ۵۲ < ۷۰ → شاخهٔ وسط','root: 30 < 52 < 70 → middle branch'],
+    ['B','گره B: ۵۰ < ۵۲ < ۶۰ → فرزند بین ۵۰ و ۶۰','node B: 50 < 52 < 60 → child between 50 and 60'],
+    ['L6','برگ! ۵۲ همین‌جاست','leaf! 52 is right here']
+  ]));
+
+  async function range(){
+    if(busy)return;busy=true;clear();
+    const descend=[
+      ['root','ریشه: ۲۲ < ۳۰ → شاخهٔ چپ','root: 22 < 30 → left branch'],
+      ['A','گره A: ۲۲ ≥ ۲۰ → آخرین فرزند','node A: 22 ≥ 20 → last child'],
+      ['L3','برگ! شروع محدوده (۲۲)','leaf! range starts here (22)']
+    ];
+    let prev=null;
+    for(const [node,fa,en] of descend){
+      if(prev)walkEdge(prev,node);
+      nodeEls[node].classList.add('walk');
+      say(fa,en);
+      prev=node;
+      await sleep(850);
+    }
+    say('حالا روی زنجیرهٔ برگ‌ها به راست حرکت می‌کنیم…','Now walk right along the leaf chain…');
+    const walk=[['L3',[22,24,26,28]],['L4',[31,34,37,39]],['L5',[41,43,45]]];
+    for(let w=0;w<walk.length;w++){
+      const [leaf,keys]=walk[w];
+      if(w>0){
+        const seg=chainSegs[walk[w-1][0]+'-'+leaf];
+        if(seg)seg.classList.add('walk');
+        await sleep(300);
+      }
+      nodeEls[leaf].classList.add('done');
+      for(const k of keys){markKey(leaf,k,'rng');chip(k);await sleep(170);}
+      await sleep(200);
+    }
+    say('۱۱ کلید در محدودهٔ ۲۲ تا ۴۵ پیدا شد — فقط با یک بار پایین رفتن از درخت!','11 keys in range 22–45 found — with a single descent!');
+    busy=false;
+  }
+  $('#btRange').addEventListener('click',range);
+  $('#btReset').addEventListener('click',()=>{
+    if(busy)return;clear();
+    say('یکی از دکمه‌ها را بزنید تا پیمایش شروع شود.','Press a button to start walking the tree.');
+  });
+})();
+
+/* ===== S6 + S8 bars ===== */
+// S6 meters
+(function(){
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{if(e.isIntersecting){$$('#meters .fill').forEach(f=>f.style.width=f.dataset.w+'%');io.disconnect();}});
+  },{threshold:.3});
+  io.observe($('#meters'));
+})();
+
+// S8 selectivity bars - fixed
+(function(){
+  let filled = false;
+
+  function fillBars() {
+    if (filled) return;
+    const bars = $$('.sel-row .bar');
+    if (!bars.length) return;
+    bars.forEach(b => {
+      b.style.width = b.dataset.w + '%';
+    });
+    filled = true;
+  }
+
+  function checkAndFill() {
+    if (filled) return;
+    const s8 = $('#s8');
+    if (!s8) return;
+    const rect = s8.getBoundingClientRect();
+    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+    if (isVisible) {
+      fillBars();
+      return true;
+    }
+    return false;
+  }
+
+  function setupObserver() {
+    if (filled) return;
+    const s8 = $('#s8');
+    if (!s8) return;
+
+    // اول چک کن که الان در viewport هست یا نه
+    if (checkAndFill()) return;
+
+    // اگر نیست، observer بگذار
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !filled) {
+          fillBars();
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+
+    observer.observe(s8);
+
+    // fallback: بعد از 3 ثانیه دوباره چک کن
+    setTimeout(() => {
+      if (!filled) {
+        checkAndFill();
+        observer.disconnect();
+      }
+    }, 3000);
+  }
+
+  // اجرا در لود صفحه
+  setTimeout(setupObserver, 200);
+
+  // بعد از تغییر زبان، دوباره تلاش کن
+  const langBtn = $('#langBtn');
+  langBtn.addEventListener('click', function() {
+    // اگر قبلاً پر شده، کاری نکن
+    if (filled) return;
+    setTimeout(setupObserver, 300);
+  });
+
+  // همچنین وقتی کاربر اسکرول می‌کند، اگر هنوز پر نشده، دوباره چک کن
+  let scrollTimer;
+  window.addEventListener('scroll', function() {
+    if (filled) return;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(checkAndFill, 200);
+  });
+})();
+
+/* ===== S7: INCLUDE toggle ===== */
+(function(){
+  const keys=$('#incKeysContainer');
+  for(let i=0;i<27;i++){const k=document.createElement('span');k.className='kv';k.textContent='1042';keys.appendChild(k);}
+  const rows=$('#incRows');
+  for(let i=0;i<84;i++){const c=document.createElement('i');if(i%14===3)c.className='hot';rows.appendChild(c);}
+  function tween(elId,from,to,dur){
+    const elx=$('#'+elId);
+    const t0=performance.now();
+    (function step(t){
+      const p=Math.min(1,(t-t0)/dur),v=Math.round(from+(to-from)*p);
+      elx.textContent=v;
+      if(p<1)requestAnimationFrame(step);
+    })(t0);
+  }
+  $('#incToggle').addEventListener('change',function(){
+    const on=this.checked;
+    $('#incTag').style.display=on?'inline-block':'none';
+    $('#incRows').classList.toggle('covering',on);
+    if(on){tween('incReads',54,27,700);tween('incLookups',27,0,700);}
+    else{tween('incReads',27,54,700);tween('incLookups',0,27,700);}
+  });
+})();
+
+/* ===== S8: composite order ===== */
+(function(){
+  const btns=$$('.cbtn'),items=$$('#qList li');
+  btns.forEach(b=>b.addEventListener('click',()=>{
+    btns.forEach(x=>x.classList.toggle('primary',x===b));
+    const ord=b.dataset.order;
+    $('#cc1').textContent=(ord==='sd')?'Status':'OrderDate';
+    $('#cc2').textContent=(ord==='sd')?'OrderDate':'Status';
+    items.forEach(li=>{
+      const r=li.dataset[ord],badge=li.querySelector('.qbadge');
+      badge.className='qbadge '+r;
+      badge.textContent=(r==='hit')?'HIT ✓':'MISS ✗';
+    });
+  }));
+})();
+
+/* ===== S9: quiz ===== */
+$$('.qa .q').forEach(q=>q.addEventListener('click',()=>q.parentElement.classList.toggle('open')));
+$('#qaAll').addEventListener('click',()=>{
+  const all=$$('.qa'),anyClosed=all.some(x=>!x.classList.contains('open'));
+  all.forEach(x=>x.classList.toggle('open',anyClosed));
+});
+
+/* ===== reveal on scroll ===== */
+(function(){
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:.1});
+  $$('.reveal').forEach(x=>io.observe(x));
+})();
+</script>
+
+</body>
+</html>
