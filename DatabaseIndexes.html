@@ -419,17 +419,7 @@ footer{border-top:1px dashed var(--line2);padding:48px 0;margin-top:48px}
       <span class="brand-logo"><svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="14" fill="var(--acc)"/><path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5" stroke-linejoin="round" fill="none"/><circle cx="32" cy="28" r="3" fill="var(--bg)"/><circle cx="22" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><circle cx="42" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6"/></svg></span>
       <span class="fa">ایندکس‌های دیتابیس</span><span class="en">Database Indexes</span>
     </span>
-    <div class="stops-nav">
-      <a href="#s1"><span class="fa">۰۱ چیست و چرا</span><span class="en">01 What & why</span></a>
-      <a href="#s2"><span class="fa">۰۲ اسکن و seek</span><span class="en">02 Scan vs seek</span></a>
-      <a href="#s3"><span class="fa">۰۳ ایندکس هش</span><span class="en">03 Hash</span></a>
-      <a href="#s4"><span class="fa">۰۴ SSTable و LSM</span><span class="en">04 LSM</span></a>
-      <a href="#s5"><span class="fa">۰۵ درخت B</span><span class="en">05 B-Trees</span></a>
-      <a href="#s6"><span class="fa">۰۶ LSM و B-Tree</span><span class="en">06 LSM vs B-Tree</span></a>
-      <a href="#s7"><span class="fa">۰۷ SQL Server</span><span class="en">07 SQL Server</span></a>
-      <a href="#s8"><span class="fa">۰۸ ایندکس ترکیبی</span><span class="en">08 Composite</span></a>
-      <a href="#s9"><span class="fa">خودآزمایی</span><span class="en">Self-check</span></a>
-    </div>
+   
     <a class="btn sm gh-link" href="./index.html" rel="noopener">
        <svg class="ic sm"><use href="#i-home"/></svg>
       <span class="fa">صفحه اصلی</span><span class="en">Main Page</span>
@@ -495,10 +485,22 @@ footer{border-top:1px dashed var(--line2);padding:48px 0;margin-top:48px}
           <a href="#s9"><b>✓</b><span class="fa">خودآزمایی</span><span class="en">Self-check</span></a>
         </div>
 
-        <a class="btn primary hero-cta" href="#s1">
-          <span class="fa">شروع مسیر</span><span class="en">Start the path</span>
-          <svg class="ic sm"><use href="#i-down"/></svg>
-        </a>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-self:flex-start;">
+  <a class="btn primary" href="#s1">
+    <span class="fa">شروع مسیر</span>
+    <span class="en">Start the path</span>
+    <svg viewBox="0 0 24 24" class="ic sm">
+      <use href="#i-arrow" />
+    </svg>
+  </a>
+  <a class="btn" href="./index.html">
+    <svg viewBox="0 0 24 24" class="ic sm">
+      <use href="#i-grid" />
+    </svg>
+    <span class="fa">مشاهده موضوعات دیگر</span>
+    <span class="en">View other topics</span>
+  </a>
+</div>
       </div>
 
       <div class="hero-right">
@@ -1394,18 +1396,22 @@ LSM:     Changing 100 bytes -> appended to memtable in RAM (cheap)
         </div>
       </div>
       <div class="foot-links">
-        <a class="btn sm gh-link" href="https://github.com/alireza-haeri" target="_blank" rel="noopener">
-          <svg class="ic sm fill"><use href="#i-github"/></svg>
+        <a class="btn sm" href="https://github.com/alireza-haeri" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" class="ic sm fill"><use href="#i-github"/></svg>
           <span class="fa">گیت‌هاب من</span><span class="en">My GitHub</span>
         </a>
         <a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
-          <svg class="ic sm"><use href="#i-branch"/></svg>
+          <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-book"/></svg>
           <span class="fa">ریپازیتوری پروژه</span><span class="en">Project Repo</span>
+        </a>
+        <a class="btn sm" href="./index.html">
+          <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-grid"/></svg>
+          <span class="fa">مشاهده موضوعات دیگر</span><span class="en">View other topics</span>
         </a>
       </div>
     </div>
+  </div>
 </footer>
-
 <script>
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];

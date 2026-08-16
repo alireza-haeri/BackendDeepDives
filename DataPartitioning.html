@@ -1,0 +1,3696 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پارتیشن‌بندی داده — Data Partitioning | مسیر یادگیری برای توسعه‌دهنده‌های ‎.NET</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F7A52'/%3E%3Cpath d='M32 14 L18 22 V34 L32 42 L46 34 V22 Z' fill='none' stroke='%23F6F2E9' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='28' r='3' fill='%23F6F2E9'/%3E%3Cpath d='M20 47 H44 M24 51 H40' stroke='%23F6F2E9' stroke-width='2.5' stroke-linecap='round' opacity='.6'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ═══ design tokens ═══ */
+    :root {
+      --bg: #F6F2E9;
+      --bg2: #EFEADD;
+      --surface: #FDFBF5;
+      --surface2: #F3EFE3;
+      --line: #E0D8C3;
+      --line2: #CDC3A8;
+      --ink: #242920;
+      --mut: #5F624F;
+      --dim: #8F8C74;
+      --acc: #1F7A52;
+      --acc-soft: rgba(31, 122, 82, .10);
+      --acc-line: rgba(31, 122, 82, .40);
+      --grn: #1F7A52;
+      --grn-soft: rgba(31, 122, 82, .10);
+      --amb: #C27803;
+      --amb-soft: rgba(194, 120, 3, .12);
+      --red: #C2492F;
+      --red-soft: rgba(194, 73, 47, .09);
+      --vio: #A05B2C;
+      --vio-soft: rgba(160, 91, 44, .10);
+      --code-bg: #1C241E;
+      --code-ink: #D8E2D4;
+      --dot: rgba(36, 41, 32, .06);
+      --shadow: 0 1px 2px rgba(36, 41, 32, .05);
+      --mono: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #171A14;
+      --bg2: #121510;
+      --surface: #1F231B;
+      --surface2: #1A1E16;
+      --line: #31362A;
+      --line2: #424836;
+      --ink: #EAE7D9;
+      --mut: #B3B29C;
+      --dim: #83846E;
+      --acc: #5CC08F;
+      --acc-soft: rgba(92, 192, 143, .13);
+      --acc-line: rgba(92, 192, 143, .45);
+      --grn: #5CC08F;
+      --grn-soft: rgba(92, 192, 143, .13);
+      --amb: #E3A63C;
+      --amb-soft: rgba(227, 166, 60, .13);
+      --red: #E5745A;
+      --red-soft: rgba(229, 116, 90, .11);
+      --vio: #D08B4F;
+      --vio-soft: rgba(208, 139, 79, .12);
+      --code-bg: #121813;
+      --code-ink: #D5E0D2;
+      --dot: rgba(234, 231, 217, .05);
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--dot) .8px, transparent .8px);
+      background-size: 22px 22px;
+      color: var(--ink);
+      font-family: 'Vazirmatn', Tahoma, system-ui, sans-serif;
+      line-height: 1.95;
+      font-size: 16.5px;
+      transition: background-color .3s, color .3s;
+    }
+
+    html[lang="fa"] .en {
+      display: none !important
+    }
+
+    html[lang="en"] .fa {
+      display: none !important
+    }
+
+    html[lang="en"] body {
+      line-height: 1.75
+    }
+
+    a {
+      color: var(--acc);
+      text-decoration: none
+    }
+
+    a:hover {
+      text-decoration: underline
+    }
+
+    ::selection {
+      background: var(--acc-soft)
+    }
+
+    code,
+    .mono {
+      font-family: var(--mono);
+      direction: ltr;
+      unicode-bidi: embed
+    }
+
+    p code,
+    li code,
+    td code {
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .05em .45em;
+      font-size: .86em;
+      color: var(--acc)
+    }
+
+    img,
+    svg {
+      max-width: 100%
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 20px
+    }
+
+    .en {
+      font-size: .86em
+    }
+
+    .ic {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0
+    }
+
+    .ic.sm {
+      width: 14px;
+      height: 14px
+    }
+
+    .ic.lg {
+      width: 22px;
+      height: 22px
+    }
+
+    .ic.fill {
+      fill: currentColor;
+      stroke: none
+    }
+
+    /* progress bar */
+    #scrollProgress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0;
+      background: var(--acc);
+      z-index: 61;
+      transition: width .1s linear
+    }
+
+    /* ═══ topbar ═══ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line)
+    }
+
+    .topbar-in {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 58px
+    }
+
+    .brand {
+      font-weight: 900;
+      font-size: 15px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--ink)
+    }
+
+    .brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0
+    }
+
+    .brand-logo svg {
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .stops-nav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      flex: 1;
+      scrollbar-width: none
+    }
+
+    .stops-nav::-webkit-scrollbar {
+      display: none
+    }
+
+    .stops-nav a {
+      font-size: 12px;
+      color: var(--mut);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 3px 11px;
+      white-space: nowrap;
+      transition: .2s
+    }
+
+    .stops-nav a:hover {
+      border-color: var(--acc-line);
+      color: var(--acc);
+      text-decoration: none
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s;
+      text-decoration: none;
+      font-family: inherit
+    }
+
+    .btn:hover {
+      border-color: var(--acc-line);
+      color: var(--acc);
+      text-decoration: none
+    }
+
+    .btn.primary {
+      background: var(--acc);
+      color: var(--bg);
+      border-color: var(--acc)
+    }
+
+    .btn.primary:hover {
+      filter: brightness(1.08);
+      color: var(--bg);
+      transform: translateY(-1px)
+    }
+
+    .btn.sm {
+      padding: 6px 12px;
+      font-size: 12.5px
+    }
+
+    .btn.iconb {
+      padding: 8px;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px
+    }
+
+    html[data-theme="dark"] .iconb svg.sun {
+      display: none
+    }
+
+    html[data-theme="light"] .iconb svg.moon {
+      display: none
+    }
+
+    .iconb:hover {
+      background: var(--surface2)
+    }
+
+    .iconb svg {
+      width: 18px;
+      height: 18px;
+      color: var(--mut)
+    }
+
+    /* ═══ hero ═══ */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 56px 0 64px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .hero .wrap {
+      position: relative
+    }
+
+    .hero-head {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 34px;
+      animation: fadeUp .6s ease-out
+    }
+
+    .logo-mark {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      overflow: hidden
+    }
+
+    .logo-mark svg {
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .hero-title-block {
+      flex: 1
+    }
+
+    .hero-title-block .h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 900;
+      line-height: 1.3;
+      letter-spacing: -.01em;
+      margin: 0
+    }
+
+    .uword {
+      position: relative;
+      display: inline-block;
+      white-space: nowrap
+    }
+
+    .uscribble {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -7px;
+      width: 100%;
+      height: 9px;
+      overflow: visible
+    }
+
+    .hero-title-block .hero-sub {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--mut);
+      margin: 14px 0 0;
+      font-weight: 400;
+      line-height: 1.7
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 40px;
+      align-items: start;
+      animation: fadeUp .6s ease-out .1s both
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      gap: 22px
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      line-height: 1.85;
+      max-width: 52ch
+    }
+
+    .hero-desc p {
+      margin: 0
+    }
+
+    .author-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-inline-start: 3px solid var(--acc);
+      border-radius: 10px;
+      padding: 13px 18px
+    }
+
+    .author-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid var(--line)
+    }
+
+    .author-avatar-fallback {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: none;
+      place-items: center;
+      font-weight: 900;
+      font-size: 20px;
+      color: #fff;
+      background: var(--acc);
+      flex-shrink: 0
+    }
+
+    .author-info {
+      flex: 1;
+      min-width: 0
+    }
+
+    .author-name {
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1.4
+    }
+
+    .author-role {
+      font-size: 13px;
+      color: var(--mut);
+      line-height: 1.5
+    }
+
+    .author-links {
+      display: flex;
+      gap: 8px
+    }
+
+    .hero-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .hero-chips a {
+      font-size: 12.5px;
+      color: var(--mut);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 6px 14px;
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      transition: .2s;
+      text-decoration: none
+    }
+
+    .hero-chips a b {
+      color: var(--acc);
+      font-weight: 700;
+      font-family: var(--mono);
+      font-size: 11px
+    }
+
+    .hero-chips a:hover {
+      border-color: var(--acc-line);
+      color: var(--ink);
+      text-decoration: none
+    }
+
+    .hero-cta {
+      align-self: flex-start;
+      padding: 12px 26px;
+      font-size: 15px;
+      font-weight: 700
+    }
+
+    .hero-right {
+      position: sticky;
+      top: 80px
+    }
+
+    /* ═══ THE SPLIT card ═══ */
+    .qwin {
+      background: #1A201B;
+      border: 1px solid #2E372F;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 28px 64px -26px rgba(26, 32, 27, .6)
+    }
+
+    .qwin-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #212823;
+      border-bottom: 1px solid #2E372F
+    }
+
+    .qwin-bar i {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%
+    }
+
+    .qwin-bar i:nth-child(1) {
+      background: #E0655A
+    }
+
+    .qwin-bar i:nth-child(2) {
+      background: #E5B45A
+    }
+
+    .qwin-bar i:nth-child(3) {
+      background: #58B78C
+    }
+
+    .qwin-bar span {
+      margin-inline-start: 10px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: #8CA08E
+    }
+
+    .qc {
+      font-family: var(--mono);
+      font-size: 14.5px;
+      direction: ltr;
+      text-align: left;
+      color: #CFE0CF;
+      padding: 18px 20px 6px;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      margin: 0
+    }
+
+    .qc .kw {
+      color: #7FC79F
+    }
+
+    .qc .st {
+      color: #E5B45A
+    }
+
+    .qc .cm {
+      color: #6E7F70
+    }
+
+    .split-stage {
+      direction: ltr;
+      padding: 14px 16px 18px
+    }
+
+    .split-cap {
+      direction: rtl;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #8CA08E;
+      min-height: 26px;
+      margin-bottom: 14px;
+      transition: opacity .24s
+    }
+
+    html[lang="en"] .split-cap {
+      direction: ltr
+    }
+
+    .split-cap b {
+      color: #CFE0CF
+    }
+
+    .split-cap.switching {
+      opacity: 0
+    }
+
+    .split-area {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start
+    }
+
+    .slice {
+      width: 24%;
+      max-width: 106px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 2px;
+      transform: translateX(0);
+      transition: transform .95s cubic-bezier(.55, 0, .25, 1)
+    }
+
+    .split-stage.split .slice {
+      transform: translateX(var(--dx))
+    }
+
+    .slice:nth-child(1) {
+      --dx: -27px
+    }
+
+    .slice:nth-child(2) {
+      --dx: -9px
+    }
+
+    .slice:nth-child(3) {
+      --dx: 9px
+    }
+
+    .slice:nth-child(4) {
+      --dx: 27px
+    }
+
+    .cells {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px
+    }
+
+    .cells i {
+      aspect-ratio: 8/5;
+      background: #39423B;
+      border-radius: 4px;
+      transition: background .5s
+    }
+
+    .split-stage .slice:nth-child(1) i.on {
+      background: #5CC08F
+    }
+
+    .split-stage .slice:nth-child(2) i.on {
+      background: #E3A63C
+    }
+
+    .split-stage .slice:nth-child(3) i.on {
+      background: #D08B4F
+    }
+
+    .split-stage .slice:nth-child(4) i.on {
+      background: #E5745A
+    }
+
+    .slabel {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #77897A;
+      margin-top: 9px;
+      letter-spacing: .06em;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: .45s
+    }
+
+    .split-stage.labeled .slabel {
+      opacity: 1;
+      transform: none
+    }
+
+    .split-stage.labeled .slice:nth-child(1) .slabel {
+      color: #5CC08F
+    }
+
+    .split-stage.labeled .slice:nth-child(2) .slabel {
+      color: #E3A63C
+    }
+
+    .split-stage.labeled .slice:nth-child(3) .slabel {
+      color: #D08B4F
+    }
+
+    .split-stage.labeled .slice:nth-child(4) .slabel {
+      color: #E5745A
+    }
+
+    .hero-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      margin: 0 16px 16px;
+      background: #1F7A52;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #F6F2E9;
+      animation: bannerPop .4s ease-out
+    }
+
+    .hero-banner.show {
+      display: flex
+    }
+
+    .hero-banner svg {
+      flex-shrink: 0;
+      color: #F6F2E9;
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    @keyframes bannerPop {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    /* ═══ sections ═══ */
+    .stop {
+      padding: 40px 0;
+      border-top: 1px dashed var(--line2);
+      scroll-margin-top: 72px
+    }
+
+    .stop-head {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px
+    }
+
+    .stop-num {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--acc);
+      background: var(--acc-soft);
+      border: 1px solid var(--acc-line);
+      padding: 5px 11px;
+      border-radius: 7px
+    }
+
+    .stop h2 {
+      font-size: clamp(22px, 3.2vw, 30px);
+      font-weight: 800;
+      line-height: 1.4;
+      letter-spacing: -.01em
+    }
+
+    .srcs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px
+    }
+
+    .srcs a {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--mut);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 14px;
+      transition: .2s
+    }
+
+    .srcs a:hover {
+      border-color: var(--acc-line);
+      color: var(--acc);
+      text-decoration: none
+    }
+
+    .srcs a svg {
+      color: var(--acc)
+    }
+
+    .lead {
+      font-size: 17px;
+      line-height: 1.95;
+      margin-bottom: 26px;
+      max-width: 72ch
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin: 24px 0
+    }
+
+    .grid3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 20px 0
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      transition: border-color .2s
+    }
+
+    .card:hover {
+      border-color: var(--acc-line)
+    }
+
+    .card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .card p {
+      font-size: 14px;
+      line-height: 1.85;
+      color: var(--mut)
+    }
+
+    .cico {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0
+    }
+
+    .cico svg {
+      width: 18px;
+      height: 18px
+    }
+
+    .cico.blue {
+      background: var(--acc-soft);
+      color: var(--acc)
+    }
+
+    .cico.green {
+      background: var(--grn-soft);
+      color: var(--grn)
+    }
+
+    .cico.amber {
+      background: var(--amb-soft);
+      color: var(--amb)
+    }
+
+    .cico.violet {
+      background: var(--vio-soft);
+      color: var(--vio)
+    }
+
+    .cico.red {
+      background: var(--red-soft);
+      color: var(--red)
+    }
+
+    .defcard {
+      position: relative;
+      overflow: hidden
+    }
+
+    .defcard::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      inset-inline-start: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--acc);
+      opacity: .7
+    }
+
+    .defcard h3 {
+      margin-bottom: 12px
+    }
+
+    .defcard p {
+      font-size: 15px;
+      line-height: 1.9
+    }
+
+    .netnote {
+      background: var(--grn-soft);
+      border: 1px solid var(--acc-line);
+      border-radius: 10px;
+      padding: 18px 20px;
+      position: relative;
+      padding-inline-start: 24px;
+      margin: 20px 0
+    }
+
+    .netnote::before {
+      content: "";
+      position: absolute;
+      top: 18px;
+      inset-inline-start: 0;
+      width: 3px;
+      height: calc(100% - 36px);
+      background: var(--grn);
+      border-radius: 2px
+    }
+
+    .netnote .badge {
+      display: inline-block;
+      background: var(--grn);
+      color: var(--bg);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      letter-spacing: .05em
+    }
+
+    .netnote p {
+      font-size: 14px;
+      line-height: 1.85;
+      margin: 0
+    }
+
+    .codebox {
+      background: var(--code-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 24px 0;
+      border: 1px solid rgba(0, 0, 0, .15)
+    }
+
+    .cb-h {
+      padding: 10px 18px;
+      background: rgba(255, 255, 255, .04);
+      border-bottom: 1px solid rgba(255, 255, 255, .07);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #8CA08E;
+      text-transform: uppercase;
+      letter-spacing: .08em
+    }
+
+    .codebox pre {
+      padding: 18px 20px;
+      font-family: var(--mono);
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--code-ink);
+      overflow-x: auto;
+      direction: ltr;
+      text-align: left
+    }
+
+    .codebox .cm {
+      color: #6E7F70
+    }
+
+    .codebox .kw {
+      color: #7FC79F
+    }
+
+    .codebox .st {
+      color: #E5B45A
+    }
+
+    .rulethumb {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--amb-soft);
+      border: 1px solid rgba(194, 120, 3, .3);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin: 28px 0
+    }
+
+    .rulethumb svg {
+      flex-shrink: 0;
+      color: var(--amb);
+      margin-top: 4px
+    }
+
+    .rulethumb p {
+      font-size: 14.5px;
+      line-height: 1.85;
+      margin: 0
+    }
+
+    .rulethumb b {
+      color: var(--amb)
+    }
+
+    .demo {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 28px 0;
+      box-shadow: var(--shadow)
+    }
+
+    .demo-t {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--line2)
+    }
+
+    .demo-t svg {
+      color: var(--acc)
+    }
+
+    .cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 13.5px
+    }
+
+    .cmp-table th,
+    .cmp-table td {
+      border: 1px solid var(--line);
+      padding: 12px 16px;
+      text-align: start;
+      vertical-align: top;
+      background: var(--surface)
+    }
+
+    .cmp-table th {
+      background: var(--surface2);
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--mut)
+    }
+
+    .cmp-table .good {
+      color: var(--grn)
+    }
+
+    .cmp-table .bad {
+      color: var(--red)
+    }
+
+    /* ═══ strategy demo ═══ */
+    .st-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .st-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--ink);
+      transition: .2s
+    }
+
+    .st-tab:hover {
+      border-color: var(--acc-line);
+      color: var(--acc)
+    }
+
+    .st-tab.primary {
+      background: var(--acc);
+      color: var(--bg);
+      border-color: var(--acc)
+    }
+
+    .st-panel {
+      display: none
+    }
+
+    .st-panel.show {
+      display: block
+    }
+
+    .st-boxes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 16px
+    }
+
+    .st-boxes.three {
+      grid-template-columns: repeat(3, 1fr)
+    }
+
+    .st-box {
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      min-height: 96px;
+      text-align: center
+    }
+
+    .st-box h6 {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+      margin-bottom: 8px
+    }
+
+    .chip {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      background: var(--acc-soft);
+      color: var(--acc);
+      border: 1px solid var(--acc-line);
+      border-radius: 6px;
+      padding: 3px 8px;
+      margin: 3px 2px;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: .35s;
+      direction: ltr
+    }
+
+    .chip.on {
+      opacity: 1;
+      transform: none
+    }
+
+    .st-rule {
+      margin-top: 14px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--mut);
+      direction: ltr;
+      text-align: left;
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 14px
+    }
+
+    /* ═══ horizontal vs vertical ═══ */
+    .hv-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 20px 0
+    }
+
+    .hv-col {
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px
+    }
+
+    .hv-col h5 {
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .hv-col h5 svg {
+      color: var(--acc)
+    }
+
+    .hv-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px
+    }
+
+    .hv-grid i {
+      aspect-ratio: 2.2/1;
+      border-radius: 3px;
+      background: var(--line)
+    }
+
+    .hv-grid i.g1 {
+      background: var(--grn)
+    }
+
+    .hv-grid i.g2 {
+      background: var(--amb)
+    }
+
+    .hv-grid i.g3 {
+      background: var(--vio)
+    }
+
+    .hv-cap {
+      font-size: 12px;
+      color: var(--dim);
+      margin-top: 10px;
+      line-height: 1.8
+    }
+
+    /* ═══ tiered / sliding window ═══ */
+    .tiered-visual {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 18px 0
+    }
+
+    .tiered-col {
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px
+    }
+
+    .tiered-col h6 {
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .tiered-col.hot {
+      border-color: rgba(194, 73, 47, .4)
+    }
+
+    .tiered-col.hot h6 {
+      color: var(--red)
+    }
+
+    .tiered-col.cold {
+      border-color: rgba(31, 122, 82, .4)
+    }
+
+    .tiered-col.cold h6 {
+      color: var(--grn)
+    }
+
+    .sw-visual {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+      margin: 18px 0;
+      padding: 18px;
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 12px
+    }
+
+    .sw-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center
+    }
+
+    .sw-box h6 {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--dim);
+      margin-bottom: 8px
+    }
+
+    .sw-box .ptag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      background: var(--acc-soft);
+      color: var(--acc);
+      border: 1px solid var(--acc-line);
+      border-radius: 6px;
+      padding: 3px 8px;
+      margin: 3px 2px
+    }
+
+    .sw-box.archive .ptag {
+      background: var(--vio-soft);
+      color: var(--vio);
+      border-color: var(--vio)
+    }
+
+    .sw-box.moved .ptag {
+      background: var(--grn-soft);
+      color: var(--grn);
+      border-color: var(--grn)
+    }
+
+    .sw-arrow {
+      color: var(--acc);
+      font-size: 24px;
+      text-align: center
+    }
+
+    /* ═══ pruning demo ═══ */
+    .pd-queries {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .pd-q {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: .2s;
+      font-family: inherit;
+      color: var(--ink);
+      direction: ltr;
+      font-family: var(--mono)
+    }
+
+    .pd-q:hover {
+      border-color: var(--acc-line);
+      color: var(--acc)
+    }
+
+    .pd-q.primary {
+      background: var(--acc);
+      border-color: var(--acc);
+      color: var(--bg)
+    }
+
+    .pd-parts {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-top: 18px
+    }
+
+    .pd-part {
+      background: var(--surface2);
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+      position: relative;
+      transition: .35s
+    }
+
+    .pd-part .plabel {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--dim);
+      letter-spacing: .05em
+    }
+
+    .pd-part .prange {
+      font-size: 10.5px;
+      color: var(--mut);
+      margin: 2px 0 8px
+    }
+
+    .pd-rows {
+      display: grid;
+      gap: 3px
+    }
+
+    .pd-rows i {
+      height: 9px;
+      border-radius: 2px;
+      background: var(--line);
+      transition: .15s
+    }
+
+    .pd-rows i.on {
+      background: var(--amb)
+    }
+
+    .pd-part.scanning {
+      border-color: var(--amb);
+      box-shadow: 0 0 0 3px var(--amb-soft)
+    }
+
+    .pd-part.scanned {
+      border-color: var(--amb)
+    }
+
+    .pd-part.scanned .plabel {
+      color: var(--amb)
+    }
+
+    .pd-part.skipped {
+      opacity: .32;
+      filter: grayscale(.6)
+    }
+
+    .pd-skip {
+      position: absolute;
+      top: -11px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--grn);
+      color: var(--bg);
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      opacity: 0;
+      transition: .3s;
+      white-space: nowrap;
+      font-family: var(--mono)
+    }
+
+    .pd-part.skipped .pd-skip {
+      opacity: 1
+    }
+
+    .pd-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px
+    }
+
+    .pd-stat {
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center
+    }
+
+    .pd-stat .label {
+      font-size: 11px;
+      color: var(--dim);
+      font-family: var(--mono);
+      margin-bottom: 2px
+    }
+
+    .pd-stat .val {
+      font-size: 22px;
+      font-weight: 800;
+      font-family: var(--mono)
+    }
+
+    .pd-stat .val.good {
+      color: var(--grn)
+    }
+
+    .pd-stat .val.bad {
+      color: var(--red)
+    }
+
+    .pd-result {
+      margin-top: 14px;
+      padding: 13px 16px;
+      border-radius: 10px;
+      background: var(--grn-soft);
+      border: 1px solid var(--acc-line);
+      font-size: 13.5px;
+      line-height: 1.8;
+      display: none
+    }
+
+    .pd-result.show {
+      display: block
+    }
+
+    .pd-result.bad {
+      background: var(--red-soft);
+      border-color: rgba(194, 73, 47, .35)
+    }
+
+    /* ═══ roadmap ═══ */
+    .road {
+      display: grid;
+      gap: 14px;
+      margin-top: 20px
+    }
+
+    .road-card {
+      display: flex;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+      align-items: flex-start;
+      box-shadow: var(--shadow);
+      transition: border-color .2s
+    }
+
+    .road-card:hover {
+      border-color: var(--acc-line)
+    }
+
+    .road-card .rnum {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--acc);
+      background: var(--acc-soft);
+      border: 1px solid var(--acc-line);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      flex-shrink: 0
+    }
+
+    .road-card h3 {
+      font-size: 15px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px
+    }
+
+    .road-card p {
+      font-size: 13.5px;
+      color: var(--mut);
+      line-height: 1.85
+    }
+
+    .badge-pill {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 6px;
+      letter-spacing: .04em
+    }
+
+    .badge-pill.req {
+      background: var(--grn);
+      color: var(--bg)
+    }
+
+    .badge-pill.ref {
+      background: var(--amb);
+      color: var(--bg)
+    }
+
+    .badge-pill.opt {
+      background: var(--vio);
+      color: var(--bg)
+    }
+
+    /* ═══ QA ═══ */
+    .qa {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow)
+    }
+
+    .qa .q {
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: start;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 18px 22px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.7;
+      cursor: pointer;
+      font-family: inherit
+    }
+
+    .qa .q .no {
+      font-family: var(--mono);
+      color: var(--acc);
+      font-size: 13px;
+      padding-top: 3px
+    }
+
+    .qa .q::after {
+      content: "+";
+      margin-inline-start: auto;
+      font-weight: 400;
+      font-size: 20px;
+      color: var(--acc);
+      transition: .3s
+    }
+
+    .qa.open .q::after {
+      transform: rotate(45deg)
+    }
+
+    .qa .a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .4s;
+      font-size: 14px;
+      line-height: 1.85;
+      color: var(--mut)
+    }
+
+    .qa.open .a {
+      max-height: 700px
+    }
+
+    .qa .a div {
+      padding: 0 22px 18px;
+      padding-inline-start: 50px;
+      border-top: 1px dashed var(--line2)
+    }
+
+    /* ═══ footer ═══ */
+    footer {
+      border-top: 1px dashed var(--line2);
+      padding: 48px 0;
+      margin-top: 48px
+    }
+
+    .foot-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: center
+    }
+
+    .foot-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px
+    }
+
+    .foot-profile img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 2px solid var(--line)
+    }
+
+    .foot-profile .name {
+      font-weight: 700;
+      font-size: 14px
+    }
+
+    .foot-profile .role {
+      font-size: 12px;
+      color: var(--mut)
+    }
+
+    .foot-links {
+      display: flex;
+      gap: 8px
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: .6s
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: none
+    }
+
+    @media (max-width:900px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 32px
+      }
+
+      .hero-right {
+        position: static
+      }
+
+      .grid2,
+      .grid3,
+      .hv-demo,
+      .tiered-visual,
+      .sw-visual {
+        grid-template-columns: 1fr
+      }
+
+      .stops-nav {
+        display: none
+      }
+
+      .pd-parts {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .pd-stats {
+        grid-template-columns: 1fr
+      }
+
+      .st-boxes {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .foot-grid {
+        grid-template-columns: 1fr;
+        text-align: center
+      }
+
+      .foot-profile {
+        justify-content: center
+      }
+
+      .foot-links {
+        justify-content: center
+      }
+    }
+
+    @media (max-width:600px) {
+      .hero {
+        padding: 36px 0 48px
+      }
+
+      .slice {
+        max-width: 78px
+      }
+
+      .split-stage.split .slice:nth-child(1) {
+        transform: translateX(-18px)
+      }
+
+      .split-stage.split .slice:nth-child(2) {
+        transform: translateX(-6px)
+      }
+
+      .split-stage.split .slice:nth-child(3) {
+        transform: translateX(6px)
+      }
+
+      .split-stage.split .slice:nth-child(4) {
+        transform: translateX(18px)
+      }
+
+      .pd-parts {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .demo {
+        padding: 18px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="scrollProgress"></div>
+
+  <svg style="display:none">
+    <symbol id="i-home" viewBox="0 0 24 24">
+      <path
+        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+      </path>
+    </symbol>
+    <symbol id="i-github" viewBox="0 0 24 24">
+      <path
+        d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.2 1.9 1.2 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8 0 3.2.8.8 1.3 1.9 1.3 3.1 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.3v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3">
+      </path>
+    </symbol>
+    <symbol id="i-award" viewBox="0 0 24 24">
+      <circle cx="12" cy="9" r="5"></circle>
+      <path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"></path>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"></path>
+      <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"></path>
+    </symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24">
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path>
+    </symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24">
+      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+    </symbol>
+    <symbol id="i-db" viewBox="0 0 24 24">
+      <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+    </symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24">
+      <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10">
+      </path>
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"></circle>
+      <circle cx="12" cy="12" r="6"></circle>
+      <circle cx="12" cy="12" r="2"></circle>
+    </symbol>
+    <symbol id="i-hash" viewBox="0 0 24 24">
+      <path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"></path>
+    </symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24">
+      <path d="M12 2 2 7l10 5 10-5-10-5z"></path>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+    </symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24">
+      <path d="M7 16V4m0 12-4-4m4 4 4-4M17 8v12m0-12 4 4m-4-4-4 4"></path>
+    </symbol>
+    <symbol id="i-server" viewBox="0 0 24 24">
+      <rect x="2" y="2" width="20" height="8" rx="2"></rect>
+      <rect x="2" y="14" width="20" height="8" rx="2"></rect>
+      <circle cx="6" cy="6" r="1" fill="currentColor"></circle>
+      <circle cx="6" cy="18" r="1" fill="currentColor"></circle>
+    </symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+      <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+      <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+      <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24">
+      <path d="M18 6 6 18M6 6l12 12"></path>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M20 6 9 17l-5-5"></path>
+    </symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24">
+      <path d="M9 18h6M10 22h4"></path>
+      <path d="M15.09 14c.58-.45 1-1.12 1-1.93V12a6 6 0 0 0-8.18-5.58A6 6 0 0 0 8 12v.07c0 .81.42 1.48 1 1.93"></path>
+      <path d="M9 18h6v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1z"></path>
+    </symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24">
+      <path d="M1 4v6h6"></path>
+      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24">
+      <path d="M5 3l14 9-14 9V3z" fill="currentColor"></path>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+      <path d="M12 4v14M6.5 13.5 12 19l5.5-5.5"></path>
+    </symbol>
+    <symbol id="i-table" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+      <path d="M3 9h18M9 21V9"></path>
+    </symbol>
+    <symbol id="i-view" viewBox="0 0 24 24">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </symbol>
+  </svg>
+
+  <!-- ═══ topbar ═══ -->
+  <nav class="topbar">
+    <div class="wrap topbar-in">
+      <span class="brand">
+        <span class="brand-logo"><svg viewBox="0 0 64 64" fill="none">
+            <rect width="64" height="64" rx="14" fill="var(--acc)" />
+            <path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5"
+              stroke-linejoin="round" fill="none" />
+            <circle cx="32" cy="28" r="3" fill="var(--bg)" />
+            <path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6" />
+          </svg></span>
+        <span class="fa">پارتیشن‌بندی داده</span><span class="en">Data Partitioning</span>
+      </span>
+     <div class="stops-nav">
+      <a class="btn sm" href="./index.html" rel="noopener">
+        <svg viewBox="0 0 24 24" class="ic sm">
+          <use href="#i-home" />
+        </svg>
+        <span class="fa">صفحه اصلی</span><span class="en">Main Page</span>
+      </a>
+      <button class="btn iconb" id="themeBtn" title="تغییر تم">
+        <svg viewBox="0 0 24 24" class="ic sun">
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+        </svg>
+        <svg viewBox="0 0 24 24" class="ic moon">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+      <button class="btn iconb" id="langBtn" title="English / فارسی">
+        <span class="fa" style="font-size:12px;font-weight:700">EN</span>
+        <span class="en" style="font-size:12px;font-weight:700">فا</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO — THE SPLIT ═══ -->
+  <header class="hero" id="top">
+    <div class="wrap">
+      <div class="hero-head">
+        <div class="logo-mark">
+          <svg viewBox="0 0 64 64" fill="none">
+            <rect width="64" height="64" rx="16" fill="var(--acc)" />
+            <path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5"
+              stroke-linejoin="round" fill="none" />
+            <circle cx="32" cy="28" r="3" fill="var(--bg)" />
+            <path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6" />
+          </svg>
+        </div>
+        <div class="hero-title-block">
+          <h1 class="h1">
+            <span class="fa">پارتیشن‌بندی <span class="uword">داده<svg class="uscribble" viewBox="0 0 120 10"
+                  preserveAspectRatio="none">
+                  <path d="M2 7 Q 20 2 40 6 T 80 6 T 118 4" fill="none" stroke="var(--amb)" stroke-width="3"
+                    stroke-linecap="round" />
+                </svg></span></span>
+            <span class="en">Data <span class="uword">Partitioning<svg class="uscribble" viewBox="0 0 120 10"
+                  preserveAspectRatio="none">
+                  <path d="M2 7 Q 20 2 40 6 T 80 6 T 118 4" fill="none" stroke="var(--amb)" stroke-width="3"
+                    stroke-linecap="round" />
+                </svg></span></span>
+          </h1>
+          <p class="hero-sub">
+            <span class="fa">میلیاردها سطر در یک جدول — چطور فقط همان یک سطر را پیدا می‌کنید، بدون اینکه بقیه را حتی
+              نگاه کنید؟</span>
+            <span class="en">A billion rows in one table — how do you find just the one row you need, without even
+              glancing at the rest?</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="hero-grid">
+        <div class="hero-left">
+          <div class="hero-desc">
+            <p>
+              <span class="fa">در یک دیتابیس بزرگ، بعد از اینکه ایندکس‌ها را درست مدیریت کردید، نوبت به تقسیم‌بندی خودِ
+                داده می‌رسد. یعنی داده را طبقه‌بندی می‌کنیم تا موتور فقط همان تکه‌ای را بخواند که به کارمان می‌آید — و
+                بقیه را کلاً نادیده بگیرد.</span>
+              <span class="en">In a large database, after you've managed your indexes properly, it's time to partition
+                the data itself. We categorize the data so the engine reads only the slice we need — and ignores the
+                rest entirely.</span>
+            </p>
+          </div>
+          <div class="author-card">
+            <img class="author-avatar" src="https://github.com/alireza-haeri.png" alt="Alireza Haeri"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+            <span class="author-avatar-fallback">ع</span>
+            <div class="author-info">
+              <div class="author-name"><span class="fa">علیرضا حایری</span><span class="en">Alireza Haeri</span></div>
+              <div class="author-role"><span class="fa">توسعه‌دهندهٔ بک‌اند ‎.NET</span><span class="en">.NET Backend
+                  Developer · Author of this path</span></div>
+            </div>
+            <div class="author-links">
+              <a class="btn sm" href="https://github.com/alireza-haeri" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" class="ic sm fill">
+                  <use href="#i-github" />
+                </svg><span>GitHub</span>
+              </a>
+            </div>
+          </div>
+        <div class="hero-chips">
+  <a href="#s1"><b>01</b><span class="fa">چرا و کِی</span><span class="en">Why &amp; when</span></a>
+  <a href="#s2"><b>02</b><span class="fa">افقی / عمودی</span><span class="en">Horiz / vert</span></a>
+  <a href="#s3"><b>03</b><span class="fa">راهبردها</span><span class="en">Strategies</span></a>
+  <a href="#s4"><b>04</b><span class="fa">SQL Server</span><span class="en">SQL Server</span></a>
+  <a href="#s5"><b>05</b><span class="fa">MySQL</span><span class="en">MySQL</span></a>
+  <a href="#s6"><b>06</b><span class="fa">در برابر Sharding</span><span class="en">vs Sharding</span></a>
+  <a href="#s7"><b>07</b><span class="fa">حذف پارتیشن</span><span class="en">Pruning</span></a>
+  <a href="#s8"><b>08</b><span class="fa">سود و زیان</span><span class="en">Trade-offs</span></a>
+  <a href="#s10"><b>✓</b><span class="fa">خودآزمایی</span><span class="en">Self-check</span></a>
+</div><div style="display:flex; gap:12px; flex-wrap:wrap; align-self:flex-start;">
+  <a class="btn primary" href="#s1">
+    <span class="fa">شروع مسیر</span>
+    <span class="en">Start the path</span>
+    <svg viewBox="0 0 24 24" class="ic sm">
+      <use href="#i-arrow" />
+    </svg>
+  </a>
+  <a class="btn" href="./index.html">
+    <svg viewBox="0 0 24 24" class="ic sm">
+      <use href="#i-grid" />
+    </svg>
+    <span class="fa">مشاهده موضوعات دیگر</span>
+    <span class="en">View other topics</span>
+  </a>
+</div>
+        </div>
+
+        <div class="hero-right">
+          <div class="qwin" aria-hidden="true">
+            <div class="qwin-bar"><i></i><i></i><i></i><span>query window — dbo.Orders (partitioned)</span></div>
+            <pre class="qc"><span class="cm">-- one logical table, several physical pieces</span>
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">FROM</span> dbo.Orders
+<span class="kw">WHERE</span> OrderDate >= <span class="st">'2025-03-01'</span>;</pre>
+
+            <div class="split-stage" id="splitStage">
+              <div class="split-cap" id="splitCap">
+                <span class="fa" id="capFa">یک جدولِ بزرگ — ۱۲۰ میلیون سطر</span>
+                <span class="en" id="capEn">one big table — 120M rows</span>
+              </div>
+              <div class="split-area">
+                <div class="slice">
+                  <div class="cells"></div>
+                  <div class="slabel">P1</div>
+                </div>
+                <div class="slice">
+                  <div class="cells"></div>
+                  <div class="slabel">P2</div>
+                </div>
+                <div class="slice">
+                  <div class="cells"></div>
+                  <div class="slabel">P3</div>
+                </div>
+                <div class="slice">
+                  <div class="cells"></div>
+                  <div class="slabel">P4</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-banner" id="splitBanner">
+              <svg viewBox="0 0 24 24">
+                <use href="#i-zap" />
+              </svg>
+              <span class="fa">یک جدول ← <b>۴ پارتیشن</b> — کوئری‌ها فقط تکهٔ لازم را می‌خوانند</span>
+              <span class="en">one table → <b>4 partitions</b> — queries read only the piece they need</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ═══ 01 — Why & When ═══ -->
+    <section id="s1" class="stop reveal">
+      <div class="stop-head"><span class="stop-num">01</span>
+        <h2><span class="fa">چرا پارتیشن‌بندی — و کِی نباید عجله کرد</span><span class="en">Why partition — and when not
+            to rush</span></h2>
+      </div>
+      <div class="srcs">
+        <a href="https://aboutsqlserver.com/publications/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"
+            class="ic sm">
+            <use href="#i-award" />
+          </svg><span class="fa">منبع: Pro SQL Server Internals، فصل ۱۶</span><span class="en">Source: Pro SQL Server
+            Internals, Ch. 16</span></a>
+        <a href="https://learn.microsoft.com/sql/relational-databases/partitions/partitioned-tables-and-indexes"
+          target="_blank" rel="noopener"><svg viewBox="0 0 24 24" class="ic sm">
+            <use href="#i-award" />
+          </svg><span class="fa">MS Learn: جدول‌های پارتیشن‌شده</span><span class="en">MS Learn: partitioned
+            tables</span></a>
+      </div>
+
+      <p class="lead">
+        <span class="fa">نکته‌ای که شاید باورتان نشود: در <b>SQL Server</b>، پارتیشن‌بندی در درجه‌ی اول یک <b>ابزار
+            مدیریت و نگهداری</b> است، نه ابزاری برای تندتر کردنِ کوئری‌ها. این جمله‌ی کلیدیِ فصل ۱۶ کتابِ <em>Pro SQL
+            Server Internals</em> است — و اگر آن را جدی نگیرید، تمام تصمیم‌گیری‌هایتان درباره‌ی پارتیشن‌بندی، از همان
+          ابتدا اشتباه خواهد بود.</span>
+        <span class="en">Here's something you might not believe: in <b>SQL Server</b>, partitioning is primarily a
+          <b>management and maintenance tool</b> — not a query-speed hack. This is the key takeaway from Chapter 16 of
+          <em>Pro SQL Server Internals</em> — and if you ignore it, every partitioning decision you make will be wrong
+          from the start.</span>
+      </p>
+      <div class="grid2">
+        <div class="card defcard">
+          <h3><span class="cico blue"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-book" />
+              </svg></span><span class="fa">دلایلِ واقعی برای پارتیشن‌بندی</span><span class="en">The real reasons to
+              partition</span></h3>
+          <p>
+            <span class="fa">
+              <b>۱. نگهداریِ تکه‌تکه:</b> بکاپ، بازسازی ایندکس، به‌روزرسانی آمار — همه روی یک پارتیشن، نه کلِ جدولِ
+              غول‌پیکر.<br>
+              <b>۲. حذف یا آرشیوِ سریع:</b> به‌جای <code>DELETE</code> کردنِ میلیون‌ها سطر، کلِ یک پارتیشن را در چند
+              میلی‌ثانیه <code>SWITCH</code> می‌کنید.<br>
+              <b>۳. ذخیره‌سازیِ طبقه‌ای:</b> دادهٔ داغ روی SSD، دادهٔ کهنه روی HDD ارزان.<br>
+              <b>۴. رد کردنِ پارتیشن‌های نامربوط:</b> کوئری‌های بازه‌ای می‌توانند پارتیشن‌هایی را که به کارشان نمی‌آیند،
+              از پلن اجرا کنار بگذارند — اما این معمولاً یک <b>سودِ جانبی</b> است، نه هدفِ اصلی.
+            </span>
+            <span class="en">
+              <b>1. Chunk-level maintenance:</b> backups, index rebuilds, stats updates — all on one partition, not the
+              giant whole table.<br>
+              <b>2. Fast purge or archive:</b> instead of <code>DELETE</code>ing millions of rows, you
+              <code>SWITCH</code> a whole partition away in milliseconds.<br>
+              <b>3. Tiered storage:</b> hot data on SSD, cold data on cheap HDD.<br>
+              <b>4. Pruning irrelevant partitions:</b> range queries can exclude partitions that aren't needed from the
+              execution plan — but this is usually a <b>side benefit</b>, not the main goal.
+            </span>
+          </p>
+        </div>
+        <div class="card" style="border-right:4px solid var(--red)">
+          <h3><span class="cico red"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-x" />
+              </svg></span><span class="fa">کِی پارتیشن‌بندی نکنیم</span><span class="en">When not to partition</span>
+          </h3>
+          <p><span class="fa">اگر جدول شما فقط «چند میلیون سطر» دارد، پارتیشن‌بندی سربار اضافه می‌کند بدون اینکه سودی
+              داشته باشد. پارتیشن‌بندی برای جدول‌های <b>واقعاً بزرگ</b> است — ده‌ها میلیون تا میلیاردها سطر، جایی که
+              نگهداریِ کلِ جدول به یک دردسر تبدیل شده. قبل از پارتیشن‌بندی، اول ایندکس‌ها را بررسی کنید (فصل قبلِ همین
+              مسیر).</span>
+            <span class="en">If your table only has "a few million rows", partitioning adds overhead with no real
+              benefit.
+              Partitioning is for <b>truly large</b> tables — tens of millions to billions of rows, where maintaining
+              the
+              whole table has become a pain. Before partitioning, check your indexes first (the previous chapter of this
+              path).</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="rulethumb">
+        <svg viewBox="0 0 24 24" class="ic">
+          <use href="#i-bulb" />
+        </svg>
+        <p><span class="fa"><b>قاعدهٔ سرانگشتی:</b> قبل از پارتیشن‌بندی یک سوال بپرسید: «مشکل من نگهداریِ جدول است یا
+            کندیِ یک کوئری؟» اگر جواب «نگهداری» است، پارتیشن‌بندی احتمالاً راه‌گشاست. اگر «کوئری» است، اول ایندکس، بعد
+            پلن اجرا، و در آخر پارتیشن‌بندی.</span>
+          <span class="en"><b>Rule of thumb:</b> before partitioning, ask one question: "is my problem table maintenance
+            or
+            a slow query?" If it's maintenance, partitioning probably helps. If it's the query, check indexes first,
+            then
+            the execution plan, and partitioning last.</span>
+        </p>
+      </div>
+
+      <div class="netnote">
+        <span class="badge">.NET</span>
+        <p><span class="fa">وقتی یک کوئری EF Core روی جدولی با ده‌ها میلیون سطر کند می‌شود، ترتیب کار این است:
+            <b>اول</b>
+            ایندکس‌ها را بررسی کنید، <b>بعد</b> پلن اجرا را ببینید (با <code>SET STATISTICS IO ON</code> تعداد
+            <code>logical reads</code> را چک کنید)، و <b>فقط اگر</b> جدول واقعاً بزرگ است و مشکل نگهداری دارید،
+            <b>سراغ پارتیشن‌بندی بروید</b>. کد LINQ شما دست‌نخورده می‌ماند — پارتیشن‌بندی برای آن شفاف است.</span>
+          <span class="en">When an EF Core query gets slow on a table with tens of millions of rows, the order is:
+            <b>first</b> check your indexes, <b>then</b> review the execution plan (use
+            <code>SET STATISTICS IO ON</code> to
+            check <code>logical reads</code>), and <b>only if</b> the table is truly large and you have a maintenance
+            problem, <b>consider partitioning</b>. Your LINQ code stays untouched — partitioning is transparent to
+            it.</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ 02 — Horizontal vs Vertical ═══ -->
+    <section id="s2" class="stop reveal">
+      <div class="stop-head"><span class="stop-num">02</span>
+        <h2><span class="fa">افقی در برابر عمودی — دو معنای «تقسیم»</span><span class="en">Horizontal vs vertical — two
+            meanings of "split"</span></h2>
+      </div>
+
+      <div class="srcs">
+        <a href="https://learn.microsoft.com/sql/relational-databases/partitions/partitioned-tables-and-indexes"
+          target="_blank" rel="noopener"><svg viewBox="0 0 24 24" class="ic sm">
+            <use href="#i-award" />
+          </svg><span class="fa">MS Learn: جدول‌های پارتیشن‌شده</span><span class="en">MS Learn: partitioned
+            tables</span></a>
+      </div>
+
+      <p class="lead"><span class="fa">کلمهٔ «پارتیشن» دو معنا دارد که اغلب قاطی می‌شوند. قبل از هر چیزی، این دو را
+          یک‌بار برای همیشه از هم جدا کنید:</span>
+        <span class="en">The word "partition" has two meanings that often get mixed up. Before anything else, let's
+          separate them once and for all:</span>
+      </p>
+
+      <div class="grid2">
+        <div class="card" style="border-right:4px solid var(--acc)">
+          <h3><span class="cico blue"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-layers" />
+              </svg></span><span class="fa">افقی — تقسیمِ <b>سطرها</b></span><span class="en">Horizontal — splitting
+              <b>rows</b></span></h3>
+          <p><span class="fa">سطرها را بین پارتیشن‌ها پخش می‌کنید؛ هر پارتیشن <b>همهٔ ستون‌ها</b> را دارد. مثلاً جدول
+              <code>Orders</code> با ۱۰۰ میلیون سطر را در نظر بگیرید. اگر آن را به ۱۲ پارتیشن تقسیم کنید، هر پارتیشن
+              حدود ۸ تا ۹ میلیون سطر خواهد داشت — و همهٔ آنها ساختارِ یکسانی دارند. <b>دقیقاً همین است که در این صفحه
+                درباره‌اش صحبت می‌کنیم.</b></span>
+            <span class="en">You spread rows across partitions; every partition has <b>all the columns</b>. Take the
+              <code>Orders</code> table with 100 million rows. If you split it into 12 partitions, each partition will
+              hold roughly 8 to 9 million rows — all with the exact same structure. <b>This is exactly what this page is
+                about.</b></span>
+          </p>
+        </div>
+        <div class="card" style="border-right:4px solid var(--vio)">
+          <h3><span class="cico violet"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-swap" />
+              </svg></span><span class="fa">عمودی — تقسیمِ <b>ستون‌ها</b></span><span class="en">Vertical — splitting
+              <b>columns</b></span></h3>
+          <p><span class="fa">ستون‌ها را از هم جدا می‌کنید. مثلاً ستونِ سنگینِ <code>Notes NVARCHAR(MAX)</code> را به
+              جدول <code>OrderNotes</code> می‌برید تا جدول اصلی باریک بماند و صفحه‌های بیشتری در حافظه جا شوند. این کار
+              را معمولاً در <b>طرحِ خودِ جدول</b> انجام می‌دهید، نه با قابلیتِ پارتیشنِ موتور.</span>
+            <span class="en">You split columns apart. For example, moving a heavy <code>Notes NVARCHAR(MAX)</code>
+              column into an <code>OrderNotes</code> table, so the main table stays slim and more pages fit in memory.
+              You usually do this in <b>your schema design</b>, not with the engine's partitioning feature.</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="hv-demo">
+        <div class="hv-col">
+          <h5><svg viewBox="0 0 24 24" class="ic sm">
+              <use href="#i-layers" />
+            </svg><span class="fa">افقی: سطرها بریده می‌شوند</span><span class="en">Horizontal: rows are cut</span></h5>
+          <div class="hv-grid">
+            <i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i>
+            <i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i>
+            <i class="g2"></i><i class="g2"></i><i class="g2"></i><i class="g2"></i><i class="g2"></i><i class="g2"></i>
+            <i class="g2"></i><i class="g2"></i><i class="g2"></i><i class="g2"></i><i class="g2"></i><i class="g2"></i>
+          </div>
+          <p class="hv-cap"><span class="fa">هر خانه یک سطر است. سبز = پارتیشن ۱ (سال ۲۰۲۴)، نارنجی = پارتیشن ۲ (سال
+              ۲۰۲۵). هر دو پارتیشن همان ستون‌ها را دارند.</span><span class="en">Each cell is one row. Green = partition
+              1 (2024), orange = partition 2 (2025). Both partitions have the same columns.</span></p>
+        </div>
+        <div class="hv-col">
+          <h5><svg viewBox="0 0 24 24" class="ic sm">
+              <use href="#i-swap" />
+            </svg><span class="fa">عمودی: ستون‌ها بریده می‌شوند</span><span class="en">Vertical: columns are cut</span>
+          </h5>
+          <div class="hv-grid">
+            <i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g3"></i><i class="g3"></i>
+            <i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g3"></i><i class="g3"></i>
+            <i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g3"></i><i class="g3"></i>
+            <i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g1"></i><i class="g3"></i><i class="g3"></i>
+          </div>
+          <p class="hv-cap"><span class="fa">سبز = ستون‌های داغ و کوچک (<code>OrdersCore</code>)، بنفش = ستون‌های سنگین
+              (<code>OrderNotes</code>). هر دو تکه همان سطرها را دارند.</span><span class="en">Green = hot, slim columns
+              (<code>OrdersCore</code>), violet = heavy columns (<code>OrderNotes</code>). Both pieces hold the same
+              rows.</span></p>
+        </div>
+      </div>
+
+      <div class="netnote">
+        <span class="badge">.NET</span>
+        <p><span class="fa">پارتیشن‌بندی افقی یک قابلیتِ <b>موتور دیتابیس</b> است (SQL Server / MySQL) — در کد C# کاری
+            برای آن انجام نمی‌دهید. اما تقسیم عمودی یک تصمیمِ <b>طراحی مدل</b> است که در EF Core می‌گیرید: مثلاً
+            <code>Order</code> و <code>OrderDetails</code> را جدا کنید چون معمولاً با هم خوانده نمی‌شوند. هر کدام از این
+            دو، مشکلِ متفاوتی را حل می‌کنند.</span>
+          <span class="en">Horizontal partitioning is a <b>database engine</b> feature (SQL Server / MySQL) — you don't
+            write any C# code for it. But vertical splitting is a <b>model design</b> decision you make in EF Core: for
+            example, separating <code>Order</code> from <code>OrderDetails</code> because they're rarely read together.
+            Each of these solves a different problem.</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ 03 — Strategies ═══ -->
+    <section id="s3" class="stop reveal">
+      <div class="stop-head"><span class="stop-num">03</span>
+        <h2><span class="fa">راهبردهای پارتیشن‌بندی — RANGE، LIST، HASH و KEY</span><span class="en">Partitioning
+            strategies — RANGE, LIST, HASH, and KEY</span></h2>
+      </div>
+
+      <div class="srcs">
+        <a href="https://dev.mysql.com/doc/refman/8.4/en/partitioning-types.html" target="_blank" rel="noopener"><svg
+            viewBox="0 0 24 24" class="ic sm">
+            <use href="#i-award" />
+          </svg><span class="fa">منبع: MySQL 8.4 — انواع پارتیشن</span><span class="en">Source: MySQL 8.4 — partitioning
+            types</span></a>
+      </div>
+
+      <p class="lead">
+  <span class="fa">چهار روش پارتیشن‌بندی در دنیای دیتابیس‌ها وجود دارد: RANGE، LIST، HASH و KEY. اما هر موتوری همهٔ آنها را پشتیبانی نمی‌کند. در SQL Server فقط <b>RANGE</b> در دسترس است؛ MySQL هر چهار روش را دارد که KEY مختص خودش است.</span>
+  <span class="en">There are four partitioning methods in the database world: RANGE, LIST, HASH, and KEY. But not every engine supports all of them. In SQL Server, only <b>RANGE</b> is available; MySQL has all four, with KEY being its own.</span>
+</p>
+
+      <!-- ===== توضیحات مفهومی ===== -->
+      <div class="grid2" style="margin-top:24px">
+        <div class="card">
+          <h3><span class="cico green"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-layers" />
+              </svg></span>RANGE</h3>
+          <p><span class="fa">هر پارتیشن، یک <b>بازهٔ پیوسته</b> را پوشش می‌دهد. برای داده‌های سری‌زمانی (لاگ، سفارش،
+              سنسور) انتخابِ طبیعی است. کوئری‌های بازه‌ای (<code>BETWEEN</code>, <code>&gt;=</code>) مستقیم به یک یا چند
+              پارتیشن می‌رسند و بقیه حذف می‌شوند.</span>
+            <span class="en">Each partition covers a <b>continuous range</b>. The natural choice for time-series data
+              (logs, orders, sensors). Range queries (<code>BETWEEN</code>, <code>&gt;=</code>) map directly onto one or
+              a few partitions, and the rest are pruned.</span>
+          </p>
+        </div>
+        <div class="card">
+          <h3><span class="cico amber"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-grid" />
+              </svg></span>LIST</h3>
+          <p><span class="fa">مقدار ستون پارتیشن با لیست مقادیرِ تعیین‌شده برای هر پارتیشن مقایسه می‌شود و در صورت
+              تطابق، سطر به همان پارتیشن می‌رود — مثلاً پارتیشن اروپا فقط سطرهایی را می‌گیرد که ستونِ کشورشان
+              <code>DE, FR, IT</code> باشد. این روش وقتی دسته‌های طبیعی و کم‌تعداد دارید (منطقه، وضعیت، نوع اشتراک) عالی
+              است.</span>
+            <span class="en">The partition column value is compared against each partition's defined value list and if
+              it matches, the row goes to that partition — for example, the Europe partition only gets rows where the
+              country column is <code>DE, FR, IT</code>. This method is great when you have natural, low‑cardinality
+              groups (region, status, subscription tier).</span>
+          </p>
+        </div>
+        <div class="card">
+          <h3><span class="cico violet"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-hash" />
+              </svg></span>HASH</h3>
+          <p><span class="fa">شما یک عبارتِ عددی روی ستون تعریف می‌کنید (مثلاً <code>YEAR(OrderDate)</code>) و
+              باقی‌ماندهٔ تقسیم آن بر تعداد پارتیشن‌ها، شمارهٔ پارتیشن را مشخص می‌کند. توزیع سطرها بین پارتیشن‌ها
+              یکنواخت است، اما ترتیب داده‌ها از بین می‌رود و کوئری‌های بازه‌ای نمی‌توانند پارتیشن‌های نامربوط را از پلن
+              اجرا کنار بگذارند.</span>
+            <span class="en">You define an integer expression on the column (e.g. <code>YEAR(OrderDate)</code>) and the
+              remainder of its division by the partition count determines the partition number. Rows are evenly
+              distributed across partitions, but data order is lost and range queries cannot exclude irrelevant
+              partitions from the execution plan.</span>
+          </p>
+        </div>
+        <div class="card">
+          <h3><span class="cico red"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-hash" />
+              </svg></span>KEY <small>(MySQL only)</small></h3>
+          <p><span class="fa">شبیه HASH، اما <b>MySQL تابعِ هشِ داخلی خودش</b> را استفاده می‌کند و شما نیازی به نوشتن
+              عبارت ندارید. ستون‌های غیرعددی (رشته، تاریخ) را هم می‌پذیرد.</span>
+            <span class="en">Like HASH, but <b>MySQL uses its own internal hashing function</b> and you don't write an
+              expression. It accepts non-integer columns (strings, dates).</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- ===== دموی تعاملی ===== -->
+      <div class="demo" style="margin-top:28px">
+        <div class="demo-t"><svg viewBox="0 0 24 24" class="ic">
+            <use href="#i-play" />
+          </svg><span class="fa">امتحان کنید — یک سطر کجا می‌نشیند؟</span><span class="en">Try it — where does a row
+            land?</span></div>
+        <p style="font-size:14px;color:var(--mut);margin-bottom:16px"><span class="fa">بین چهار راهبرد جابه‌جا شوید و
+            ببینید هر سطر نمونه در کدام پارتیشن فرود می‌آید.</span><span class="en">Switch between the four strategies
+            and watch each sample row land in its partition.</span></p>
+
+        <div class="st-tabs">
+          <button class="st-tab primary" data-strat="range"><span class="fa">Range (تاریخ)</span><span class="en">Range
+              (date)</span></button>
+          <button class="st-tab" data-strat="list"><span class="fa">List (منطقه)</span><span class="en">List
+              (region)</span></button>
+          <button class="st-tab" data-strat="hash"><span class="fa">Hash (عبارت)</span><span class="en">Hash
+              (expression)</span></button>
+          <button class="st-tab" data-strat="key"><span class="fa">Key (مخصوص MySQL)</span><span class="en">Key (MySQL
+              only)</span></button>
+        </div>
+
+        <style>
+          .st-rule {
+            text-align: center;
+          }
+        </style>
+
+        <div class="st-panel show" id="st-range">
+          <div class="st-boxes">
+            <div class="st-box">
+              <h6>Q1<br>Jan – Mar</h6><span class="chip">2025-02-10</span>
+            </div>
+            <div class="st-box">
+              <h6>Q2<br>Apr – Jun</h6><span class="chip">2025-05-03</span>
+            </div>
+            <div class="st-box">
+              <h6>Q3<br>Jul – Sep</h6><span class="chip">2025-08-21</span>
+            </div>
+            <div class="st-box">
+              <h6>Q4<br>Oct – Dec</h6><span class="chip">2025-11-30</span>
+            </div>
+          </div>
+          <div class="st-rule">
+            <span class="fa">مقدار ستون پارتیشن با مرزهای تعیین‌شده مقایسه می‌شود و بر اساس قرار گرفتن در یکی از
+              بازه‌ها، به همان پارتیشن می‌رود، این روش برای کوئری‌های بازه‌ای بسیار کارآمد است</span>
+            <span class="en">The partition column value is compared against the defined boundaries and based on which
+              range it falls into, it goes to that partition, this method is very efficient for range queries</span>
+          </div>
+        </div>
+
+        <div class="st-panel" id="st-list">
+          <div class="st-boxes three">
+            <div class="st-box">
+              <h6>AMER</h6><span class="chip">US</span><span class="chip">BR</span>
+            </div>
+            <div class="st-box">
+              <h6>EMEA</h6><span class="chip">DE</span><span class="chip">FR</span>
+            </div>
+            <div class="st-box">
+              <h6>APAC</h6><span class="chip">JP</span><span class="chip">IN</span>
+            </div>
+          </div>
+          <div class="st-rule">
+            <span class="fa">مقدار ستون پارتیشن با لیست مقادیر هر پارتیشن مقایسه می‌شود و در صورت تطابق، به آن پارتیشن
+              می‌رود</span>
+            <span class="en">The partition column value is compared against each partition's value list and if it
+              matches, it goes to that partition</span>
+          </div>
+        </div>
+
+        <div class="st-panel" id="st-hash">
+          <div class="st-boxes">
+            <div class="st-box">
+              <h6>bucket 0</h6><span class="chip">year(col) % 4 = 0</span>
+            </div>
+            <div class="st-box">
+              <h6>bucket 1</h6><span class="chip">year(col) % 4 = 1</span>
+            </div>
+            <div class="st-box">
+              <h6>bucket 2</h6><span class="chip">year(col) % 4 = 2</span>
+            </div>
+            <div class="st-box">
+              <h6>bucket 3</h6><span class="chip">year(col) % 4 = 3</span>
+            </div>
+          </div>
+          <div class="st-rule">
+            <span class="fa">عبارت عددیِ دلخواه شما روی ستون اعمال می‌شود و باقی‌ماندهٔ تقسیم آن بر تعداد پارتیشن‌ها،
+              شمارهٔ سطل را مشخص می‌کند، توزیع یکنواخت است اما حذف بازه‌ای ممکن نیست</span>
+            <span class="en">Your custom integer expression is applied to the column and the remainder of its division
+              by the partition count determines the bucket number, distribution is even but range pruning is not
+              possible</span>
+          </div>
+        </div>
+
+        <div class="st-panel" id="st-key">
+          <div class="st-boxes">
+            <div class="st-box">
+              <h6>bucket 0</h6><span class="chip">sku:B-205</span>
+            </div>
+            <div class="st-box">
+              <h6>bucket 1</h6><span class="chip">order:8841</span>
+            </div>
+            <div class="st-box">
+              <h6>bucket 2</h6><span class="chip">user:42</span>
+            </div>
+            <div class="st-box">
+              <h6>bucket 3</h6><span class="chip">user:113</span>
+            </div>
+          </div>
+          <div class="st-rule">
+            <span class="fa">MySQL از تابع هش داخلی خود روی ستون استفاده می‌کند و شمارهٔ سطل را مشخص می‌کند، نیازی به
+              نوشتن عبارت نیست و روی هر نوع ستونی کار می‌کند</span>
+            <span class="en">MySQL applies its own internal hash function to the column and determines the bucket
+              number, no expression needed and it works on any column type</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== قابلیت‌های تکمیلی MySQL ===== -->
+      <div
+        style="margin-top:28px;padding:20px 24px;background:var(--surface2);border:2px dashed var(--line);border-radius:12px">
+        <p style="font-size:14px;color:var(--mut);margin-bottom:16px;text-align:center">
+          <span class="fa">علاوه بر چهار روش اصلی، MySQL دو قابلیتِ تکمیلی نیز دارد که در ادامه توضیح داده
+            شده‌اند</span>
+          <span class="en">In addition to the four main methods, MySQL also has two complementary features explained
+            below</span>
+        </p>
+
+        <div class="grid2">
+          <div class="card">
+            <h3><span class="cico blue"><svg viewBox="0 0 24 24" class="ic">
+                  <use href="#i-layers" />
+                </svg></span><span class="fa">RANGE COLUMNS / LIST COLUMNS</span><span class="en">RANGE COLUMNS / LIST
+                COLUMNS</span></h3>
+            <p><span class="fa">این‌ها در واقع نسخه‌های توسعه‌یافته‌ی همان RANGE و LIST هستند، نه روش‌های جداگانه.
+                تفاوتشان این است که به‌جای یک عبارتِ عددی، <b>خودِ ستون</b> را می‌پذیرند — از جمله ستون‌های رشته‌ای و
+                تاریخی. برای پارتیشن‌بندی مستقیم بر اساس ستونِ تاریخ، نیازی به <code>TO_DAYS</code> ندارید و ساده‌تر
+                است.</span>
+              <span class="en">These are actually extended versions of the same RANGE and LIST, not separate methods.
+                The difference is that they accept <b>the column itself</b> instead of an integer expression — including
+                string and date columns. For partitioning directly on a date column, you don't need <code>TO_DAYS</code>
+                and it's simpler.</span>
+            </p>
+          </div>
+          <div class="card">
+            <h3><span class="cico amber"><svg viewBox="0 0 24 24" class="ic">
+                  <use href="#i-grid" />
+                </svg></span><span class="fa">Subpartitioning (پارتیشنِ تو در تو)</span><span
+                class="en">Subpartitioning</span></h3>
+            <p><span class="fa">این هم یک روشِ جداگانه نیست؛ بلکه یک لایه‌ی اضافی روی پارتیشن‌بندیِ موجود است. در MySQL
+                می‌توانید هر پارتیشنِ RANGE یا LIST را <b>یک بار دیگر</b> با HASH یا KEY زیرپارتیشن کنید. مثلاً
+                پارتیشن‌بندیِ اصلی بر اساس ماه، و زیرپارتیشن بر اساس <code>CustomerID</code>. کاربردی است، اما پیچیدگیِ
+                مدیریت را چند برابر می‌کند.</span>
+              <span class="en">This is not a separate method either; it's an additional layer on top of existing
+                partitioning. In MySQL, you can subpartition each RANGE or LIST partition <b>once more</b> with HASH or
+                KEY. For example, main partitioning by month, and subpartitioning by <code>CustomerID</code>. Useful,
+                but it multiplies management complexity.</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== نکته ===== -->
+      <div class="rulethumb">
+        <svg viewBox="0 0 24 24" class="ic">
+          <use href="#i-bulb" />
+        </svg>
+        <p>
+          <span class="fa">
+            <b>یک نکتهٔ مهم:</b> در MySQL چیزی به نام «پارتیشن‌بندی تاریخ» به عنوان یک روشِ مستقل وجود ندارد. هر وقت در
+            مستندات یا مقالات می‌بینید که از «پارتیشن‌بندی بر اساس تاریخ» صحبت می‌شود، منظور همان روش <b>RANGE</b> است
+            که روی یک ستونِ تاریخ یا یک عبارت مثل <code>TO_DAYS(date_col)</code> اعمال شده. در SQL Server نیز دقیقاً به
+            همین شکل کار می‌کند — تنها راهِ پارتیشن‌بندیِ زمانی، استفاده از RANGE است.
+          </span>
+          <span class="en">
+            <b>Important note:</b> MySQL does not have a separate method called "date partitioning". Whenever you see
+            "date-based partitioning" mentioned in documentation or articles, it means the <b>RANGE</b> method applied
+            to a date column or an expression like <code>TO_DAYS(date_col)</code>. SQL Server works exactly the same way
+            — the only way to partition by time is using RANGE.
+          </span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ 04 — SQL Server ═══ -->
+    <section id="s4" class="stop reveal">
+      <div class="stop-head"><span class="stop-num">04</span>
+        <h2><span class="fa">پارتیشن‌بندی در SQL Server — جدول‌ها، ویوها و فراتر</span><span class="en">Partitioning in
+            SQL Server — tables, views, and beyond</span></h2>
+      </div>
+      <div class="srcs">
+        <a href="https://aboutsqlserver.com/publications/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"
+            class="ic sm">
+            <use href="#i-award" />
+          </svg><span class="fa">منبع: Pro SQL Server Internals، فصل ۱۶</span><span class="en">Source: Pro SQL Server
+            Internals, Ch. 16</span></a>
+        <a href="https://learn.microsoft.com/sql/relational-databases/partitions/partitioned-tables-and-indexes"
+          target="_blank" rel="noopener"><svg viewBox="0 0 24 24" class="ic sm">
+            <use href="#i-award" />
+          </svg><span class="fa">MS Learn: جدول‌ها و ایندکس‌های پارتیشن‌شده</span><span class="en">MS Learn: partitioned
+            tables &amp; indexes</span></a>
+     <a href="https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms190019(v=sql.105)" target="_blank"
+      rel="noopener"><svg viewBox="0 0 24 24" class="ic sm">
+        <use href="#i-award" />
+      </svg><span class="fa">MS Learn: ویوهای پارتیشن‌شده</span><span class="en">MS Learn: partitioned
+        views</span></a>
+      </div>
+
+      <p class="lead">
+        <span class="fa">SQL Server <b>دو مکانیزم مجزا</b> برای پارتیشن‌بندی دارد و درک تفاوت‌شان برای هر توسعه‌دهنده‌ای
+          ضروری است: <b>Partitioned Tables</b> (روش جدیدتر و قدرتمندتر) و <b>Partitioned Views</b> (روش قدیمی‌تر، اما
+          هنوز هم کاربردی). بیایید اول این دو را کنار هم ببینیم، بعد سراغ جزئیات هرکدام برویم.</span>
+        <span class="en">SQL Server has <b>two separate mechanisms</b> for partitioning, and understanding the
+          difference is essential for every developer: <b>Partitioned Tables</b> (the newer, more powerful approach) and
+          <b>Partitioned Views</b> (the older method, but still very much alive). Let's first look at them side by side,
+          then dive into the details of each.</span>
+      </p>
+      <div class="grid2">
+        <div class="card" style="border-right:4px solid var(--acc)">
+          <h3><span class="cico blue"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-table" />
+              </svg></span><span class="fa">Partitioned Tables</span><span class="en">Partitioned Tables</span></h3>
+          <p>
+            <span class="fa"><b>یک جدول منطقی، چند تکهٔ فیزیکی.</b> از دید کاربر، یک جدول واحد می‌بینید. اما در
+              پشت‌صحنه، داده بین چند پارتیشن توزیع شده که هرکدام روی یک <b>Filegroup</b> جداگانه قرار دارند. موتور با
+              کمک Partition Function و Partition Scheme، مدیریت کامل این ساختار را به‌عهده دارد.</span>
+            <span class="en"><b>One logical table, several physical pieces.</b> From the user's perspective, it's a
+              single table. Behind the scenes, data is distributed across multiple partitions, each sitting on its own
+              <b>filegroup</b>. The engine handles the entire management using a partition function and a partition
+              scheme.</span>
+          </p>
+        </div>
+
+        <div class="card" style="border-right:4px solid var(--vio)">
+          <h3><span class="cico violet"><svg viewBox="0 0 24 24" class="ic">
+                <use href="#i-view" />
+              </svg></span><span class="fa">Partitioned Views</span><span class="en">Partitioned Views</span></h3>
+          <p>
+            <span class="fa"><b>چند جدول جداگانه، یک ویو.</b> شما چند جدول مستقل می‌سازید (مثلاً
+              <code>Orders_2023</code>، <code>Orders_2024</code>، <code>Orders_2025</code>)، روی هرکدام یک
+              <code>CHECK CONSTRAINT</code> برای ستون پارتیشن تعریف می‌کنید، و در نهایت یک ویو با <code>UNION ALL</code>
+              روی همهٔ آنها می‌سازید. وقتی کوئری با <code>WHERE</code> اجرا می‌شود، موتور جدول‌های نامربوط را از پلن
+              اجرا کنار می‌گذارد.</span>
+            <span class="en"><b>Several separate tables, one view.</b> You create independent tables (e.g.
+              <code>Orders_2023</code>, <code>Orders_2024</code>, <code>Orders_2025</code>), define a
+              <code>CHECK CONSTRAINT</code> on the partition column for each, and finally build a view that
+              <code>UNION ALL</code>s them. When a query with a <code>WHERE</code> clause runs, the engine excludes
+              irrelevant tables from the execution plan.</span>
+          </p>
+        </div>
+      </div>
+
+    <h3 style="margin-top:32px;font-size:18px">
+  <span class="fa">۱. Partitioned Tables — آجر به آجر</span>
+  <span class="en">1. Partitioned Tables — brick by brick</span>
+</h3>
+
+<p style="margin:14px 0 24px;font-size:15px">
+  <span class="fa">برای ساختن یک جدول پارتیشن‌شده در SQL Server، سه مؤلفهٔ کلیدی داریم:</span>
+  <span class="en">Building a partitioned table in SQL Server requires three key components:</span>
+</p>
+
+<div class="grid3">
+  <div class="card">
+    <h3>
+      <span class="cico blue"><svg viewBox="0 0 24 24" class="ic"><use href="#i-pen" /></svg></span>
+      <span class="fa">تابع پارتیشن</span>
+      <span class="en">Partition Function</span>
+    </h3>
+    <p>
+      <span class="fa"><b>Partition Function</b> نوع ستون و مرزهای بین پارتیشن‌ها را مشخص می‌کند. در این مرحله، تنها یک قانون ریاضی تعریف شده‌است — هنوز به هیچ جدولی متصل نشده.</span>
+      <span class="en">The <b>partition function</b> defines the column type and the boundaries between partitions. At this stage, it's just a mathematical rule — not yet attached to any table.</span>
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>
+      <span class="cico green"><svg viewBox="0 0 24 24" class="ic"><use href="#i-db" /></svg></span>
+      <span class="fa">طرح پارتیشن</span>
+      <span class="en">Partition Scheme</span>
+    </h3>
+    <p>
+      <span class="fa"><b>Partition Scheme</b> تابع را به <b>Filegroup</b> ها نگاشت می‌کند — یعنی مشخص می‌کند هر پارتیشن روی کدام فایل دیسک قرار بگیرد. اینجاست که <b>Tiered Storage</b> ممکن می‌شود.</span>
+      <span class="en">The <b>partition scheme</b> maps the function onto <b>filegroups</b> — determining which disk file each partition lives on. This is where <b>Tiered Storage</b> becomes possible.</span>
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>
+      <span class="cico amber"><svg viewBox="0 0 24 24" class="ic"><use href="#i-target" /></svg></span>
+      <span class="fa">ستون پارتیشن</span>
+      <span class="en">Partitioning Column</span>
+    </h3>
+    <p>
+      <span class="fa">ستونی که جدول بر اساس آن پارتیشن‌بندی می‌شود — مثلاً <code>OrderDate</code>. با <code>ON scheme(column)</code> جدول را روی طرح می‌سازید. این ستون قلب ماجراست و <b>باید در هر کلید یکتا (از جمله Primary Key) حضور داشته باشد</b>.</span>
+      <span class="en">The column by which the table is partitioned — for example, <code>OrderDate</code>. You create the table using <code>ON scheme(column)</code>. This column is the heart of the matter and <b>must be part of every unique key (including the Primary Key)</b>.</span>
+    </p>
+  </div>
+</div>
+<div class="codebox">
+  <div class="cb-h">sql — partitioned table, three steps</div>
+  <pre><code><span class="cm">-- 1) Partition function: the rule + boundaries</span>
+      <span class="kw">CREATE PARTITION FUNCTION</span> pf_OrdersByYear (<span class="kw">date</span>)
+      <span class="kw">AS RANGE RIGHT FOR VALUES</span>
+      (<span class="st">'2023-01-01'</span>, <span class="st">'2024-01-01'</span>, <span class="st">'2025-01-01'</span>);
+      <span class="cm">-- → 4 partitions: &lt;2023, 2023–2024, 2024–2025, 2025+</span>
+      
+      <span class="cm">-- 2) Partition scheme: map partitions to filegroups</span>
+      <span class="kw">CREATE PARTITION SCHEME</span> ps_Orders
+      <span class="kw">AS PARTITION</span> pf_OrdersByYear <span class="kw">TO</span>
+      ([FG_Archive], [FG_2023], [FG_2024], [FG_Current]);
+      
+      <span class="cm">-- 3) Create the table ON the scheme — OrderDate is the key</span>
+      <span class="kw">CREATE TABLE</span> dbo.Orders (
+          Id         <span class="kw">bigint IDENTITY NOT NULL</span>,
+          OrderDate  <span class="kw">date NOT NULL</span>,
+          CustomerId <span class="kw">int NOT NULL</span>,
+          Total      <span class="kw">decimal</span>(12,2) <span class="kw">NOT NULL</span>,
+          <span class="kw">CONSTRAINT</span> PK_Orders <span class="kw">PRIMARY KEY</span> (Id, OrderDate)  <span class="cm">-- key must include OrderDate!</span>
+      ) <span class="kw">ON</span> ps_Orders(OrderDate);</code></pre>
+</div>
+      
+      <h3 style="margin-top:32px;font-size:18px">
+  <span class="fa">۲. Partitioned Views — روشِ قدیمی‌تر</span>
+  <span class="en">2. Partitioned Views — the older technique</span>
+</h3>
+
+<p style="margin:14px 0">
+  <span class="fa">پیش از ورود Partitioned Tables به SQL Server، این روش تنها راهِ ممکن بود. اما هنوز هم کاربرد خودش را دارد؛ به‌ویژه وقتی که نیاز دارید جدول‌های عضو، <b>ساختارِ کمی متفاوت</b> داشته باشند یا روی <b>سرورهای جداگانه</b> (از طریق Linked Servers) قرار گیرند.</span>
+  <span class="en">Before Partitioned Tables arrived in SQL Server, this was the only option. It's still useful, especially when member tables need <b>slightly different structures</b> or need to reside on <b>different servers</b> (via Linked Servers).</span>
+</p>
+
+<div class="codebox">
+  <div class="cb-h">sql — partitioned view with CHECK constraints</div>
+  <pre><code><span class="cm">-- each member table has its own CHECK constraint to enforce the partition range</span>
+  <span class="kw">CREATE TABLE</span> dbo.Orders_2023 (
+      Id <span class="kw">int NOT NULL PRIMARY KEY</span>,
+      OrderDate <span class="kw">date NOT NULL</span>,
+      <span class="kw">CONSTRAINT</span> CK_Orders_2023 <span class="kw">CHECK</span>
+          (OrderDate >= <span class="st">'2023-01-01'</span> <span class="kw">AND</span> OrderDate < <span class="st">'2024-01-01'</span>)
+  );
+  
+  <span class="kw">CREATE TABLE</span> dbo.Orders_2024 (
+      Id <span class="kw">int NOT NULL PRIMARY KEY</span>,
+      OrderDate <span class="kw">date NOT NULL</span>,
+      <span class="kw">CONSTRAINT</span> CK_Orders_2024 <span class="kw">CHECK</span>
+          (OrderDate >= <span class="st">'2024-01-01'</span> <span class="kw">AND</span> OrderDate < <span class="st">'2025-01-01'</span>)
+  );
+  
+  <span class="kw">CREATE TABLE</span> dbo.Orders_2025 (
+      Id <span class="kw">int NOT NULL PRIMARY KEY</span>,
+      OrderDate <span class="kw">date NOT NULL</span>,
+      <span class="kw">CONSTRAINT</span> CK_Orders_2025 <span class="kw">CHECK</span>
+          (OrderDate >= <span class="st">'2025-01-01'</span> <span class="kw">AND</span> OrderDate < <span class="st">'2026-01-01'</span>)
+  );
+  <span class="kw">GO</span>
+  
+  <span class="cm">-- the view unions all member tables</span>
+  <span class="kw">CREATE VIEW</span> dbo.AllOrders <span class="kw">AS</span>
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> dbo.Orders_2023
+  <span class="kw">UNION ALL</span>
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> dbo.Orders_2024
+  <span class="kw">UNION ALL</span>
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> dbo.Orders_2025;
+  
+  <span class="cm">-- query through the view: optimizer uses CHECK constraints to eliminate irrelevant tables</span>
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> dbo.AllOrders
+  <span class="kw">WHERE</span> OrderDate >= <span class="st">'2024-06-01'</span> <span class="kw">AND</span> OrderDate < <span class="st">'2024-07-01'</span>;
+  <span class="cm">-- execution plan: only Orders_2024 is touched — the other tables are pruned ✓</span>
+</code></pre>
+</div>
+
+<h3 style="margin-top:32px;font-size:18px">
+  <span class="fa">۳. مقایسه و استفادهٔ ترکیبی</span>
+  <span class="en">3. Comparison and using them together</span>
+</h3>
+
+<p style="margin:14px 0 24px;font-size:15px;color:var(--mut);line-height:1.9">
+  <span class="fa">حالا که با هر دو مکانیزم آشنا شدید، این جدول کمک می‌کند در یک نگاه تفاوت‌های کلیدی را ببینید و تصمیم بگیرید کدام یک برای سناریوی شما مناسب‌تر است.</span>
+  <span class="en">Now that you're familiar with both mechanisms, this table helps you see the key differences at a glance and decide which one fits your scenario better.</span>
+</p>
+
+<table class="cmp-table">
+  <tr>
+    <th></th>
+    <th>Partitioned Tables</th>
+    <th>Partitioned Views</th>
+  </tr>
+  <tr>
+    <td><span class="fa">ساختار</span><span class="en">Structure</span></td>
+    <td><span class="fa">یک جدول منطقی، چند تکهٔ فیزیکی</span><span class="en">One logical table, multiple physical pieces</span></td>
+    <td><span class="fa">چند جدول جداگانه، یک ویو</span><span class="en">Several separate tables, one view</span></td>
+  </tr>
+  <tr>
+    <td><span class="fa">انعطافِ ساختاری</span><span class="en">Schema flexibility</span></td>
+    <td class="bad"><span class="fa">همهٔ پارتیشن‌ها ساختار یکسانی دارند</span><span class="en">All partitions share the same schema</span></td>
+    <td class="good"><span class="fa">هر جدول عضو می‌تواند ساختارِ کمی متفاوت داشته باشد</span><span class="en">Each member table can have a slightly different schema</span></td>
+  </tr>
+  <tr>
+    <td><span class="fa">مدیریت</span><span class="en">Management</span></td>
+    <td class="good"><span class="fa">موتور همه‌چیز را خودکار مدیریت می‌کند</span><span class="en">The engine handles everything automatically</span></td>
+    <td class="bad"><span class="fa">شما باید جدول‌های عضو و ویو را دستی مدیریت کنید</span><span class="en">You must manage member tables and the view manually</span></td>
+  </tr>
+  <tr>
+    <td>
+      <span class="fa">عملیاتِ SWITCH</span>
+      <span class="en">SWITCH operation</span>
+      <sup style="color:var(--acc);font-weight:700;font-size:11px">[1]</sup>
+    </td>
+    <td class="good"><span class="fa">پشتیبانی می‌شود — انتقالِ آنیِ یک پارتیشن به جدول دیگر</span><span class="en">Supported — instant transfer of a partition to another table</span></td>
+    <td class="bad"><span class="fa">پشتیبانی نمی‌شود — باید جدول را حذف و ویو را تغییر دهید</span><span class="en">Not supported — you must drop the table and alter the view</span></td>
+  </tr>
+  <tr>
+    <td><span class="fa">سرورهای مختلف</span><span class="en">Different servers</span></td>
+    <td class="bad"><span class="fa">فقط در یک نمونهٔ SQL Server</span><span class="en">Only within one SQL Server instance</span></td>
+    <td class="good"><span class="fa">با Linked Servers، جدول‌های عضو می‌توانند روی سرورهای جدا باشند</span><span class="en">With Linked Servers, member tables can reside on separate servers</span></td>
+  </tr>
+  <tr>
+    <td><span class="fa">کِی استفاده کنیم</span><span class="en">When to use</span></td>
+    <td><span class="fa">گزینهٔ پیش‌فرض برای اکثر سناریوها</span><span class="en">The default choice for most scenarios</span></td>
+    <td><span class="fa">وقتی به ساختارهای متفاوت یا سرورهای جداگانه نیاز دارید</span><span class="en">When you need different schemas or separate servers</span></td>
+  </tr>
+</table>
+
+<!-- ===== پانویس ===== -->
+<div style="margin-top:14px;padding:14px 18px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;font-size:13px;line-height:1.9;color:var(--mut)">
+  <sup style="color:var(--acc);font-weight:700;font-size:12px">[1]</sup>
+  <span class="fa"><b>SWITCH</b> عملیاتی است که یک پارتیشن کامل را در حد میلی‌ثانیه از یک جدول به جدول دیگر منتقل می‌کند — بدون اینکه حتی یک سطر جابه‌جا شود. فقط متادیتا (اشاره‌گرهای کاتالوگ) تغییر می‌کند. این ویژگی برای آرشیو کردنِ سریعِ داده‌های قدیمی (الگوی Sliding Window) بسیار ارزشمند است.</span>
+  <span class="en"><b>SWITCH</b> is an operation that transfers an entire partition from one table to another in milliseconds — without moving a single row. Only metadata (catalog pointers) changes. This feature is extremely valuable for quickly archiving old data (the Sliding Window pattern).</span>
+</div>
+
+<p style="margin-top:18px;font-size:14.5px;line-height:1.9">
+  <span class="fa"><b>استفادهٔ ترکیبی:</b> در عمل، می‌توانید از هر دو روش با هم بهره ببرید. مثلاً داده‌های «داغ» را در یک جدول پارتیشن‌شده نگه دارید و یک ویوی پارتیشن‌شده بسازید که این جدول را با یک جدول قدیمیِ جداگانه (روی یک Filegroup آرشیو) ترکیب کند. این رویکرد، انعطاف‌پذیری هر دو روش را در اختیار شما قرار می‌دهد.</span>
+  <span class="en"><b>Using them together:</b> in practice, you can combine both approaches. For example, keep "hot" data in a partitioned table and create a partitioned view that combines it with a separate older table (on an archive filegroup). This approach gives you the flexibility of both methods.</span>
+</p>
+
+ <h3 style="margin-top:32px;font-size:18px">
+  <span class="fa">۴. Tiered Storage — داغ روی SSD، کهنه روی HDD</span>
+  <span class="en">4. Tiered Storage — hot on SSD, cold on HDD</span>
+</h3>
+
+<p style="margin:14px 0;font-size:15px;line-height:1.9">
+  <span class="fa">یادتان هست که Partition Scheme هر پارتیشن را به یک Filegroup متصل می‌کند؟ این یعنی می‌توانید Filegroup‌های مختلف را روی <b>دیسک‌های متفاوت</b> قرار دهید — یکی روی SSDِ گران‌قیمت و سریع، دیگری روی HDDِ ارزان‌تر و کندتر. داده‌ی امسال روی SSD می‌نشیند و کوئری‌های داغ را سریع پاسخ می‌دهد؛ داده‌ی ۵ سال پیش روی HDD می‌رود و هزینه‌ی ذخیره‌سازی را پایین می‌آورد. همین.</span>
+  <span class="en">Remember that the partition scheme maps each partition to a filegroup? This means you can place different filegroups on <b>different disks</b> — one on expensive, fast SSD, another on cheaper, slower HDD. This year's data lives on SSD and serves hot queries quickly; 5-year-old data goes to HDD and keeps storage costs down. That's it.</span>
+</p>
+
+<div class="tiered-visual">
+  <div class="tiered-col hot">
+    <h6>🔥 SSD · HOT · fast</h6>
+    <p style="font-size:13px;color:var(--mut);line-height:1.8">
+      <span class="fa">پارتیشن‌های ۲۰۲۵ و ۲۰۲۶: داده‌ای که <b>همین الان</b> کوئری می‌شود. سریع، گران‌تر، اما حجمش کم است.</span>
+      <span class="en">2025 and 2026 partitions: data being queried <b>right now</b>. Fast, more expensive, but smaller in size.</span>
+    </p>
+  </div>
+  <div class="tiered-col cold">
+    <h6>❄ HDD · COLD · cheap</h6>
+    <p style="font-size:13px;color:var(--mut);line-height:1.8">
+      <span class="fa">پارتیشن‌های قدیمی‌تر: داده‌ای که <b>به‌ندرت</b> لمس می‌شود. کندتر، ارزان‌تر، اما حجمش زیاد است.</span>
+      <span class="en">Older partitions: data that's <b>rarely</b> touched. Slower, cheaper, but larger in size.</span>
+    </p>
+  </div>
+</div>
+
+<h3 style="margin-top:32px;font-size:18px">
+  <span class="fa">۵. Sliding Window — آرشیوِ آنی، بدون DELETE</span>
+  <span class="en">5. Sliding Window — instant archive, no DELETE</span>
+</h3>
+
+<p style="margin:14px 0;font-size:15px;line-height:1.9">
+  <span class="fa">این یکی از کاربردی‌ترین الگوهای پارتیشن‌بندی است — و همان دلیلی که بسیاری از تیم‌ها اصلاً سراغ پارتیشن‌بندی می‌روند. فرض کنید تصمیم دارید همیشه ۱۲ ماهِ اخیر را در جدول اصلی نگه دارید. هر ماه، یک پارتیشنِ جدید برای داده‌های تازه اضافه می‌کنید و قدیمی‌ترین پارتیشن را با <code>ALTER TABLE ... SWITCH</code> <b>آنی</b> به یک جدول آرشیو منتقل می‌کنید. این عملیات <b>فقط متادیتا را تغییر می‌دهد</b> و حتی اگر پارتیشن صدها میلیون سطر داشته باشد، فقط چند میلی‌ثانیه طول می‌کشد. خبری از <code>DELETE</code> های سنگین نیست، لاگ تراکنش باد نمی‌کند، و قفلِ طولانی‌مدتی روی جدول نمی‌آید.</span>
+  <span class="en">This is one of the most practical partitioning patterns — and the very reason many teams adopt partitioning in the first place. Suppose you decide to keep only the last 12 months in the main table. Each month, you add a fresh partition for new data and <code>ALTER TABLE ... SWITCH</code> the oldest partition <b>instantly</b> to an archive table. This operation <b>changes only metadata</b> and takes milliseconds, even if the partition holds hundreds of millions of rows. No heavy <code>DELETE</code>s, no transaction log bloat, and no long‑lasting table locks.</span>
+</p>
+
+<div class="sw-visual">
+  <div class="sw-box">
+    <h6><span class="fa">جدول اصلی — <span class="mono">Orders</span></span><span class="en">Main table — <span class="mono">Orders</span></span></h6>
+    <span class="ptag">P1 (Jan)</span>
+    <span class="ptag moved">P2 (Feb) ← moved out</span>
+    <span class="ptag">P3 (Mar)</span>
+    <span class="ptag">P4 (Apr)</span>
+  </div>
+  <div class="sw-arrow">
+    <svg viewBox="0 0 24 24" class="ic lg" style="color:var(--acc)"><use href="#i-arrow" /></svg>
+    <div style="font-size:11px;color:var(--acc);font-weight:700;margin-top:4px">SWITCH</div>
+  </div>
+  <div class="sw-box archive">
+    <h6><span class="fa">جدول آرشیو — <span class="mono">OrdersArchive</span></span><span class="en">Archive table — <span class="mono">OrdersArchive</span></span></h6>
+    <span class="ptag moved"><span class="fa">P2 (Feb) — ۸ میلیون سطر، در ۲ میلی‌ثانیه!</span><span class="en">P2 (Feb) — 8 million rows, in 2ms!</span></span>
+  </div>
+</div>
+
+<div class="codebox">
+  <div class="cb-h">sql — the sliding window in action</div>
+  <pre><code><span class="cm">-- archive table must have EXACTLY the same structure as the main table</span>
+<span class="kw">CREATE TABLE</span> dbo.OrdersArchive (<span class="cm">/* identical schema */</span>);
+
+<span class="cm">-- instant move: metadata-only, milliseconds even for huge partitions</span>
+<span class="kw">ALTER TABLE</span> dbo.Orders
+<span class="kw">SWITCH PARTITION</span> 1 <span class="kw">TO</span> dbo.OrdersArchive;
+
+<span class="cm">-- remove the now‑empty partition boundary (merge it with the previous one)</span>
+<span class="kw">ALTER PARTITION FUNCTION</span> pf_OrdersByYear()
+<span class="kw">MERGE RANGE</span> (<span class="st">'2023-01-01'</span>);
+
+<span class="cm">-- add a fresh partition for the upcoming month/year</span>
+<span class="kw">ALTER PARTITION FUNCTION</span> pf_OrdersByYear()
+<span class="kw">SPLIT RANGE</span> (<span class="st">'2026-01-01'</span>);</code></pre>
+</div>
+     <h3 style="margin-top:32px;font-size:18px">
+  <span class="fa">۶. Potential Issues — تله‌هایی که باید بدانید</span>
+  <span class="en">6. Potential Issues — traps to know about</span>
+</h3>
+
+<div class="grid2" style="margin-top:14px">
+  <div class="card" style="border-right:4px solid var(--red)">
+    <h3>
+      <span class="cico red"><svg viewBox="0 0 24 24" class="ic"><use href="#i-target" /></svg></span>
+      <span class="fa">کلید یکتا باید شامل ستون پارتیشن باشد</span>
+      <span class="en">Unique keys must include the partition column</span>
+    </h3>
+    <p>
+      <span class="fa">این مهم‌ترین محدودیت است: هر <code>PRIMARY KEY</code> یا <code>UNIQUE</code> روی جدول پارتیشن‌شده <b>باید</b> ستون پارتیشن را هم داشته باشد. پس نمی‌توانید <code>PRIMARY KEY (Id)</code> داشته باشید — باید <code>PRIMARY KEY (Id, OrderDate)</code> باشد. این را از روز اول در مدل EF Core لحاظ کنید.</span>
+      <span class="en">This is the most important constraint: every <code>PRIMARY KEY</code> or <code>UNIQUE</code> constraint on a partitioned table <b>must</b> include the partition column. So you can't have <code>PRIMARY KEY (Id)</code> — it must be <code>PRIMARY KEY (Id, OrderDate)</code>. Bake this into your EF Core model from day one.</span>
+    </p>
+  </div>
+
+  <div class="card" style="border-right:4px solid var(--red)">
+    <h3>
+  <span class="cico red"><svg viewBox="0 0 24 24" class="ic"><use href="#i-scan" /></svg></span>
+  <span class="fa">اگر ستون پارتیشن در WHERE نباشد، رد شدن اتفاق نمی‌افتد</span>
+  <span class="en">If the partition column is missing from WHERE, pruning does not occur</span>
+</h3>
+  <p>
+  <span class="fa">رایج‌ترین اشتباه این است که کوئری درست می‌نویسید و جواب هم درست می‌گیرید، اما متوجه نمی‌شوید موتور <b>همهٔ پارتیشن‌ها</b> را خوانده است. چون ستون پارتیشن در فیلتر نیست، موتور راهی برای رد کردنِ پارتیشن‌های نامربوط ندارد. <code>WHERE YEAR(OrderDate) = 2025</code> هم دقیقاً همین مشکل را دارد — تابع، مقایسه با مرزهای پارتیشن را غیرممکن می‌کند. راه‌حل: همیشه مستقیماً روی خودِ ستون مقایسه کنید، مثلاً <code>WHERE OrderDate &gt;= '2025-01-01' AND OrderDate &lt; '2026-01-01'</code>.</span>
+  <span class="en">The most common mistake is writing a valid query that returns correct results, without realizing the engine has read <b>every partition</b>. Because the partition column isn't in the filter, the engine has no way to prune irrelevant partitions. <code>WHERE YEAR(OrderDate) = 2025</code> has the exact same issue — the function makes boundary comparison impossible. The fix: always compare the column directly, e.g. <code>WHERE OrderDate &gt;= '2025-01-01' AND OrderDate &lt; '2026-01-01'</code>.</span>
+</p>
+  </div>
+
+  <div class="card" style="border-right:4px solid var(--amb)">
+    <h3>
+      <span class="cico amber"><svg viewBox="0 0 24 24" class="ic"><use href="#i-grid" /></svg></span>
+      <span class="fa">ایندکس‌های aligned و non‑aligned</span>
+      <span class="en">Aligned vs non‑aligned indexes</span>
+    </h3>
+    <p>
+      <span class="fa">ایندکسی که از همان Partition Scheme استفاده می‌کند، <b>aligned</b> نامیده می‌شود. <code>SWITCH</code> فقط با ایندکس‌های aligned کار می‌کند. اگر ایندکسی روی Scheme دیگری بسازید (non‑aligned)، نمی‌توانید پارتیشن را سوییچ کنید مگر اینکه اول آن ایندکس را حذف کنید.</span>
+      <span class="en">An index using the same partition scheme is called <b>aligned</b>. <code>SWITCH</code> only works with aligned indexes. If you build an index on a different scheme (non‑aligned), you cannot switch the partition unless you drop that index first.</span>
+    </p>
+  </div>
+
+  <div class="card" style="border-right:4px solid var(--amb)">
+    <h3>
+      <span class="cico amber"><svg viewBox="0 0 24 24" class="ic"><use href="#i-swap" /></svg></span>
+      <span class="fa">سوییچ، ساختارِ دقیقاً یکسان می‌خواهد</span>
+      <span class="en">SWITCH needs exactly matching structure</span>
+    </h3>
+    <p>
+      <span class="fa">جدول مقصدِ <code>SWITCH</code> باید دقیقاً همان ساختار، همان ایندکس‌های aligned، همان <code>CHECK CONSTRAINT</code>ها و همان Filegroup را داشته باشد. کوچک‌ترین تفاوتی، عملیات را خراب می‌کند.</span>
+      <span class="en">The <code>SWITCH</code> target table must have exactly the same structure, the same aligned indexes, the same <code>CHECK CONSTRAINT</code>s, and the same filegroup. The slightest difference breaks the operation.</span>
+    </p>
+  </div>
+</div>
+
+<div class="netnote">
+  <span class="badge">.NET</span>
+  <p>
+    <span class="fa">EF Core به‌طور خودکار تابع و طرح پارتیشن نمی‌سازد — این کارِ Migration دستی یا DBA است. اما EF Core از <code>PRIMARY KEY</code>های ترکیبی پشتیبانی می‌کند: <code>builder.HasKey(o =&gt; new { o.Id, o.OrderDate });</code> و این دقیقاً همان چیزی است که پارتیشن‌بندی SQL Server نیاز دارد. کد LINQ شما دست‌نخورده می‌ماند — همه‌چیز شفاف است.</span>
+    <span class="en">EF Core won't auto‑create partition functions or schemes — that's manual migration or DBA work. But EF Core supports composite primary keys: <code>builder.HasKey(o =&gt; new { o.Id, o.OrderDate });</code> — and that's exactly what SQL Server partitioning requires. Your LINQ code stays untouched — everything is transparent.</span>
+  </p>
+</div>
+    </section>
+
+<!-- ═══ 05 — MySQL ═══ -->
+<section id="s5" class="stop reveal">
+  <div class="stop-head">
+    <span class="stop-num">05</span>
+    <h2>
+      <span class="fa">پارتیشن‌بندی در MySQL — همان ایده، نحوهٔ تعریف متفاوت</span>
+      <span class="en">Partitioning in MySQL — same idea, different definition syntax</span>
+    </h2>
+  </div>
+
+  <div class="srcs">
+    <a href="https://dev.mysql.com/doc/refman/8.4/en/partitioning.html" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-award" /></svg>
+      <span class="fa">منبع: MySQL 8.4 — فصل Partitioning</span>
+      <span class="en">Source: MySQL 8.4 — Partitioning chapter</span>
+    </a>
+    <a href="https://dev.mysql.com/doc/refman/8.4/en/partitioning-range.html" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-award" /></svg>
+      <span class="fa">RANGE Partitioning</span>
+      <span class="en">RANGE partitioning</span>
+    </a>
+    <a href="https://dev.mysql.com/doc/refman/8.4/en/partitioning-hash.html" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-award" /></svg>
+      <span class="fa">HASH و KEY</span>
+      <span class="en">HASH and KEY</span>
+    </a>
+  </div>
+
+  <p class="lead">
+    <span class="fa">در MySQL، چهار روش پارتیشن‌بندی یعنی RANGE، LIST، HASH و KEY را داریم، اما نحوهٔ تعریف آنها با SQL Server تفاوت دارد. MySQL همه‌چیز را <b>داخل خودِ دستور CREATE TABLE</b> تعریف می‌کند — خبری از اشیای جداگانه‌ای مثل Partition Function و Scheme نیست. یک تفاوت مهم دیگر: از MySQL 8.0 به بعد، فقط <b>InnoDB و NDB</b> از پارتیشن‌بندی پشتیبانی می‌کنند ولی MyISAM نه.</span>
+    <span class="en">In MySQL, we have the four partitioning methods RANGE, LIST, HASH, and KEY, but the way they're defined differs from SQL Server. MySQL defines everything <b>inside the CREATE TABLE statement itself</b> — no separate objects like partition functions and schemes. Another important difference: from MySQL 8.0 onward, only <b>InnoDB and NDB</b> support partitioning — not MyISAM.</span>
+  </p>
+
+  <!-- ===== کدها ===== -->
+  <div class="grid2">
+    <div class="codebox" style="margin:0">
+      <div class="cb-h">mysql — RANGE partitioning</div>
+      <pre><code><span class="kw">CREATE TABLE</span> orders (
+  id          <span class="kw">BIGINT NOT NULL AUTO_INCREMENT</span>,
+  order_date  <span class="kw">DATE NOT NULL</span>,
+  customer_id <span class="kw">INT NOT NULL</span>,
+  total       <span class="kw">DECIMAL</span>(12,2),
+  <span class="kw">PRIMARY KEY</span> (id, order_date)
+)
+<span class="kw">PARTITION BY RANGE</span> (YEAR(order_date)) (
+  <span class="kw">PARTITION</span> p2023 <span class="kw">VALUES LESS THAN</span> (<span class="st">2024</span>),
+  <span class="kw">PARTITION</span> p2024 <span class="kw">VALUES LESS THAN</span> (<span class="st">2025</span>),
+  <span class="kw">PARTITION</span> p2025 <span class="kw">VALUES LESS THAN</span> (<span class="st">2026</span>),
+  <span class="kw">PARTITION</span> pmax  <span class="kw">VALUES LESS THAN</span> (MAXVALUE)
+);</code></pre>
+    </div>
+
+    <div class="codebox" style="margin:0">
+      <div class="cb-h">mysql — RANGE COLUMNS (no function needed)</div>
+      <pre><code><span class="kw">CREATE TABLE</span> events (
+  id         <span class="kw">BIGINT NOT NULL AUTO_INCREMENT</span>,
+  event_date <span class="kw">DATE NOT NULL</span>,
+  payload    <span class="kw">JSON</span>,
+  <span class="kw">PRIMARY KEY</span> (id, event_date)
+)
+<span class="kw">PARTITION BY RANGE COLUMNS</span>(event_date) (
+  <span class="kw">PARTITION</span> p2024 <span class="kw">VALUES LESS THAN</span> (<span class="st">'2025-01-01'</span>),
+  <span class="kw">PARTITION</span> p2025 <span class="kw">VALUES LESS THAN</span> (<span class="st">'2026-01-01'</span>),
+  <span class="kw">PARTITION</span> pmax  <span class="kw">VALUES LESS THAN</span> (MAXVALUE)
+);
+<span class="cm">-- COLUMNS variant: use the date directly, no TO_DAYS()</span></code></pre>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="codebox" style="margin:0">
+      <div class="cb-h">mysql — HASH (your expression)</div>
+      <pre><code><span class="kw">CREATE TABLE</span> user_sessions (
+  id         <span class="kw">INT NOT NULL</span>,
+  user_id    <span class="kw">INT NOT NULL</span>,
+  payload    <span class="kw">TEXT</span>,
+  <span class="kw">PRIMARY KEY</span> (id, user_id)
+)
+<span class="kw">PARTITION BY HASH</span>(user_id)
+<span class="kw">PARTITIONS</span> <span class="st">8</span>;
+<span class="cm">-- user_id % 8 picks the bucket</span></code></pre>
+    </div>
+
+    <div class="codebox" style="margin:0">
+      <div class="cb-h">mysql — KEY (MySQL's own hash)</div>
+      <pre><code><span class="kw">CREATE TABLE</span> api_logs (
+  trace_id   <span class="kw">VARCHAR</span>(36) <span class="kw">NOT NULL</span>,
+  ts         <span class="kw">DATETIME NOT NULL</span>,
+  body       <span class="kw">TEXT</span>,
+  <span class="kw">PRIMARY KEY</span> (trace_id, ts)
+)
+<span class="kw">PARTITION BY KEY</span>(trace_id)
+<span class="kw">PARTITIONS</span> <span class="st">16</span>;
+<span class="cm">-- works on non-integer columns; MySQL hashes internally</span></code></pre>
+    </div>
+  </div>
+
+  <div class="codebox">
+    <div class="cb-h">mysql — subpartitioning (partition within partition)</div>
+    <pre><code><span class="kw">CREATE TABLE</span> sales (
+  id          <span class="kw">BIGINT NOT NULL AUTO_INCREMENT</span>,
+  region      <span class="kw">VARCHAR</span>(10) <span class="kw">NOT NULL</span>,
+  sale_date   <span class="kw">DATE NOT NULL</span>,
+  amount      <span class="kw">DECIMAL</span>(12,2),
+  <span class="kw">PRIMARY KEY</span> (id, region, sale_date)
+)
+<span class="kw">PARTITION BY LIST COLUMNS</span>(region)
+<span class="kw">SUBPARTITION BY HASH</span> (YEAR(sale_date))
+<span class="kw">SUBPARTITIONS</span> <span class="st">4</span> (
+  <span class="kw">PARTITION</span> pAMER <span class="kw">VALUES IN</span> (<span class="st">'US'</span>, <span class="st">'CA'</span>, <span class="st">'BR'</span>),
+  <span class="kw">PARTITION</span> pEMEA <span class="kw">VALUES IN</span> (<span class="st">'DE'</span>, <span class="st">'FR'</span>, <span class="st">'UK'</span>),
+  <span class="kw">PARTITION</span> pAPAC <span class="kw">VALUES IN</span> (<span class="st">'JP'</span>, <span class="st">'IN'</span>, <span class="st">'AU'</span>)
+);
+<span class="cm">-- first layer: LIST by region</span>
+<span class="cm">-- second layer: HASH on year within each region</span></code></pre>
+  </div>
+
+  <!-- ===== جدول مقایسه ===== -->
+  <table class="cmp-table">
+    <tr>
+      <th><span class="fa">تفاوت‌های کلیدی با SQL Server</span><span class="en">Key differences vs SQL Server</span></th>
+      <th>SQL Server</th>
+      <th>MySQL</th>
+    </tr>
+    <tr>
+      <td><span class="fa">محل تعریف</span><span class="en">Definition location</span></td>
+      <td><span class="fa">دو شیء جدا (تابع + طرح) و سپس جدول</span><span class="en">Two separate objects (function + scheme), then the table</span></td>
+      <td><span class="fa">مستقیم داخل CREATE TABLE</span><span class="en">Inline inside CREATE TABLE</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">انواع پارتیشن</span><span class="en">Partition types</span></td>
+      <td>RANGE</td>
+      <td>RANGE · LIST · HASH · KEY</td>
+    </tr>
+    <tr>
+      <td><span class="fa">Subpartitioning</span><span class="en">Subpartitioning</span></td>
+      <td class="bad"><span class="fa">پشتیبانی نمی‌شود</span><span class="en">Not supported</span></td>
+      <td class="good"><span class="fa">پشتیبانی می‌شود</span><span class="en">Supported</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">کلید یکتا / PK</span><span class="en">Unique key / PK</span></td>
+      <td><span class="fa">باید شامل ستون پارتیشن باشد</span><span class="en">Must include the partition column</span></td>
+      <td><span class="fa">همین‌طور — سخت‌گیرانه</span><span class="en">Same — strictly enforced</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">Foreign Key</span><span class="en">Foreign keys</span></td>
+      <td><span class="fa">پشتیبانی می‌شود</span><span class="en">Supported</span></td>
+      <td class="bad"><span class="fa">روی جدول پارتیشن‌شده پشتیبانی <b>نمی‌شود</b></span><span class="en"><b>Not</b> supported on partitioned tables</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">موتورهای پشتیبانی‌شده</span><span class="en">Supported engines</span></td>
+      <td><span class="fa">همه (SQL Server فقط یک موتور دارد)</span><span class="en">All (SQL Server only has one engine)</span></td>
+      <td><span class="fa">فقط InnoDB و NDB (از 8.0 به بعد)</span><span class="en">InnoDB and NDB only (since 8.0)</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">دیدن پارتیشن‌های استفاده‌شده</span><span class="en">See which partitions were used</span></td>
+      <td><code>Actual Partition Count</code> <span class="fa">در پلن اجرا</span><span class="en">in the plan</span></td>
+      <td><span class="fa">ستون <code>partitions</code> در خروجی <code>EXPLAIN</code></span><span class="en">the <code>partitions</code> column in <code>EXPLAIN</code></span></td>
+    </tr>
+  </table>
+
+  <!-- ===== نکته .NET ===== -->
+  <div class="netnote">
+    <span class="badge">.NET</span>
+    <p>
+      <span class="fa">اگر از MySQL با EF Core استفاده می‌کنید (مثلاً با <code>Pomelo.EntityFrameworkCore.MySql</code>)، پارتیشن‌بندی برای کد شما کاملاً شفاف است. فقط دو نکته را جدی بگیرید: <b>۱)</b> محدودیت Foreign Key — اگر مدل شما به FKهای زیادی متکی است، قبل از پارتیشن‌بندی در MySQL دو بار فکر کنید. <b>۲)</b> فقط از InnoDB استفاده کنید؛ MyISAM از نسخهٔ ۸٫۰ به بعد دیگر پشتیبانی نمی‌شود.</span>
+      <span class="en">If you're using MySQL with EF Core (say, with <code>Pomelo.EntityFrameworkCore.MySql</code>), partitioning is completely transparent to your code. Just keep two things in mind: <b>1)</b> the foreign-key limitation — if your model relies heavily on FKs, think twice before partitioning in MySQL. <b>2)</b> use InnoDB only; MyISAM is no longer supported from version 8.0 onward.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ═══ 06 — Partitioning vs Sharding ═══ -->
+<section id="s6" class="stop reveal">
+  <div class="stop-head">
+    <span class="stop-num">06</span>
+    <h2>
+      <span class="fa">پارتیشن‌بندی در برابر Sharding — این دو را قاطی نکنید</span>
+      <span class="en">Partitioning vs Sharding — don't mix these up</span>
+    </h2>
+  </div>
+
+  <div class="srcs">
+    <a href="https://dataintensive.net/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-award" /></svg>
+      <span class="fa">منبع: DDIA ویرایش ۲، فصل ۶</span>
+      <span class="en">Source: DDIA 2e, Ch. 6</span>
+    </a>
+  </div>
+
+  <p class="lead">
+    <span class="fa">هر دو یعنی «تقسیم داده» و به همین دلیل اغلب به جای هم استفاده می‌شوند. اما تفاوتشان یک سوال ساده است: <b>تقسیم روی یک سرور، یا روی چند سرور؟</b> پاسخ به این سوال، معماری شما را تعیین می‌کند.</span>
+    <span class="en">Both mean "splitting data" and are often used interchangeably. But their difference comes down to one simple question: <b>splitting on one server, or across many?</b> The answer defines your architecture.</span>
+  </p>
+
+  <div class="grid2">
+    <div class="card" style="border-right:4px solid var(--acc)">
+      <h3>
+        <span class="cico blue"><svg viewBox="0 0 24 24" class="ic"><use href="#i-db" /></svg></span>
+        <span class="fa">Partitioning — یک خانه، چند اتاق</span>
+        <span class="en">Partitioning — one house, several rooms</span>
+      </h3>
+      <p>
+        <span class="fa">همهٔ پارتیشن‌ها داخل <b>یک نمونهٔ دیتابیس</b> قرار دارند. موتور خودش می‌داند هر داده کجاست؛ کوئری شما عادی است و نیازی به مسیریابی دستی ندارید. JOIN بین پارتیشن‌ها؟ موتور خودش انجام می‌دهد.</span>
+        <span class="en">All partitions live inside <b>one database instance</b>. The engine knows where everything is; your queries are normal and need no manual routing. JOINs across partitions? The engine handles them itself.</span>
+      </p>
+    </div>
+
+    <div class="card" style="border-right:4px solid var(--vio)">
+      <h3>
+        <span class="cico violet"><svg viewBox="0 0 24 24" class="ic"><use href="#i-server" /></svg></span>
+        <span class="fa">Sharding — چند خانهٔ جدا</span>
+        <span class="en">Sharding — several separate houses</span>
+      </h3>
+     <p>
+  <span class="fa">داده بین <b>چند سرور مستقل</b> پخش می‌شود. هیچ سروری همهٔ داده را ندارد. حالا <b>شما</b> (یا یک لایهٔ مسیریاب) باید بدانید هر بخش از داده کجاست، کوئری را به سرور درست بفرستید، و JOIN های بین‌بخشی را خودتان مدیریت کنید.</span>
+  <span class="en">Data is spread across <b>multiple independent servers</b>. No single server holds everything. Now <b>you</b> (or a routing layer) must know where each shard lives, route queries to the right server, and handle cross‑shard JOINs yourself.</span>
+</p>
+    </div>
+  </div>
+
+  <table class="cmp-table">
+    <tr>
+      <th></th>
+      <th>Partitioning</th>
+      <th>Sharding</th>
+    </tr>
+    <tr>
+      <td><span class="fa">کجا؟</span><span class="en">Where?</span></td>
+      <td><span class="fa">یک سرور / یک نمونه</span><span class="en">One server / one instance</span></td>
+      <td><span class="fa">چند سرور مستقل</span><span class="en">Multiple independent servers</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">چه کسی مسیریابی می‌کند؟</span><span class="en">Who routes?</span></td>
+      <td class="good"><span class="fa">خودِ موتور — شفاف</span><span class="en">The engine itself — transparent</span></td>
+      <td class="bad"><span class="fa">اپلیکیشن یا لایهٔ proxy</span><span class="en">The app or a proxy layer</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">کوئری بین تکه‌ها</span><span class="en">Cross‑piece queries</span></td>
+      <td class="good"><span class="fa">عادی — موتور انجام می‌دهد</span><span class="en">Normal — the engine handles it</span></td>
+      <td class="bad"><span class="fa">سخت — باید خودتان جمع کنید</span><span class="en">Hard — you must stitch results together</span></td>
+    </tr>
+    <tr>
+      <td><span class="fa">هدف اصلی</span><span class="en">Main goal</span></td>
+      <td><span class="fa">کارایی و نگهداری روی دادهٔ بزرگ</span><span class="en">Performance and maintenance on large data</span></td>
+      <td><span class="fa">مقیاس افقی فراتر از توان یک سرور</span><span class="en">Horizontal scale beyond one server's limits</span></td>
+    </tr>
+  <tr>
+  <td><span class="fa">تشبیه</span><span class="en">Analogy</span></td>
+  <td><span class="fa">یک ساختمان با چندین طبقه</span><span class="en">One building with multiple floors</span></td>
+  <td><span class="fa">چند ساختمان جداگانه در نقاط مختلف شهر</span><span class="en">Separate buildings in different parts of the city</span></td>
+</tr>
+  </table>
+
+<div class="netnote">
+  <span class="badge">.NET</span>
+  <p>
+    <span class="fa"><b>ترتیب عملی:</b> اول ایندکس. بعد پارتیشن‌بندی — چون کد شما را تغییر نمی‌دهد. پارتیشن‌بندی توزیع‌شده را فقط وقتی به میز بیاورید که یک سرور واقعاً دیگر پاسخگو نیست — چون یک پروژهٔ معماری کامل است: مسیریابی، توزیع مجدد، تراکنش‌های بین‌بخشی.</span>
+    <span class="en"><b>Practical order:</b> indexes first. Then partitioning — because it doesn't change your code. Bring sharding to the table only when one server truly can't keep up — because it's a full architecture project: routing, rebalancing, cross‑shard transactions.</span>
+  </p>
+</div>
+</section>
+
+    <!-- ═══ 07 — Pruning demo ═══ -->
+    <section id="s7" class="stop reveal">
+      <div class="stop-head"><span class="stop-num">07</span>
+        <h2><span class="fa">تماشا کنید — حذف پارتیشن در عمل</span><span class="en">Watch it — partition elimination in
+            action</span></h2>
+      </div>
+
+      <div class="demo">
+        <div class="demo-t"><svg viewBox="0 0 24 24" class="ic">
+            <use href="#i-play" />
+          </svg><span class="fa">جدول Orders — پارتیشن‌شده بر اساس دوماه</span><span class="en">Orders table —
+            partitioned by two-month slices</span></div>
+        <p style="font-size:14px;color:var(--mut);margin-bottom:16px">
+          <span class="fa">جدول ما ۶ پارتیشن دارد (هرکدام ~۲٬۰۰۰ صفحه). یک کوئری انتخاب کنید و ببینید موتور کدام
+            پارتیشن‌ها را می‌خواند و کدام‌ها را کلاً رد می‌کند.</span>
+          <span class="en">Our table has 6 partitions (~2,000 pages each). Pick a query and watch which partitions the
+            engine reads and which it skips entirely.</span>
+        </p>
+
+        <div class="pd-queries">
+          <button class="pd-q" data-q="0">WHERE OrderDate BETWEEN '2025-03-01' AND '2025-04-30'</button>
+          <button class="pd-q" data-q="1">WHERE OrderDate >= '2025-09-01'</button>
+          <button class="pd-q" data-q="2">WHERE CustomerId = 1042</button>
+          <button class="pd-q" data-q="3"><span class="fa">اسکن کامل (بدون WHERE)</span><span class="en">Full scan (no
+              WHERE)</span></button>
+          <button class="btn" id="pdReset"><svg viewBox="0 0 24 24" class="ic sm">
+              <use href="#i-reset" />
+            </svg><span class="fa">ریست</span><span class="en">Reset</span></button>
+        </div>
+
+        <div class="pd-parts" id="pdParts">
+          <div class="pd-part"><span class="pd-skip">SKIPPED ✓</span>
+            <div class="plabel">P1</div>
+            <div class="prange">Jan–Feb</div>
+            <div class="pd-rows"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="pd-part"><span class="pd-skip">SKIPPED ✓</span>
+            <div class="plabel">P2</div>
+            <div class="prange">Mar–Apr</div>
+            <div class="pd-rows"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="pd-part"><span class="pd-skip">SKIPPED ✓</span>
+            <div class="plabel">P3</div>
+            <div class="prange">May–Jun</div>
+            <div class="pd-rows"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="pd-part"><span class="pd-skip">SKIPPED ✓</span>
+            <div class="plabel">P4</div>
+            <div class="prange">Jul–Aug</div>
+            <div class="pd-rows"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="pd-part"><span class="pd-skip">SKIPPED ✓</span>
+            <div class="plabel">P5</div>
+            <div class="prange">Sep–Oct</div>
+            <div class="pd-rows"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="pd-part"><span class="pd-skip">SKIPPED ✓</span>
+            <div class="plabel">P6</div>
+            <div class="prange">Nov–Dec</div>
+            <div class="pd-rows"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+
+        <div class="pd-stats">
+          <div class="pd-stat">
+            <div class="label"><span class="fa">پارتیشن خوانده‌شده</span><span class="en">Partitions read</span></div>
+            <div class="val" id="pdRead">0 / 6</div>
+          </div>
+          <div class="pd-stat">
+            <div class="label"><span class="fa">Logical Reads (تقریبی)</span><span class="en">Logical reads
+                (approx.)</span></div>
+            <div class="val" id="pdReads">0</div>
+          </div>
+          <div class="pd-stat">
+            <div class="label"><span class="fa">دادهٔ ردشده</span><span class="en">Data skipped</span></div>
+            <div class="val good" id="pdSaved">—</div>
+          </div>
+        </div>
+
+        <div class="pd-result" id="pdResult"></div>
+      </div>
+
+      <p><span class="fa">به کوئری سوم دقت کنید: <code>WHERE CustomerId = 1042</code>. این کوئری کاملاً درست است و جواب
+          درست می‌دهد — اما چون <b>ستون پارتیشن (<code>OrderDate</code>) در WHERE نیست</b>، موتور هیچ راهی برای حذف
+          پارتیشن ندارد و <b>هر شش پارتیشن</b> را می‌خواند. این پرهزینه‌ترین نتیجهٔ یک انتخابِ بدِ کلید است.</span>
+        <span class="en">Look closely at query three: <code>WHERE CustomerId = 1042</code>. This query is perfectly
+          valid and returns correct results — but because <b>the partition key (<code>OrderDate</code>) isn't in the
+            WHERE clause</b>, the engine has no way to eliminate anything and reads <b>all six partitions</b>. That's
+          the most expensive outcome of a poor key choice.</span>
+      </p>
+    </section>
+
+    <!-- ═══ 08 — Trade-offs ═══ -->
+<section id="s8" class="stop reveal">
+  <div class="stop-head">
+    <span class="stop-num">08</span>
+    <h2>
+      <span class="fa">سود و زیان — جمع‌بندی</span>
+      <span class="en">Trade-offs — the recap</span>
+    </h2>
+  </div>
+
+  <div class="grid2">
+    <div class="card" style="border-right:4px solid var(--grn)">
+      <h3>
+        <span class="cico green"><svg viewBox="0 0 24 24" class="ic"><use href="#i-check" /></svg></span>
+        <span class="fa">پارتیشن‌بندی کمک می‌کند وقتی…</span>
+        <span class="en">Partitioning helps when…</span>
+      </h3>
+      <p>
+        <span class="fa">
+          <b>۱.</b> جدول واقعاً بزرگ باشد — از ده‌ها میلیون سطر شروع شود.<br>
+          <b>۲.</b> داده سری‌زمانی باشد و کوئری‌ها فیلترِ بازهٔ زمانی داشته باشند.<br>
+          <b>۳.</b> نیاز به آرشیو یا پاک‌سازیِ منظمِ دادهٔ قدیمی داشته باشید (Sliding Window).<br>
+          <b>۴.</b> نگهداری (بازسازی ایندکس، بکاپ) روی کلِ جدول به یک دردسر تبدیل شده باشد.<br>
+          <b>۵.</b> بخواهید دادهٔ داغ و کهنه را روی دیسک‌های متفاوت نگه دارید (Tiered Storage).
+        </span>
+        <span class="en">
+          <b>1.</b> The table is truly large — starting from tens of millions of rows.<br>
+          <b>2.</b> The data is time‑series and queries carry time‑range filters.<br>
+          <b>3.</b> You need regular archiving or purging of old data (sliding window).<br>
+          <b>4.</b> Maintenance (index rebuilds, backups) on the whole table has become a pain.<br>
+          <b>5.</b> You want hot and cold data on different disks (tiered storage).
+        </span>
+      </p>
+    </div>
+
+    <div class="card" style="border-right:4px solid var(--red)">
+      <h3>
+        <span class="cico red"><svg viewBox="0 0 24 24" class="ic"><use href="#i-x" /></svg></span>
+        <span class="fa">ضرر می‌زند وقتی…</span>
+        <span class="en">It hurts when…</span>
+      </h3>
+      <p>
+        <span class="fa">
+          <b>۱.</b> جدول کوچک باشد — پیچیدگی اضافه می‌شود بدون اینکه سودی داشته باشد.<br>
+          <b>۲.</b> کوئری‌ها هیچ‌وقت روی ستون پارتیشن فیلتر نکنند.<br>
+          <b>۳.</b> بیشتر دسترسی‌ها تک‌سطری با Primary Key باشد — همان ایندکس خوشه‌ای کافی است.<br>
+          <b>۴.</b> تیم، ظرفیتِ نگهداریِ یک ساختار پیچیده‌تر را نداشته باشد.<br>
+          <b>۵.</b> در MySQL به Foreign Key نیاز داشته باشید — پشتیبانی نمی‌شود.
+        </span>
+        <span class="en">
+          <b>1.</b> The table is small — added complexity without any benefit.<br>
+          <b>2.</b> Queries never filter on the partition column.<br>
+          <b>3.</b> Most access is single‑row by Primary Key — the clustered index already covers it.<br>
+          <b>4.</b> Your team can't handle the maintenance of a more complex structure.<br>
+          <b>5.</b> You need foreign keys in MySQL — they're not supported.
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <div class="rulethumb">
+    <svg viewBox="0 0 24 24" class="ic"><use href="#i-bulb" /></svg>
+    <p>
+      <span class="fa"><b>قاعدهٔ سرانگشتی:</b> قبل از پارتیشن‌بندی دو سوال بپرسید: «کوئری‌های داغِ من روی کدام ستون فیلتر دارند؟» و «نگهداریِ جدول چقدر برایم دردسر دارد؟» اگر پاسخِ اولی یک ستونِ تاریخ با توزیعِ منظم باشد و پاسخِ دومی «زیاد»، پارتیشن‌بندی احتمالاً سود دارد. اگر جواب «نمی‌دانم» است، اول Query Store (در SQL Server) یا <code>performance_schema</code> (در MySQL) را روشن کنید.</span>
+      <span class="en"><b>Rule of thumb:</b> before partitioning, ask two questions: "which column do my hot queries filter on?" and "how painful is table maintenance?" If the first answer is a date column with steady distribution and the second is "very", partitioning probably pays off. If the answer is "I don't know", turn on Query Store (in SQL Server) or <code>performance_schema</code> (in MySQL) first.</span>
+    </p>
+  </div>
+
+  <div class="netnote">
+    <span class="badge">.NET</span>
+    <p>
+      <span class="fa"><b>چک‌لیست سریع شما:</b> در SSMS، پلن اجرای واقعی (Actual Plan) را باز کنید و خاصیت <code>Actual Partition Count</code> را روی عملگر Scan/Seek ببینید. اگر برابر تعداد کل پارتیشن‌ها بود، یعنی رد شدن اتفاق نیفتاده است. در MySQL با <code>EXPLAIN</code> ستون <code>partitions</code> را بررسی کنید. در EF Core با <code>LogTo(Console.WriteLine)</code> خروجی SQL را ببینید و مطمئن شوید که فیلتر تاریخ واقعاً ارسال می‌شود.</span>
+      <span class="en"><b>Your quick checklist:</b> in SSMS, open the Actual Execution Plan and check the <code>Actual Partition Count</code> property on the Scan/Seek operator. If it equals the total number of partitions, pruning did not occur. In MySQL, run <code>EXPLAIN</code> and check the <code>partitions</code> column. In EF Core, use <code>LogTo(Console.WriteLine)</code> to see the SQL output and confirm the date filter is actually being sent.</span>
+    </p>
+  </div>
+</section>
+
+   <!-- ═══ 10 — Self-check ═══ -->
+<section id="s10" class="stop reveal">
+  <div class="stop-head">
+    <span class="stop-num">✓</span>
+    <h2>
+      <span class="fa">خودآزمایی — می‌توانید این‌ها را بلند جواب بدهید؟</span>
+      <span class="en">Self-check — can you answer these out loud?</span>
+    </h2>
+  </div>
+
+  <p class="lead">
+    <span class="fa">صفحه را ببندید و با کلمات خودتان جواب بدهید، سپس کلیک کنید و پاسخ را با توضیحات مقایسه کنید. اگر سوالی شما را گیر انداخت، به همان ایستگاه برگردید و دوباره بخوانید.</span>
+    <span class="en">Close the page, answer in your own words, then click to compare your response with the explanation. If a question stumps you, jump back to that stop and review it.</span>
+  </p>
+
+  <button class="btn" id="qaAll" style="margin-bottom:20px">
+    <span class="fa">باز/بسته کردن همه</span>
+    <span class="en">Toggle all</span>
+  </button>
+
+  <!-- ===== Q1 ===== -->
+  <div class="qa">
+    <button class="q">
+      <span class="no">Q1</span>
+      <span class="fa">تفاوت Partitioned Tables و Partitioned Views در SQL Server چیست؟ کِی باید از ویوها استفاده کنیم؟</span>
+      <span class="en">What's the difference between partitioned tables and partitioned views in SQL Server? When should you use views?</span>
+    </button>
+    <div class="a">
+      <div>
+        <span class="fa"><b>Partitioned Tables</b> یک جدول منطقی است که موتور با کمک Partition Function و Partition Scheme آن را به چند تکهٔ فیزیکی تقسیم می‌کند. همه‌چیز خودکار است و <code>ALTER TABLE SWITCH</code> پشتیبانی می‌شود. <b>Partitioned Views</b> چند جدول جداگانه هستند که هرکدام <code>CHECK CONSTRAINT</code> مخصوص خود را دارند و یک ویو با <code>UNION ALL</code> آنها را ترکیب می‌کند. این روش قدیمی‌تر، اما انعطاف‌پذیرتر است. زمانی سراغ ویوها می‌رویم که هر جدول عضو نیاز به ساختارِ کمی متفاوت داشته باشد، یا وقتی جدول‌ها باید روی سرورهای مختلف (از طریق Linked Servers) قرار بگیرند.</span>
+        <span class="en"><b>Partitioned tables</b> are a single logical table that the engine splits into physical pieces using a partition function and a partition scheme. Everything is automatic and <code>ALTER TABLE SWITCH</code> is supported. <b>Partitioned views</b> are separate tables, each with its own <code>CHECK CONSTRAINT</code>, combined by a view with <code>UNION ALL</code>. This older method is more flexible. Use views when each member table needs a slightly different schema, or when tables must reside on different servers (via Linked Servers).</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Q2 ===== -->
+  <div class="qa">
+    <button class="q">
+      <span class="no">Q2</span>
+      <span class="fa">الگوی Sliding Window چیست و چرا <code>ALTER TABLE SWITCH</code> حتی برای پارتیشن‌های صدها میلیونی، میلی‌ثانیه‌ای تمام می‌شود؟</span>
+      <span class="en">What is the Sliding Window pattern, and why does <code>ALTER TABLE SWITCH</code> finish in milliseconds even for hundred‑million‑row partitions?</span>
+    </button>
+    <div class="a">
+      <div>
+        <span class="fa"><b>Sliding Window</b> الگویی برای نگه‌داشتن یک پنجرهٔ زمانیِ ثابت از داده است (مثلاً ۱۲ ماه اخیر). هر دوره، یک پارتیشن جدید برای دادهٔ تازه اضافه می‌کنید و قدیمی‌ترین پارتیشن را با <code>SWITCH</code> به یک جدول آرشیو منتقل می‌کنید. <b>دلیل سرعت:</b> این عملیات <b>فقط متادیتا را تغییر می‌دهد</b> — هیچ سطری جابه‌جا یا کپی نمی‌شود. موتور فقط اشاره‌گرهای کاتالوگ را به‌روز می‌کند تا بداند پارتیشن حالا متعلق به جدول دیگری است. به همین دلیل، حتی برای پارتیشن‌های صدها میلیونی، در حد میلی‌ثانیه تمام می‌شود و لاگ تراکنش را باد نمی‌کند.</span>
+        <span class="en"><b>Sliding Window</b> is a pattern for keeping a fixed time window of data (e.g., the last 12 months). Each period, you add a new partition for fresh data and <code>SWITCH</code> the oldest partition to an archive table. <b>Why it's fast:</b> the operation <b>only changes metadata</b> — no rows are moved or copied. The engine updates catalog pointers so the partition now belongs to a different table. That's why it finishes in milliseconds even for huge partitions and doesn't bloat the transaction log.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Q3 ===== -->
+  <div class="qa">
+    <button class="q">
+      <span class="no">Q3</span>
+      <span class="fa">در MySQL، چرا نوع جداگانه‌ای به نام KEY در کنار HASH وجود دارد؟ تفاوت اصلی چیست؟</span>
+      <span class="en">In MySQL, why is there a separate KEY type alongside HASH? What's the main difference?</span>
+    </button>
+    <div class="a">
+      <div>
+        <span class="fa">هر دو توزیع یکنواخت بین چند سطل (bucket) ایجاد می‌کنند. تفاوت اصلی: <b>HASH</b> به یک <b>عبارت عددی که شما می‌نویسید</b> نیاز دارد (مثلاً <code>YEAR(col)</code> یا <code>col % 4</code>)، اما <b>KEY</b> از <b>تابع هش داخلی خود MySQL</b> استفاده می‌کند و روی ستون‌های <b>غیرعددی</b> (رشته، تاریخ) بدون هیچ تبدیلی کار می‌کند. هر دو روش، ترتیب داده را از بین می‌برند و کوئری‌های بازه‌ای نمی‌توانند پارتیشن‌های نامربوط را از پلن اجرا کنار بگذارند.</span>
+        <span class="en">Both spread data evenly across buckets. The main difference: <b>HASH</b> needs an <b>integer expression you write</b> (e.g., <code>YEAR(col)</code> or <code>col % 4</code>), while <b>KEY</b> uses <b>MySQL's own internal hash function</b> and works on <b>non‑integer</b> columns (strings, dates) without any conversion. Both methods lose data order, and range queries cannot exclude irrelevant partitions from the execution plan.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Q4 ===== -->
+  <div class="qa">
+    <button class="q">
+      <span class="no">Q4</span>
+      <span class="fa">چرا <code>WHERE YEAR(OrderDate) = 2025</code> باعث می‌شود که رد شدنِ پارتیشن اتفاق نیفتد؟ چه بنویسیم؟</span>
+      <span class="en">Why does <code>WHERE YEAR(OrderDate) = 2025</code> prevent partition pruning? What should you write instead?</span>
+    </button>
+    <div class="a">
+      <div>
+        <span class="fa">وقتی ستون را درون تابع می‌پیچید، موتور دیگر <b>مقدار خام</b> را در اختیار ندارد که با مرزهای پارتیشن مقایسه کند — پس مجبور است تابع را برای هر سطر محاسبه کند و همهٔ پارتیشن‌ها را بخواند. راه درست، مقایسهٔ مستقیم و بازه‌ای است: <code>WHERE OrderDate &gt;= '2025-01-01' AND OrderDate &lt; '2026-01-01'</code>.</span>
+        <span class="en">When you wrap the column in a function, the engine no longer has the <b>raw value</b> to compare against partition boundaries — so it must evaluate the function per row and read every partition. The correct approach is a direct range comparison: <code>WHERE OrderDate &gt;= '2025-01-01' AND OrderDate &lt; '2026-01-01'</code>.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Q5 ===== -->
+  <div class="qa">
+    <button class="q">
+      <span class="no">Q5</span>
+      <span class="fa">تفاوت کلیدی Partitioning و Sharding چیست؟ کدام یک داده را روی چند سرور پخش می‌کند؟</span>
+      <span class="en">What is the key difference between Partitioning and Sharding? Which one spreads data across servers?</span>
+    </button>
+    <div class="a">
+      <div>
+        <span class="fa"><b>Partitioning</b> داده را داخل <b>یک نمونهٔ دیتابیس</b> تقسیم می‌کند — موتور همه‌چیز را مدیریت می‌کند و کوئری‌ها شفاف می‌مانند. <b>Sharding</b> داده را بین <b>چند سرور مستقل</b> پخش می‌کند؛ مسیریابی کوئری‌ها به عهدهٔ اپلیکیشن یا یک لایهٔ proxy است و JOINهای بین‌بخشی سخت می‌شوند. ترتیب منطقی: اول ایندکس، بعد پارتیشن‌بندی، و Sharding را فقط وقتی به کار بگیرید که یک سرور واقعاً کافی نباشد — چون یک پروژهٔ معماری کامل است.</span>
+        <span class="en"><b>Partitioning</b> splits data within <b>one database instance</b> — the engine handles everything and queries stay transparent. <b>Sharding</b> spreads data across <b>multiple independent servers</b>; the application or a proxy layer must route queries, and cross‑shard JOINs become hard. The logical order: indexes first, then partitioning, and only consider sharding when one server truly isn't enough — because it's a full architecture project.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+<!-- ═══ footer ═══ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-profile">
+        <img src="https://github.com/alireza-haeri.png" alt="Alireza Haeri" onerror="this.style.display='none'">
+        <div>
+          <div class="name"><span class="fa">علیرضا حایری</span><span class="en">Alireza Haeri</span></div>
+          <div class="role"><span class="fa">توسعه‌دهندهٔ بک‌اند ‎.NET · پروژهٔ آموزش مبانی عمیق
+              برنامه‌نویسی</span><span class="en">.NET Backend Developer · deep programming fundamentals</span></div>
+        </div>
+      </div>
+      <div class="foot-links">
+        <a class="btn sm" href="https://github.com/alireza-haeri" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" class="ic sm fill">
+            <use href="#i-github" />
+          </svg>
+          <span class="fa">گیت‌هاب من</span><span class="en">My GitHub</span>
+        </a>
+        <a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" class="ic sm">
+            <use href="#i-book" />
+          </svg>
+          <span class="fa">ریپازیتوری پروژه</span><span class="en">Project Repo</span>
+        </a>
+        <a class="btn sm" href="./index.html">
+          <svg viewBox="0 0 24 24" class="ic sm">
+            <use href="#i-grid" />
+          </svg>
+          <span class="fa">مشاهده موضوعات دیگر</span><span class="en">View other topics</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  <script>
+    /* ═══ theme & language ═══ */
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const h = document.documentElement;
+      h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
+    });
+    document.getElementById('langBtn').addEventListener('click', () => {
+      const h = document.documentElement;
+      if (h.lang === 'fa') { h.lang = 'en'; h.dir = 'ltr'; }
+      else { h.lang = 'fa'; h.dir = 'rtl'; }
+    });
+
+    /* ═══ scroll progress ═══ */
+    const prog = document.getElementById('scrollProgress');
+    addEventListener('scroll', () => {
+      const h = document.documentElement;
+      const p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+      prog.style.width = (p * 100) + '%';
+    }, { passive: true });
+
+    /* ═══ reveal on scroll ═══ */
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('in');
+    }), { threshold: .06 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    /* ═══ THE SPLIT — infinite loop: run → pause → run again ═══ */
+    (function () {
+      const stage = document.getElementById('splitStage');
+      const cap = document.getElementById('splitCap');
+      const capFa = document.getElementById('capFa');
+      const capEn = document.getElementById('capEn');
+      const banner = document.getElementById('splitBanner');
+      const slices = [...stage.querySelectorAll('.slice')];
+
+      slices.forEach(s => {
+        const g = s.querySelector('.cells');
+        for (let i = 0; i < 24; i++) g.appendChild(document.createElement('i'));
+      });
+      const cells = [...stage.querySelectorAll('.cells i')];
+
+      const wait = ms => new Promise(r => setTimeout(r, ms));
+
+      function setCap(fa, en) {
+        cap.classList.add('switching');
+        setTimeout(() => {
+          capFa.textContent = fa;
+          capEn.textContent = en;
+          cap.classList.remove('switching');
+        }, 240);
+      }
+
+      async function cycle() {
+        let first = true;
+        while (true) {
+          stage.classList.remove('split', 'labeled');
+          cells.forEach(c => c.classList.remove('on'));
+          setCap('یک جدولِ بزرگ — ۱۲۰ میلیون سطر', 'one big table — 120M rows');
+          await wait(2100);
+
+          stage.classList.add('split');
+          setCap('بر اساس OrderDate تکه‌تکه می‌شود…', 'splitting by OrderDate…');
+          await wait(950);
+
+          slices.forEach((s, si) => {
+            [...s.querySelectorAll('i')].forEach((c, ci) => {
+              setTimeout(() => c.classList.add('on'), si * 150 + ci * 16);
+            });
+          });
+          await wait(150 * 3 + 16 * 23 + 600);
+
+          stage.classList.add('labeled');
+          setCap('هر تکه، یک پارتیشنِ فیزیکیِ جداست', 'each piece is a separate physical partition');
+          if (first) { banner.classList.add('show'); first = false; }
+          await wait(3400);
+
+          stage.classList.remove('labeled');
+          cells.forEach(c => c.classList.remove('on'));
+          await wait(500);
+          stage.classList.remove('split');
+          await wait(1700);
+        }
+      }
+      cycle();
+    })();
+
+    /* ═══ strategy demo ═══ */
+    document.querySelectorAll('.st-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.st-tab').forEach(t => t.classList.remove('primary'));
+        tab.classList.add('primary');
+        document.querySelectorAll('.st-panel').forEach(p => p.classList.remove('show'));
+        const panel = document.getElementById('st-' + tab.dataset.strat);
+        panel.classList.add('show');
+        panel.querySelectorAll('.chip').forEach((c, i) => {
+          c.classList.remove('on');
+          setTimeout(() => c.classList.add('on'), 150 + i * 200);
+        });
+      });
+    });
+    document.querySelectorAll('#st-range .chip').forEach((c, i) =>
+      setTimeout(() => c.classList.add('on'), 300 + i * 200));
+
+    /* ═══ pruning demo ═══ */
+    const PD_PAGES = 2000;
+    const pdQueries = [
+      {
+        scan: [1], kind: 'good',
+        fa: 'حذف پارتیشن کار کرد: فقط P2 (Mar–Apr) خوانده شد و ۵ پارتیشن دیگر هرگز لمس نشدند. ≈ ۸۳٪ داده رد شد.',
+        en: 'Elimination worked: only P2 (Mar–Apr) was read; the other 5 partitions were never touched. ≈83% of the data skipped.'
+      },
+      {
+        scan: [4, 5], kind: 'good',
+        fa: 'حذف پارتیشن کار کرد: فقط P5 و P6 خوانده شدند — ۴ پارتیشن رد شد. ≈ ۶۶٪ داده کمتر.',
+        en: 'Elimination worked: only P5 and P6 were read — 4 partitions skipped. ≈66% less data.'
+      },
+      {
+        scan: [0, 1, 2, 3, 4, 5], kind: 'bad',
+        fa: 'حذفی رخ نداد! ستون پارتیشن (OrderDate) در WHERE نیست، پس موتور هر ۶ پارتیشن را اسکن می‌کند. این پرهزینه‌ترین حالت است.',
+        en: 'No elimination! The partition key (OrderDate) is not in the WHERE clause, so the engine scans all 6 partitions. This is the most expensive case.'
+      },
+      {
+        scan: [0, 1, 2, 3, 4, 5], kind: 'neutral',
+        fa: 'اسکن کامل — وقتی فیلتری نیست، انتظاری هم نیست. پارتیشن‌بندی برای کوئری‌های فیلتردار سود دارد، نه خواندنِ همه‌چیز.',
+        en: 'Full scan — with no filter, there is nothing to eliminate. Partitioning pays off for filtered queries, not for reading everything.'
+      }
+    ];
+    let pdTimer = null;
+    function pdSetStats(read, reads, saved, savedClass) {
+      document.getElementById('pdRead').textContent = read;
+      document.getElementById('pdReads').textContent = reads;
+      const s = document.getElementById('pdSaved');
+      s.textContent = saved;
+      s.className = 'val ' + (savedClass || '');
+    }
+    function pdReset() {
+      clearInterval(pdTimer);
+      document.querySelectorAll('.pd-part').forEach(p => {
+        p.classList.remove('scanning', 'scanned', 'skipped');
+        p.querySelectorAll('.pd-rows i').forEach(r => r.classList.remove('on'));
+      });
+      document.querySelectorAll('.pd-q').forEach(b => b.classList.remove('primary'));
+      document.getElementById('pdResult').classList.remove('show', 'bad');
+      pdSetStats('0 / 6', '0', '—', '');
+    }
+    function pdRun(qi) {
+      pdReset();
+      const q = pdQueries[qi];
+      document.querySelectorAll('.pd-q')[qi].classList.add('primary');
+      const parts = [...document.querySelectorAll('.pd-part')];
+      const seq = [];
+      q.scan.forEach(i => seq.push(['scan', i]));
+      parts.map((_, i) => i).filter(i => !q.scan.includes(i)).forEach(i => seq.push(['skip', i]));
+      let step = 0, scanned = 0, skipped = 0;
+      pdTimer = setInterval(() => {
+        if (step >= seq.length) {
+          clearInterval(pdTimer);
+          const res = document.getElementById('pdResult');
+          const isFa = document.documentElement.lang === 'fa';
+          res.innerHTML = '<b>' + (q.kind === 'bad' ? '⚠ ' : q.kind === 'good' ? '⚡ ' : 'ℹ ') + '</b>' + (isFa ? q.fa : q.en);
+          res.classList.add('show');
+          if (q.kind === 'bad') res.classList.add('bad');
+          return;
+        }
+        const [act, i] = seq[step++];
+        if (act === 'skip') {
+          skipped++;
+          parts[i].classList.add('skipped');
+        } else {
+          scanned++;
+          parts[i].classList.add('scanning');
+          const rows = [...parts[i].querySelectorAll('.pd-rows i')];
+          rows.forEach((r, k) => setTimeout(() => r.classList.add('on'), k * 70));
+          setTimeout(() => {
+            parts[i].classList.remove('scanning');
+            parts[i].classList.add('scanned');
+          }, rows.length * 70 + 120);
+        }
+        pdSetStats(scanned + ' / 6', (scanned * PD_PAGES).toLocaleString('en-US'),
+          Math.round(skipped / 6 * 100) + '%',
+          q.kind === 'good' ? 'good' : (q.kind === 'bad' ? 'bad' : ''));
+      }, 700);
+    }
+    document.querySelectorAll('.pd-q').forEach(btn =>
+      btn.addEventListener('click', () => pdRun(+btn.dataset.q)));
+    document.getElementById('pdReset').addEventListener('click', pdReset);
+
+    /* ═══ QA accordion ═══ */
+    document.querySelectorAll('.qa .q').forEach(q =>
+      q.addEventListener('click', () => q.parentElement.classList.toggle('open')));
+    document.getElementById('qaAll').addEventListener('click', () => {
+      const qas = [...document.querySelectorAll('.qa')];
+      const anyClosed = qas.some(x => !x.classList.contains('open'));
+      qas.forEach(x => x.classList.toggle('open', anyClosed));
+    });
+  </script>
+</body>
+
+</html>

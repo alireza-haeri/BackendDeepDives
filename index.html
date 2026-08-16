@@ -1,556 +1,2424 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl" data-theme="light">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Backend Deep Dives | عمقِ بک‌اند</title>
-<meta name="description" content="بررسی عمیق مفاهیم بک‌اند برای توسعه‌دهنده‌های .NET — بدون حاشیه، با مثال واقعی">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F7A52'/%3E%3Cpath d='M32 14 L18 22 V34 L32 42 L46 34 V22 Z' fill='none' stroke='%23F6F2E9' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='28' r='3' fill='%23F6F2E9'/%3E%3Ccircle cx='22' cy='36' r='2.5' fill='%23F6F2E9' opacity='.75'/%3E%3Ccircle cx='42' cy='36' r='2.5' fill='%23F6F2E9' opacity='.75'/%3E%3Cpath d='M20 47 H44 M24 51 H40' stroke='%23F6F2E9' stroke-width='2.5' stroke-linecap='round' opacity='.6'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com/">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<style>
-/* ══════════════════════════════════════════
-   VARIABLES & THEMES  (exact match to source)
-   ══════════════════════════════════════════ */
-:root{
-  --bg:#F6F2E9;--bg2:#EFEADD;--surface:#FDFBF5;--surface2:#F3EFE3;
-  --line:#E0D8C3;--line2:#CDC3A8;--ink:#242920;--mut:#5F624F;--dim:#8F8C74;
-  --acc:#1F7A52;--acc-soft:rgba(31,122,82,.10);--acc-line:rgba(31,122,82,.40);
-  --grn:#1F7A52;--grn-soft:rgba(31,122,82,.10);
-  --amb:#C27803;--amb-soft:rgba(194,120,3,.12);
-  --red:#C2492F;--red-soft:rgba(194,73,47,.09);
-  --vio:#A05B2C;--vio-soft:rgba(160,91,44,.10);
-  --blue:#2D6A9F;--blue-soft:rgba(45,106,159,.10);
-  --code-bg:#1C241E;--code-ink:#D8E2D4;
-  --dot:rgba(36,41,32,.06);--shadow:0 1px 2px rgba(36,41,32,.05);
-  --mono:'JetBrains Mono',Consolas,monospace;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backend Deep Dives | عمقِ بک‌اند</title>
+  <meta name="description" content="بررسی عمیق مفاهیم بک‌اند برای توسعه‌دهنده‌های .NET — بدون حاشیه، با مثال واقعی">
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F7A52'/%3E%3Cpath d='M32 14 L18 22 V34 L32 42 L46 34 V22 Z' fill='none' stroke='%23F6F2E9' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='28' r='3' fill='%23F6F2E9'/%3E%3Ccircle cx='22' cy='36' r='2.5' fill='%23F6F2E9' opacity='.75'/%3E%3Ccircle cx='42' cy='36' r='2.5' fill='%23F6F2E9' opacity='.75'/%3E%3Cpath d='M20 47 H44 M24 51 H40' stroke='%23F6F2E9' stroke-width='2.5' stroke-linecap='round' opacity='.6'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════
+VARIABLES & THEMES
+══════════════════════════════════════════ */
+    :root {
+      --bg: #F6F2E9;
+      --bg2: #EFEADD;
+      --surface: #FDFBF5;
+      --surface2: #F3EFE3;
+      --line: #E0D8C3;
+      --line2: #CDC3A8;
+      --ink: #242920;
+      --mut: #5F624F;
+      --dim: #8F8C74;
+      --acc: #1F7A52;
+      --acc-soft: rgba(31, 122, 82, .10);
+      --acc-line: rgba(31, 122, 82, .40);
+      --grn: #1F7A52;
+      --grn-soft: rgba(31, 122, 82, .10);
+      --amb: #C27803;
+      --amb-soft: rgba(194, 120, 3, .12);
+      --red: #C2492F;
+      --red-soft: rgba(194, 73, 47, .09);
+      --vio: #A05B2C;
+      --vio-soft: rgba(160, 91, 44, .10);
+      --blue: #2D6A9F;
+      --blue-soft: rgba(45, 106, 159, .10);
+      --code-bg: #1C241E;
+      --code-ink: #D8E2D4;
+      --term-bg: #1A201B;
+      --term-line: #2E372F;
+      --term-bar: #212823;
+      --term-mut: #8CA08E;
+      --dot: rgba(36, 41, 32, .06);
+      --shadow: 0 1px 2px rgba(36, 41, 32, .05);
+      --mono: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #171A14;
+      --bg2: #121510;
+      --surface: #1F231B;
+      --surface2: #1A1E16;
+      --line: #31362A;
+      --line2: #424836;
+      --ink: #EAE7D9;
+      --mut: #B3B29C;
+      --dim: #83846E;
+      --acc: #5CC08F;
+      --acc-soft: rgba(92, 192, 143, .13);
+      --acc-line: rgba(92, 192, 143, .45);
+      --grn: #5CC08F;
+      --grn-soft: rgba(92, 192, 143, .13);
+      --amb: #E3A63C;
+      --amb-soft: rgba(227, 166, 60, .13);
+      --red: #E5745A;
+      --red-soft: rgba(229, 116, 90, .11);
+      --vio: #D08B4F;
+      --vio-soft: rgba(208, 139, 79, .12);
+      --blue: #6BA8D4;
+      --blue-soft: rgba(107, 168, 212, .13);
+      --code-bg: #121813;
+      --code-ink: #D5E0D2;
+      --term-bg: #14180F;
+      --term-line: #2C332A;
+      --term-bar: #1C2119;
+      --term-mut: #7E937F;
+      --dot: rgba(234, 231, 217, .05);
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    }
+
+    /* ══════════════════════════════════════════
+BASE
+══════════════════════════════════════════ */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--dot) .8px, transparent .8px);
+      background-size: 22px 22px;
+      color: var(--ink);
+      font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+      line-height: 1.95;
+      font-size: 16.5px;
+      overflow-x: hidden;
+      transition: background-color .35s, color .35s;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--acc);
+      z-index: 60
+    }
+
+    html[lang="fa"] .en {
+      display: none !important
+    }
+
+    html[lang="en"] .fa {
+      display: none !important
+    }
+
+    html[lang="en"] body {
+      line-height: 1.75
+    }
+
+    a {
+      color: var(--acc);
+      text-decoration: none
+    }
+
+    a:hover {
+      text-decoration: underline
+    }
+
+    ::selection {
+      background: var(--acc-soft)
+    }
+
+    code,
+    .mono {
+      font-family: var(--mono);
+      direction: ltr;
+      unicode-bidi: embed
+    }
+
+    img,
+    svg {
+      max-width: 100%
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 20px
+    }
+
+    .en {
+      font-size: .86em
+    }
+
+    .ic {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0
+    }
+
+    .ic.sm {
+      width: 14px;
+      height: 14px
+    }
+
+    .ic.lg {
+      width: 22px;
+      height: 22px
+    }
+
+    .ic.fill {
+      fill: currentcolor;
+      stroke: none
+    }
+
+    #prog {
+      position: fixed;
+      top: 3px;
+      left: 0;
+      height: 3px;
+      background: var(--amb);
+      z-index: 61;
+      width: 0;
+      transition: width .1s linear
+    }
+
+    /* ══════════════════════════════════════════
+KEYFRAMES LIBRARY
+══════════════════════════════════════════ */
+    @keyframes fadeUp {
+      0% {
+        opacity: 0;
+        transform: translateY(22px)
+      }
+
+      100% {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes fadeDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-16px)
+      }
+
+      100% {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0
+      }
+
+      100% {
+        opacity: 1
+      }
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(.85)
+      }
+
+      60% {
+        transform: scale(1.04)
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    @keyframes slideR {
+      0% {
+        opacity: 0;
+        transform: translateX(30px)
+      }
+
+      100% {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes slideL {
+      0% {
+        opacity: 0;
+        transform: translateX(-30px)
+      }
+
+      100% {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes floaty {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg)
+      }
+
+      50% {
+        transform: translateY(-14px) rotate(3deg)
+      }
+    }
+
+    @keyframes breathe {
+
+      0%,
+      100% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.06)
+      }
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    @keyframes shine {
+      0% {
+        transform: translateX(-120%) skewX(-18deg)
+      }
+
+      100% {
+        transform: translateX(220%) skewX(-18deg)
+      }
+    }
+
+    @keyframes drawline {
+      to {
+        stroke-dashoffset: 0
+      }
+    }
+
+    @keyframes pulseRing {
+      0% {
+        box-shadow: 0 0 0 0 var(--acc-soft)
+      }
+
+      70% {
+        box-shadow: 0 0 0 12px rgba(31, 122, 82, 0)
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(31, 122, 82, 0)
+      }
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-7px)
+      }
+    }
+
+    @keyframes spinSlow {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    @keyframes gradShift {
+
+      0%,
+      100% {
+        background-position: 0% 50%
+      }
+
+      50% {
+        background-position: 100% 50%
+      }
+    }
+
+    @keyframes wiggle {
+
+      0%,
+      100% {
+        transform: rotate(0)
+      }
+
+      25% {
+        transform: rotate(-6deg)
+      }
+
+      75% {
+        transform: rotate(6deg)
+      }
+    }
+
+    @keyframes barGrow {
+      from {
+        width: 0
+      }
+    }
+
+    @keyframes countGlow {
+
+      0%,
+      100% {
+        text-shadow: none
+      }
+
+      50% {
+        text-shadow: 0 0 18px var(--acc-soft)
+      }
+    }
+
+    @keyframes bannerPop {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    /* ══════════════════════════════════════════
+TOPBAR
+══════════════════════════════════════════ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      animation: fadeDown .5s ease-out both
+    }
+
+    .topbar-in {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 58px
+    }
+
+    .brand {
+      font-weight: 900;
+      font-size: 15px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--ink)
+    }
+
+    .brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      animation: breathe 4s ease-in-out infinite
+    }
+
+    .brand-logo svg {
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .topbar-nav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      flex: 1;
+      scrollbar-width: none
+    }
+
+    .topbar-nav::-webkit-scrollbar {
+      display: none
+    }
+
+    .topbar-nav a {
+      font-size: 12px;
+      color: var(--mut);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 3px 11px;
+      white-space: nowrap;
+      transition: .25s
+    }
+
+    .topbar-nav a:hover {
+      border-color: var(--acc-line);
+      color: var(--acc);
+      text-decoration: none;
+      transform: translateY(-1px)
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .25s;
+      text-decoration: none;
+      font-family: inherit
+    }
+
+    .btn:hover {
+      border-color: var(--acc-line);
+      color: var(--acc);
+      text-decoration: none;
+      transform: translateY(-2px)
+    }
+
+    .btn.primary {
+      background: var(--acc);
+      color: var(--bg);
+      border-color: var(--acc)
+    }
+
+    .btn.primary:hover {
+      filter: brightness(1.1);
+      color: var(--bg);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px var(--acc-soft)
+    }
+
+    .btn.sm {
+      padding: 6px 12px;
+      font-size: 12.5px
+    }
+
+    .btn.iconb {
+      padding: 8px;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px
+    }
+
+    html[data-theme="dark"] .iconb svg.sun {
+      display: none
+    }
+
+    html[data-theme="light"] .iconb svg.moon {
+      display: none
+    }
+
+    .iconb:hover {
+      background: var(--surface2)
+    }
+
+    .iconb svg {
+      width: 18px;
+      height: 18px;
+      color: var(--mut)
+    }
+
+    /* ══════════════════════════════════════════
+HERO
+══════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 70px 0 30px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .hero .shape {
+      position: absolute;
+      opacity: .5;
+      pointer-events: none;
+      animation: floaty 9s ease-in-out infinite
+    }
+
+    .hero .shape svg {
+      width: 100%;
+      height: 100%
+    }
+
+    .hero .wrap {
+      position: relative;
+      z-index: 2
+    }
+
+    .hero-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center
+    }
+
+    .logo-mark {
+      width: 78px;
+      height: 78px;
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 0 auto 22px;
+      animation: popIn .7s cubic-bezier(.2, .9, .3, 1.3) both, breathe 5s ease-in-out 1s infinite;
+      box-shadow: 0 12px 30px -8px var(--acc-soft)
+    }
+
+    .logo-mark svg {
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 4.8vw, 54px);
+      font-weight: 900;
+      line-height: 1.3;
+      letter-spacing: -.01em;
+      animation: fadeUp .7s .1s ease-out both
+    }
+
+    .uword {
+      position: relative;
+      display: inline-block;
+      white-space: nowrap
+    }
+
+    .uscribble {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -8px;
+      width: 100%;
+      height: 10px;
+      overflow: visible
+    }
+
+    .uscribble path {
+      stroke-dasharray: 260;
+      stroke-dashoffset: 260;
+      animation: drawline 1.1s .7s ease-out forwards
+    }
+
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 19px);
+      color: var(--mut);
+      max-width: 62ch;
+      line-height: 1.85;
+      margin: 20px auto 0;
+      animation: fadeUp .7s .25s ease-out both
+    }
+
+    .qwin {
+      background: var(--code-bg);
+      border: 1px solid var(--line2);
+      border-radius: 14px;
+      overflow: hidden;
+      max-width: 640px;
+      width: 100%;
+      margin: 34px auto 0;
+      text-align: left;
+      direction: ltr;
+      box-shadow: 0 26px 60px -22px rgba(0, 0, 0, .45);
+      animation: fadeUp .8s .4s ease-out both
+    }
+
+    .qwin-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, .04);
+      border-bottom: 1px solid rgba(255, 255, 255, .07)
+    }
+
+    .qwin-bar i {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%
+    }
+
+    .qwin-bar i:nth-child(1) {
+      background: #E0655A
+    }
+
+    .qwin-bar i:nth-child(2) {
+      background: #E5B45A
+    }
+
+    .qwin-bar i:nth-child(3) {
+      background: #58B78C
+    }
+
+    .qwin-bar span {
+      margin-left: 12px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: #8CA08E
+    }
+
+    .term {
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--code-ink);
+      padding: 20px;
+      min-height: 200px;
+      white-space: pre-wrap
+    }
+
+    .term .pr {
+      color: #5CC08F
+    }
+
+    .term .cm {
+      color: #6E7F70
+    }
+
+    .term .hl {
+      color: #E5B45A
+    }
+
+    .term .ok {
+      color: #5CC08F;
+      font-weight: 600
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: #5CC08F;
+      vertical-align: middle;
+      animation: blink 1s steps(1) infinite
+    }
+
+    .hero-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 30px
+    }
+
+    .hero-chips span {
+      font-size: 12.5px;
+      color: var(--mut);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 6px 15px;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      transition: .25s;
+      animation: popIn .5s ease-out both
+    }
+
+    .hero-chips span:hover {
+      transform: translateY(-3px);
+      border-color: var(--acc-line);
+      color: var(--ink)
+    }
+
+    .hero-chips span b {
+      color: var(--acc);
+      font-weight: 700;
+      font-family: var(--mono);
+      font-size: 11px
+    }
+
+    .hero-chips span:nth-child(1) {
+      animation-delay: .5s
+    }
+
+    .hero-chips span:nth-child(2) {
+      animation-delay: .6s
+    }
+
+    .hero-chips span:nth-child(3) {
+      animation-delay: .7s
+    }
+
+    .hero-chips span:nth-child(4) {
+      animation-delay: .8s
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 30px;
+      animation: fadeUp .7s .55s ease-out both
+    }
+
+    .hero-actions .btn {
+      padding: 14px 32px;
+      font-size: 15.5px;
+      font-weight: 700
+    }
+
+    .scroll-hint {
+      margin: 44px auto 0;
+      color: var(--dim);
+      animation: fadeIn 1s 1.2s both
+    }
+
+    .scroll-hint svg {
+      width: 24px;
+      height: 24px;
+      animation: bounce 1.8s ease-in-out infinite
+    }
+
+    /* ══════════════════════════════════════════
+STATS BAR
+══════════════════════════════════════════ */
+    .stats {
+      padding: 0;
+      border-bottom: 1px dashed var(--line2);
+      background: var(--surface)
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr)
+    }
+
+    .stat {
+      padding: 34px 20px;
+      text-align: center;
+      border-inline-end: 1px dashed var(--line2);
+      position: relative
+    }
+
+    .stat:last-child {
+      border-inline-end: none
+    }
+
+    .stat .num {
+      font-family: var(--mono);
+      font-size: clamp(30px, 4vw, 42px);
+      font-weight: 600;
+      color: var(--acc);
+      line-height: 1;
+      animation: countGlow 3s ease-in-out infinite
+    }
+
+    .stat .lbl {
+      font-size: 13px;
+      color: var(--mut);
+      margin-top: 8px
+    }
+
+    .stat svg {
+      width: 22px;
+      height: 22px;
+      color: var(--dim);
+      margin: 0 auto 8px;
+      display: block
+    }
+
+    /* ══════════════════════════════════════════
+SECTIONS
+══════════════════════════════════════════ */
+    section {
+      padding: 64px 0
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px
+    }
+
+    .section-num {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--acc);
+      background: var(--acc-soft);
+      border: 1px solid var(--acc-line);
+      padding: 5px 11px;
+      border-radius: 7px
+    }
+
+    .section-head h2 {
+      font-size: clamp(22px, 3.2vw, 30px);
+      font-weight: 800;
+      line-height: 1.4;
+      letter-spacing: -.01em
+    }
+
+    .lead {
+      font-size: 17px;
+      line-height: 1.95;
+      color: var(--ink);
+      margin-bottom: 8px;
+      max-width: 72ch
+    }
+
+    /* ══════════════════════════════════════════
+ABOUT CARDS
+══════════════════════════════════════════ */
+    .about {
+      border-bottom: 1px dashed var(--line2)
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 30px
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: transform .3s cubic-bezier(.2, .8, .3, 1.2), border-color .3s, box-shadow .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(105deg, transparent, rgba(255, 255, 255, .35), transparent);
+      transform: translateX(-120%) skewX(-18deg);
+      pointer-events: none
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: var(--acc-line);
+      box-shadow: 0 14px 34px -12px var(--acc-soft)
+    }
+
+    .card:hover::after {
+      animation: shine .9s ease
+    }
+
+    .card h3 {
+      font-size: 15.5px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 11px
+    }
+
+    .card p {
+      font-size: 14px;
+      line-height: 1.85;
+      color: var(--mut)
+    }
+
+    .cico {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: transform .35s cubic-bezier(.2, .8, .3, 1.4)
+    }
+
+    .card:hover .cico {
+      transform: rotate(-8deg) scale(1.12)
+    }
+
+    .cico svg {
+      width: 18px;
+      height: 18px
+    }
+
+    .cico.blue {
+      background: var(--acc-soft);
+      color: var(--acc)
+    }
+
+    .cico.green {
+      background: var(--grn-soft);
+      color: var(--grn)
+    }
+
+    .cico.amber {
+      background: var(--amb-soft);
+      color: var(--amb)
+    }
+
+    .cico.violet {
+      background: var(--vio-soft);
+      color: var(--vio)
+    }
+
+    .cico.red {
+      background: var(--red-soft);
+      color: var(--red)
+    }
+
+    /* ══════════════════════════════════════════
+TOPIC CARDS — RESUME STYLE (feat-card)
+══════════════════════════════════════════ */
+    .topics {
+      border-bottom: 1px dashed var(--line2)
+    }
+
+    .proj-list {
+      display: grid;
+      gap: 22px;
+      margin-top: 34px
+    }
+
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: border-color .3s, box-shadow .35s, transform .35s;
+      position: relative
+    }
+
+    .feat-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--tc, var(--acc));
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform .45s cubic-bezier(.2, .8, .3, 1);
+      z-index: 3
+    }
+
+    html[dir="ltr"] .feat-card::before {
+      transform-origin: left
+    }
+
+    .feat-card:hover {
+      border-color: var(--acc-line);
+      box-shadow: 0 18px 44px -14px var(--acc-soft);
+      transform: translateY(-4px)
+    }
+
+    .feat-card:hover::before {
+      transform: scaleX(1)
+    }
+
+    .feat-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0
+    }
+
+    .feat-info {
+      padding: 30px 30px 28px;
+      display: flex;
+      flex-direction: column
+    }
+
+    .feat-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 6px
+    }
+
+    .pnum {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--dim);
+      letter-spacing: .06em
+    }
+
+    .feat-head h3 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -.01em;
+      font-family: var(--mono);
+      direction: ltr
+    }
+
+    .feat-desc {
+      font-size: 14.5px;
+      line-height: 1.9;
+      color: var(--mut);
+      margin: 10px 0 16px
+    }
+
+    .feat-desc b {
+      color: var(--ink)
+    }
+
+    .ftags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 22px
+    }
+
+    .ftags span {
+      font-size: 11px;
+      color: var(--dim);
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 2px 9px;
+      font-family: var(--mono);
+      direction: ltr
+    }
+
+    .feat-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: auto
+    }
+
+    .pstatus {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .pstatus.live {
+      background: var(--grn-soft);
+      color: var(--grn);
+      animation: pulseRing 2.4s ease-out infinite
+    }
+
+    .pstatus .pdot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor
+    }
+
+    /* ── stage (dark window) ── */
+    .feat-stage {
+      background: var(--term-bg);
+      border-inline-start: 1px solid var(--term-line);
+      display: flex;
+      flex-direction: column;
+      justify-content: center
+    }
+
+    .feat-stage .qwin-bar {
+      border-top: 0
+    }
+
+    .st-cap {
+      direction: rtl;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--term-mut);
+      min-height: 26px;
+      margin: 10px 14px 6px;
+      transition: opacity .24s
+    }
+
+    html[lang="en"] .st-cap {
+      direction: ltr
+    }
+
+    .st-cap b {
+      color: var(--code-ink)
+    }
+
+    .st-cap.switching {
+      opacity: 0
+    }
+
+    /* .mini-banner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      margin: 14px 14px 18px;
+      padding: 11px 16px;
+      background: var(--acc);
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #F6F2E9;
+      animation: bannerPop .4s ease-out;
+      text-align: center
+    }
+
+    html[data-theme="dark"] .mini-banner {
+      color: #10141A
+    }
+
+    .mini-banner.show {
+      display: flex
+    }
+
+    .mini-banner svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0
+    } */
+
+    .mini-banner {
+  display: flex;                    /* همیشه flex باشد */
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 14px 14px 18px;
+  padding: 11px 16px;
+  background: var(--acc);
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #F6F2E9;
+  text-align: center;
+  min-height: 52px;                 /* ارتفاع ثابت */
+  opacity: 0;                       /* مخفی */
+  visibility: hidden;               /* مخفی */
+  transition: opacity .4s ease, visibility .4s ease;
 }
-html[data-theme="dark"]{
-  --bg:#171A14;--bg2:#121510;--surface:#1F231B;--surface2:#1A1E16;
-  --line:#31362A;--line2:#424836;--ink:#EAE7D9;--mut:#B3B29C;--dim:#83846E;
-  --acc:#5CC08F;--acc-soft:rgba(92,192,143,.13);--acc-line:rgba(92,192,143,.45);
-  --grn:#5CC08F;--grn-soft:rgba(92,192,143,.13);
-  --amb:#E3A63C;--amb-soft:rgba(227,166,60,.13);
-  --red:#E5745A;--red-soft:rgba(229,116,90,.11);
-  --vio:#D08B4F;--vio-soft:rgba(208,139,79,.12);
-  --blue:#6BA8D4;--blue-soft:rgba(107,168,212,.13);
-  --code-bg:#121813;--code-ink:#D5E0D2;
-  --dot:rgba(234,231,217,.05);--shadow:0 1px 2px rgba(0,0,0,.3);
+html[data-theme="dark"] .mini-banner {
+  color: #10141A;
+}
+.mini-banner.show {
+  opacity: 1;
+  visibility: visible;
+}
+.mini-banner svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
-/* ══════════════════════════════════════════
-   BASE
-   ══════════════════════════════════════════ */
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  background-color:var(--bg);
-  background-image:radial-gradient(var(--dot) .8px,transparent .8px);
-  background-size:22px 22px;
-  color:var(--ink);font-family:Vazirmatn,Tahoma,system-ui,sans-serif;
-  line-height:1.95;font-size:16.5px;overflow-x:hidden;
-  transition:background-color .35s,color .35s;
-}
-body::before{content:"";position:fixed;top:0;left:0;right:0;height:3px;background:var(--acc);z-index:60}
-html[lang="fa"] .en{display:none!important}
-html[lang="en"] .fa{display:none!important}
-html[lang="en"] body{line-height:1.75}
-a{color:var(--acc);text-decoration:none}
-a:hover{text-decoration:underline}
-::selection{background:var(--acc-soft)}
-code,.mono{font-family:var(--mono);direction:ltr;unicode-bidi:embed}
-img,svg{max-width:100%}
-.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
-.en{font-size:.86em}
-.ic{width:18px;height:18px;fill:none;stroke:currentcolor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.ic.sm{width:14px;height:14px}
-.ic.lg{width:22px;height:22px}
-.ic.fill{fill:currentcolor;stroke:none}
 
-/* scroll progress bar */
-#prog{position:fixed;top:3px;left:0;height:3px;background:var(--amb);z-index:61;width:0;transition:width .1s linear}
+    /* ══════════════════════════════════════════
+SCAN vs SEEK ANIMATION (DatabaseIndexes)
+══════════════════════════════════════════ */
+    .ss-stage {
+      direction: ltr;
+      padding: 6px 16px 18px;
+      font-family: var(--mono);
+      font-size: 12px
+    }
 
-/* ══════════════════════════════════════════
-   KEYFRAMES LIBRARY
-   ══════════════════════════════════════════ */
-@keyframes fadeUp{0%{opacity:0;transform:translateY(22px)}100%{opacity:1;transform:none}}
-@keyframes fadeDown{0%{opacity:0;transform:translateY(-16px)}100%{opacity:1;transform:none}}
-@keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
-@keyframes popIn{0%{opacity:0;transform:scale(.85)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
-@keyframes slideR{0%{opacity:0;transform:translateX(30px)}100%{opacity:1;transform:none}}
-@keyframes slideL{0%{opacity:0;transform:translateX(-30px)}100%{opacity:1;transform:none}}
-@keyframes floaty{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-14px) rotate(3deg)}}
-@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-@keyframes shine{0%{transform:translateX(-120%) skewX(-18deg)}100%{transform:translateX(220%) skewX(-18deg)}}
-@keyframes drawline{to{stroke-dashoffset:0}}
-@keyframes pulseRing{0%{box-shadow:0 0 0 0 var(--acc-soft)}70%{box-shadow:0 0 0 12px rgba(31,122,82,0)}100%{box-shadow:0 0 0 0 rgba(31,122,82,0)}}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes spinSlow{to{transform:rotate(360deg)}}
-@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
-@keyframes barGrow{from{width:0}}
-@keyframes countGlow{0%,100%{text-shadow:none}50%{text-shadow:0 0 18px var(--acc-soft)}}
+    .ss-query {
+      color: var(--term-mut);
+      margin-bottom: 14px;
+      min-height: 20px
+    }
 
-/* ══════════════════════════════════════════
-   TOPBAR
-   ══════════════════════════════════════════ */
-.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);animation:fadeDown .5s ease-out both}
-.topbar-in{display:flex;align-items:center;gap:12px;height:58px}
-.brand{font-weight:900;font-size:15px;white-space:nowrap;display:flex;align-items:center;gap:9px;color:var(--ink)}
-.brand-logo{width:30px;height:30px;border-radius:8px;overflow:hidden;flex-shrink:0;animation:breathe 4s ease-in-out infinite}
-.brand-logo svg{width:100%;height:100%;display:block}
-.topbar-nav{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none}
-.topbar-nav::-webkit-scrollbar{display:none}
-.topbar-nav a{font-size:12px;color:var(--mut);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;white-space:nowrap;transition:.25s}
-.topbar-nav a:hover{border-color:var(--acc-line);color:var(--acc);text-decoration:none;transform:translateY(-1px)}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;transition:.25s;text-decoration:none;font-family:inherit}
-.btn:hover{border-color:var(--acc-line);color:var(--acc);text-decoration:none;transform:translateY(-2px)}
-.btn.primary{background:var(--acc);color:var(--bg);border-color:var(--acc)}
-.btn.primary:hover{filter:brightness(1.1);color:var(--bg);transform:translateY(-2px);box-shadow:0 6px 18px var(--acc-soft)}
-.btn.sm{padding:6px 12px;font-size:12.5px}
-.btn.iconb{padding:8px;width:36px;height:36px;display:grid;place-items:center;border-radius:8px}
-html[data-theme="dark"] .iconb svg.sun{display:none}
-html[data-theme="light"] .iconb svg.moon{display:none}
-.iconb:hover{background:var(--surface2)}
-.iconb svg{width:18px;height:18px;color:var(--mut)}
+    .ss-query .kw {
+      color: #7FC79F
+    }
 
-/* ══════════════════════════════════════════
-   HERO
-   ══════════════════════════════════════════ */
-.hero{position:relative;overflow:hidden;padding:70px 0 30px;border-bottom:1px solid var(--line)}
-/* floating decorative shapes */
-.hero .shape{position:absolute;opacity:.5;pointer-events:none;animation:floaty 9s ease-in-out infinite}
-.hero .shape svg{width:100%;height:100%}
-.hero .wrap{position:relative;z-index:2}
-.hero-inner{display:flex;flex-direction:column;align-items:center;text-align:center}
+    .ss-query .st {
+      color: #E5B45A
+    }
 
-.logo-mark{width:78px;height:78px;border-radius:20px;overflow:hidden;margin:0 auto 22px;animation:popIn .7s cubic-bezier(.2,.9,.3,1.3) both,breathe 5s ease-in-out 1s infinite;box-shadow:0 12px 30px -8px var(--acc-soft)}
-.logo-mark svg{width:100%;height:100%;display:block}
+    .ss-lanes {
+      display: grid;
+      gap: 12px
+    }
 
-.hero h1{font-size:clamp(32px,4.8vw,54px);font-weight:900;line-height:1.3;letter-spacing:-.01em;animation:fadeUp .7s .1s ease-out both}
-.uword{position:relative;display:inline-block;white-space:nowrap}
-.uscribble{position:absolute;left:0;right:0;bottom:-8px;width:100%;height:10px;overflow:visible}
-.uscribble path{stroke-dasharray:260;stroke-dashoffset:260;animation:drawline 1.1s .7s ease-out forwards}
+    .ss-lane {
+      background: var(--term-bar);
+      border: 1px solid var(--term-line);
+      border-radius: 10px;
+      padding: 12px
+    }
 
-.hero-sub{font-size:clamp(15px,2vw,19px);color:var(--mut);max-width:62ch;line-height:1.85;margin:20px auto 0;animation:fadeUp .7s .25s ease-out both}
+    .ss-lane-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px
+    }
 
-/* hero terminal */
-.qwin{background:var(--code-bg);border:1px solid var(--line2);border-radius:14px;overflow:hidden;max-width:640px;width:100%;margin:34px auto 0;text-align:left;direction:ltr;box-shadow:0 26px 60px -22px rgba(0,0,0,.45);animation:fadeUp .8s .4s ease-out both}
-.qwin-bar{display:flex;align-items:center;gap:7px;padding:12px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
-.qwin-bar i{width:12px;height:12px;border-radius:50%}
-.qwin-bar i:nth-child(1){background:#E0655A}.qwin-bar i:nth-child(2){background:#E5B45A}.qwin-bar i:nth-child(3){background:#58B78C}
-.qwin-bar span{margin-left:12px;font-family:var(--mono);font-size:12.5px;color:#8CA08E}
-.term{font-family:var(--mono);font-size:14px;line-height:1.8;color:var(--code-ink);padding:20px;min-height:200px;white-space:pre-wrap}
-.term .pr{color:#5CC08F}.term .cm{color:#6E7F70}.term .hl{color:#E5B45A}.term .ok{color:#5CC08F;font-weight:600}
-.cursor{display:inline-block;width:8px;height:16px;background:#5CC08F;vertical-align:middle;animation:blink 1s steps(1) infinite}
+    .ss-lane-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--term-mut);
+      letter-spacing: .08em;
+      text-transform: uppercase
+    }
 
-.hero-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:30px}
-.hero-chips span{font-size:12.5px;color:var(--mut);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 15px;display:inline-flex;gap:8px;align-items:center;transition:.25s;animation:popIn .5s ease-out both}
-.hero-chips span:hover{transform:translateY(-3px);border-color:var(--acc-line);color:var(--ink)}
-.hero-chips span b{color:var(--acc);font-weight:700;font-family:var(--mono);font-size:11px}
-.hero-chips span:nth-child(1){animation-delay:.5s}.hero-chips span:nth-child(2){animation-delay:.6s}.hero-chips span:nth-child(3){animation-delay:.7s}.hero-chips span:nth-child(4){animation-delay:.8s}
+    .ss-cnt {
+      font-size: 13px;
+      color: #CFE0CF;
+      display: flex;
+      align-items: baseline;
+      gap: 4px
+    }
 
-.hero-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:30px;animation:fadeUp .7s .55s ease-out both}
-.hero-actions .btn{padding:14px 32px;font-size:15.5px;font-weight:700}
+    .ss-cnt small {
+      font-size: 9px;
+      color: #77897A;
+      text-transform: uppercase;
+      letter-spacing: .05em
+    }
 
-.scroll-hint{margin:44px auto 0;color:var(--dim);animation:fadeIn 1s 1.2s both}
-.scroll-hint svg{width:24px;height:24px;animation:bounce 1.8s ease-in-out infinite}
+    .ss-cells {
+      display: grid;
+      grid-template-columns: repeat(16, 1fr);
+      gap: 3px
+    }
 
-/* ══════════════════════════════════════════
-   STATS BAR
-   ══════════════════════════════════════════ */
-.stats{padding:0;border-bottom:1px dashed var(--line2);background:var(--surface)}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr)}
-.stat{padding:34px 20px;text-align:center;border-inline-end:1px dashed var(--line2);position:relative}
-.stat:last-child{border-inline-end:none}
-.stat .num{font-family:var(--mono);font-size:clamp(30px,4vw,42px);font-weight:600;color:var(--acc);line-height:1;animation:countGlow 3s ease-in-out infinite}
-.stat .lbl{font-size:13px;color:var(--mut);margin-top:8px}
-.stat svg{width:22px;height:22px;color:var(--dim);margin:0 auto 8px;display:block}
+    .ss-cells i {
+      aspect-ratio: 1;
+      background: #2E372F;
+      border-radius: 3px;
+      transition: background .12s
+    }
 
-/* ══════════════════════════════════════════
-   SECTIONS
-   ══════════════════════════════════════════ */
-section{padding:64px 0}
-.section-head{display:flex;align-items:center;gap:16px;margin-bottom:14px}
-.section-num{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--acc);background:var(--acc-soft);border:1px solid var(--acc-line);padding:5px 11px;border-radius:7px}
-.section-head h2{font-size:clamp(22px,3.2vw,30px);font-weight:800;line-height:1.4;letter-spacing:-.01em}
-.lead{font-size:17px;line-height:1.95;color:var(--ink);margin-bottom:8px;max-width:72ch}
+    .ss-cells i.scan {
+      background: #C27803
+    }
 
-/* ══════════════════════════════════════════
-   ABOUT CARDS
-   ══════════════════════════════════════════ */
-.about{border-bottom:1px dashed var(--line2)}
-.about-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;box-shadow:var(--shadow);transition:transform .3s cubic-bezier(.2,.8,.3,1.2),border-color .3s,box-shadow .3s;position:relative;overflow:hidden}
-.card::after{content:"";position:absolute;top:0;left:0;width:60%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.35),transparent);transform:translateX(-120%) skewX(-18deg);pointer-events:none}
-.card:hover{transform:translateY(-6px);border-color:var(--acc-line);box-shadow:0 14px 34px -12px var(--acc-soft)}
-.card:hover::after{animation:shine .9s ease}
-.card h3{font-size:15.5px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:11px}
-.card p{font-size:14px;line-height:1.85;color:var(--mut)}
-.cico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;transition:transform .35s cubic-bezier(.2,.8,.3,1.4)}
-.card:hover .cico{transform:rotate(-8deg) scale(1.12)}
-.cico svg{width:18px;height:18px}
-.cico.blue{background:var(--acc-soft);color:var(--acc)}
-.cico.green{background:var(--grn-soft);color:var(--grn)}
-.cico.amber{background:var(--amb-soft);color:var(--amb)}
-.cico.violet{background:var(--vio-soft);color:var(--vio)}
-.cico.red{background:var(--red-soft);color:var(--red)}
+    .ss-cells i.done {
+      background: #C2492F
+    }
 
-/* ══════════════════════════════════════════
-   TOPIC CARDS
-   ══════════════════════════════════════════ */
-.topics{border-bottom:1px dashed var(--line2)}
-.topics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;margin-top:34px}
-.topic-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;text-decoration:none;color:var(--ink);position:relative;transition:transform .35s cubic-bezier(.2,.8,.3,1.2),border-color .3s,box-shadow .35s}
-.topic-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--tc,var(--acc));transform:scaleX(0);transform-origin:right;transition:transform .4s cubic-bezier(.2,.8,.3,1)}
-html[dir="ltr"] .topic-card::before{transform-origin:left}
-.topic-card:hover{transform:translateY(-7px);border-color:var(--acc-line);box-shadow:0 18px 40px -14px var(--acc-soft);text-decoration:none}
-.topic-card:hover::before{transform:scaleX(1)}
-.topic-card-top{padding:22px 22px 12px;display:flex;align-items:center;gap:15px}
-.topic-icon{width:50px;height:50px;border-radius:13px;display:grid;place-items:center;flex-shrink:0;transition:transform .4s cubic-bezier(.2,.8,.3,1.5)}
-.topic-card:hover .topic-icon{transform:scale(1.12) rotate(-6deg)}
-.topic-icon svg{width:25px;height:25px}
-.topic-icon.green{background:var(--grn-soft);color:var(--grn)}
-.topic-icon.amber{background:var(--amb-soft);color:var(--amb)}
-.topic-icon.blue{background:var(--acc-soft);color:var(--acc)}
-.topic-icon.violet{background:var(--vio-soft);color:var(--vio)}
-.topic-icon.red{background:var(--red-soft);color:var(--red)}
-.topic-num{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.06em;margin-bottom:2px}
-.topic-title{font-size:17px;font-weight:800;line-height:1.5}
-.topic-title-en{font-size:12px;color:var(--dim);font-weight:500;font-family:var(--mono);direction:ltr;text-align:right}
-.topic-card-body{padding:0 22px 18px;flex:1}
-.topic-card-body p{font-size:13.5px;line-height:1.85;color:var(--mut)}
-.topic-card-foot{padding:15px 22px;border-top:1px dashed var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
-.topic-tags{display:flex;gap:6px;flex-wrap:wrap}
-.topic-tags span{font-size:11px;color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:2px 9px;font-family:var(--mono);direction:ltr}
-.topic-arrow{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--acc-soft);color:var(--acc);transition:.35s cubic-bezier(.2,.8,.3,1.3);flex-shrink:0}
-.topic-card:hover .topic-arrow{background:var(--acc);color:var(--bg);transform:translateX(-4px)}
-html[dir="ltr"] .topic-card:hover .topic-arrow{transform:translateX(4px)}
-.topic-arrow svg{width:15px;height:15px;transform:rotate(-90deg)}
-html[dir="ltr"] .topic-arrow svg{transform:rotate(90deg)}
-.topic-status{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:6px;margin-inline-start:auto;white-space:nowrap}
-.topic-status.done{background:var(--grn-soft);color:var(--grn);animation:pulseRing 2.4s ease-out infinite}
-.topic-status.soon{background:var(--amb-soft);color:var(--amb)}
+    .ss-path {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #CFE0CF;
+      padding: 6px 0;
+      flex-wrap: wrap
+    }
 
-/* ══════════════════════════════════════════
-   ROADMAP
-   ══════════════════════════════════════════ */
-.roadmap{border-bottom:1px dashed var(--line2)}
-.roadmap-list{margin-top:32px;position:relative}
-.roadmap-list::before{content:"";position:absolute;inset-inline-start:17px;top:8px;bottom:8px;width:2px;background:var(--line)}
-.roadmap-list .prog-line{position:absolute;inset-inline-start:17px;top:8px;width:2px;background:var(--acc);height:0;transition:height 1.2s ease;z-index:1}
-.roadmap-item{display:flex;align-items:flex-start;gap:20px;position:relative;padding-bottom:34px;z-index:2}
-.roadmap-item:last-child{padding-bottom:0}
-.roadmap-dot{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;font-family:var(--mono);font-size:13px;font-weight:700;border:2px solid var(--line);background:var(--surface);color:var(--dim);transition:.4s cubic-bezier(.2,.8,.3,1.4)}
-.roadmap-item.in .roadmap-dot{transform:scale(1.08)}
-.roadmap-item.done .roadmap-dot{border-color:var(--grn);background:var(--grn-soft);color:var(--grn)}
-.roadmap-item.next .roadmap-dot{border-color:var(--amb);background:var(--amb-soft);color:var(--amb);animation:breathe 2.2s ease-in-out infinite}
-.roadmap-content h4{font-size:15.5px;font-weight:700;margin-bottom:4px;transition:color .3s}
-.roadmap-item:hover .roadmap-content h4{color:var(--acc)}
-.roadmap-content p{font-size:13px;color:var(--mut);line-height:1.8}
+    .ss-node {
+      padding: 4px 9px;
+      background: #2E372F;
+      border-radius: 6px;
+      transition: all .3s
+    }
 
-/* ══════════════════════════════════════════
-   AUTHOR
-   ══════════════════════════════════════════ */
-.author-section{border-bottom:1px dashed var(--line2)}
-.author-card-big{display:flex;align-items:center;gap:26px;background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid var(--acc);border-radius:16px;padding:30px 34px;margin-top:30px;box-shadow:var(--shadow);transition:transform .3s,box-shadow .3s}
-.author-card-big:hover{transform:translateY(-4px);box-shadow:0 16px 40px -14px var(--acc-soft)}
-.author-avatar-big{width:84px;height:84px;border-radius:18px;object-fit:cover;flex-shrink:0;border:3px solid var(--line);animation:breathe 5s ease-in-out infinite}
-.author-info-big{flex:1}
-.author-name-big{font-weight:800;font-size:21px;margin-bottom:4px}
-.author-role-big{font-size:14px;color:var(--mut);margin-bottom:14px}
-.author-links-big{display:flex;gap:10px;flex-wrap:wrap}
+    .ss-node.walk {
+      background: #2E8F63;
+      color: #fff
+    }
 
-/* ══════════════════════════════════════════
-   FOOTER
-   ══════════════════════════════════════════ */
-footer{padding:50px 0}
-.foot-grid{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
-.foot-profile{display:flex;align-items:center;gap:14px}
-.foot-profile img{width:42px;height:42px;border-radius:10px;border:2px solid var(--line)}
-.foot-profile .name{font-weight:700;font-size:14px}
-.foot-profile .role{font-size:12px;color:var(--mut)}
-.foot-links{display:flex;gap:8px}
-.foot-meta{text-align:center;color:var(--dim);font-size:13px;line-height:2;margin-top:26px;padding-top:26px;border-top:1px dashed var(--line2)}
-.foot-meta a{color:var(--acc)}
+    .ss-node.done {
+      background: #1F7A52;
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(92, 192, 143, .35)
+    }
 
-/* ══════════════════════════════════════════
-   REVEAL (scroll-triggered)
-   ══════════════════════════════════════════ */
-.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.3,1)}
-.rv.in{opacity:1;transform:none}
-.rv-l{opacity:0;transform:translateX(-30px);transition:.7s cubic-bezier(.2,.8,.3,1)}
-.rv-l.in{opacity:1;transform:none}
-.rv-r{opacity:0;transform:translateX(30px);transition:.7s cubic-bezier(.2,.8,.3,1)}
-.rv-r.in{opacity:1;transform:none}
-.rv-scale{opacity:0;transform:scale(.9);transition:.7s cubic-bezier(.2,.8,.3,1.2)}
-.rv-scale.in{opacity:1;transform:scale(1)}
+    .ss-arrow {
+      color: #5C6B5E
+    }
 
-/* ══════════════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════════════ */
-@media(max-width:900px){
-  .about-grid{grid-template-columns:1fr}
-  .topics-grid{grid-template-columns:1fr}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .stat:nth-child(2){border-inline-end:none}
-  .stat:nth-child(1),.stat:nth-child(2){border-bottom:1px dashed var(--line2)}
-  .author-card-big{flex-direction:column;text-align:center}
-  .author-links-big{justify-content:center}
-  .foot-grid{grid-template-columns:1fr;text-align:center}
-  .foot-profile{justify-content:center}
-  .foot-links{justify-content:center}
-  .topbar-nav{display:none}
-}
-@media(max-width:600px){
-  .hero{padding:46px 0 56px}
-  .logo-mark{width:60px;height:60px}
-  .hero-actions .btn{padding:12px 24px;font-size:14px}
-  .author-card-big{padding:22px}
-  .term{font-size:12px;padding:16px}
-}
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-}
-</style>
+    .ss-result {
+      font-size: 11px;
+      color: #77897A;
+      padding: 4px 0;
+      margin-top: 4px;
+      min-height: 18px
+    }
+
+    .ss-result.highlight {
+      color: #5CC08F;
+      font-weight: 600
+    }
+
+    /* ══════════════════════════════════════════
+SPLIT ANIMATION (DataPartitioning)
+══════════════════════════════════════════ */
+    .sp-stage {
+      direction: ltr;
+      padding: 6px 16px 18px
+    }
+
+    .sp-query {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--term-mut);
+      margin-bottom: 14px;
+      min-height: 20px;
+      text-align: left
+    }
+
+    .sp-query .kw {
+      color: #7FC79F
+    }
+
+    .sp-query .st {
+      color: #E5B45A
+    }
+
+    .sp-area {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start
+    }
+
+    .sp-slice {
+      width: 22%;
+      max-width: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 3px;
+      transform: translateX(0);
+      transition: transform .95s cubic-bezier(.55, 0, .25, 1)
+    }
+
+    .sp-stage.split .sp-slice {
+      transform: translateX(var(--dx))
+    }
+
+    .sp-slice:nth-child(1) {
+      --dx: -24px
+    }
+
+    .sp-slice:nth-child(2) {
+      --dx: -8px
+    }
+
+    .sp-slice:nth-child(3) {
+      --dx: 8px
+    }
+
+    .sp-slice:nth-child(4) {
+      --dx: 24px
+    }
+
+    .sp-cells {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px
+    }
+
+    .sp-cells i {
+      aspect-ratio: 8/5;
+      background: #39423B;
+      border-radius: 3px;
+      transition: background .5s
+    }
+
+    .sp-stage .sp-slice:nth-child(1) i.on {
+      background: #5CC08F
+    }
+
+    .sp-stage .sp-slice:nth-child(2) i.on {
+      background: #E3A63C
+    }
+
+    .sp-stage .sp-slice:nth-child(3) i.on {
+      background: #D08B4F
+    }
+
+    .sp-stage .sp-slice:nth-child(4) i.on {
+      background: #E5745A
+    }
+
+    .sp-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: #77897A;
+      margin-top: 8px;
+      letter-spacing: .06em;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: .45s
+    }
+
+    .sp-stage.labeled .sp-label {
+      opacity: 1;
+      transform: none
+    }
+
+    .sp-stage.labeled .sp-slice:nth-child(1) .sp-label {
+      color: #5CC08F
+    }
+
+    .sp-stage.labeled .sp-slice:nth-child(2) .sp-label {
+      color: #E3A63C
+    }
+
+    .sp-stage.labeled .sp-slice:nth-child(3) .sp-label {
+      color: #D08B4F
+    }
+
+    .sp-stage.labeled .sp-slice:nth-child(4) .sp-label {
+      color: #E5745A
+    }
+
+    /* ══════════════════════════════════════════
+ROADMAP
+══════════════════════════════════════════ */
+    .roadmap {
+      border-bottom: 1px dashed var(--line2)
+    }
+
+    .roadmap-list {
+      margin-top: 32px;
+      position: relative
+    }
+
+    .roadmap-list::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 17px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--line)
+    }
+
+    .roadmap-list .prog-line {
+      position: absolute;
+      inset-inline-start: 17px;
+      top: 8px;
+      width: 2px;
+      background: var(--acc);
+      height: 0;
+      transition: height 1.2s ease;
+      z-index: 1
+    }
+
+    .roadmap-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      position: relative;
+      padding-bottom: 34px;
+      z-index: 2
+    }
+
+    .roadmap-item:last-child {
+      padding-bottom: 0
+    }
+
+    .roadmap-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      border: 2px solid var(--line);
+      background: var(--surface);
+      color: var(--dim);
+      transition: .4s cubic-bezier(.2, .8, .3, 1.4)
+    }
+
+    .roadmap-item.in .roadmap-dot {
+      transform: scale(1.08)
+    }
+
+    .roadmap-item.done .roadmap-dot {
+      border-color: var(--grn);
+      background: var(--grn-soft);
+      color: var(--grn)
+    }
+
+    .roadmap-item.next .roadmap-dot {
+      border-color: var(--amb);
+      background: var(--amb-soft);
+      color: var(--amb);
+      animation: breathe 2.2s ease-in-out infinite
+    }
+
+    .roadmap-content h4 {
+      font-size: 15.5px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      transition: color .3s
+    }
+
+    .roadmap-item:hover .roadmap-content h4 {
+      color: var(--acc)
+    }
+
+    .roadmap-content p {
+      font-size: 13px;
+      color: var(--mut);
+      line-height: 1.8
+    }
+
+    /* ══════════════════════════════════════════
+AUTHOR
+══════════════════════════════════════════ */
+    .author-section {
+      border-bottom: 1px dashed var(--line2)
+    }
+
+    .author-card-big {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-inline-start: 4px solid var(--acc);
+      border-radius: 16px;
+      padding: 30px 34px;
+      margin-top: 30px;
+      box-shadow: var(--shadow);
+      transition: transform .3s, box-shadow .3s
+    }
+
+    .author-card-big:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px -14px var(--acc-soft)
+    }
+
+    .author-avatar-big {
+      width: 84px;
+      height: 84px;
+      border-radius: 18px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 3px solid var(--line);
+      animation: breathe 5s ease-in-out infinite
+    }
+
+    .author-info-big {
+      flex: 1
+    }
+
+    .author-name-big {
+      font-weight: 800;
+      font-size: 21px;
+      margin-bottom: 4px
+    }
+
+    .author-role-big {
+      font-size: 14px;
+      color: var(--mut);
+      margin-bottom: 14px
+    }
+
+    .author-links-big {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    /* ══════════════════════════════════════════
+FOOTER
+══════════════════════════════════════════ */
+    footer {
+      padding: 50px 0
+    }
+
+    .foot-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: center
+    }
+
+    .foot-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px
+    }
+
+    .foot-profile img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 2px solid var(--line)
+    }
+
+    .foot-profile .name {
+      font-weight: 700;
+      font-size: 14px
+    }
+
+    .foot-profile .role {
+      font-size: 12px;
+      color: var(--mut)
+    }
+
+    .foot-links {
+      display: flex;
+      gap: 8px
+    }
+
+    .foot-meta {
+      text-align: center;
+      color: var(--dim);
+      font-size: 13px;
+      line-height: 2;
+      margin-top: 26px;
+      padding-top: 26px;
+      border-top: 1px dashed var(--line2)
+    }
+
+    .foot-meta a {
+      color: var(--acc)
+    }
+
+    /* ══════════════════════════════════════════
+REVEAL (scroll-triggered)
+══════════════════════════════════════════ */
+    .rv {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity .7s ease, transform .7s cubic-bezier(.2, .8, .3, 1)
+    }
+
+    .rv.in {
+      opacity: 1;
+      transform: none
+    }
+
+    .rv-l {
+      opacity: 0;
+      transform: translateX(-30px);
+      transition: .7s cubic-bezier(.2, .8, .3, 1)
+    }
+
+    .rv-l.in {
+      opacity: 1;
+      transform: none
+    }
+
+    .rv-r {
+      opacity: 0;
+      transform: translateX(30px);
+      transition: .7s cubic-bezier(.2, .8, .3, 1)
+    }
+
+    .rv-r.in {
+      opacity: 1;
+      transform: none
+    }
+
+    .rv-scale {
+      opacity: 0;
+      transform: scale(.9);
+      transition: .7s cubic-bezier(.2, .8, .3, 1.2)
+    }
+
+    .rv-scale.in {
+      opacity: 1;
+      transform: scale(1)
+    }
+
+    /* ══════════════════════════════════════════
+RESPONSIVE
+══════════════════════════════════════════ */
+    @media(max-width:900px) {
+      .about-grid {
+        grid-template-columns: 1fr
+      }
+
+      .feat-top {
+        grid-template-columns: 1fr
+      }
+
+      .feat-stage {
+        border-inline-start: 0;
+        border-top: 1px solid var(--term-line)
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .stat:nth-child(2) {
+        border-inline-end: none
+      }
+
+      .stat:nth-child(1),
+      .stat:nth-child(2) {
+        border-bottom: 1px dashed var(--line2)
+      }
+
+      .author-card-big {
+        flex-direction: column;
+        text-align: center
+      }
+
+      .author-links-big {
+        justify-content: center
+      }
+
+      .foot-grid {
+        grid-template-columns: 1fr;
+        text-align: center
+      }
+
+      .foot-profile {
+        justify-content: center
+      }
+
+      .foot-links {
+        justify-content: center
+      }
+
+      .topbar-nav {
+        display: none
+      }
+    }
+
+    @media(max-width:600px) {
+      .hero {
+        padding: 46px 0 56px
+      }
+
+      .logo-mark {
+        width: 60px;
+        height: 60px
+      }
+
+      .hero-actions .btn {
+        padding: 12px 24px;
+        font-size: 14px
+      }
+
+      .author-card-big {
+        padding: 22px
+      }
+
+      .term {
+        font-size: 12px;
+        padding: 16px
+      }
+
+      .feat-info {
+        padding: 22px
+      }
+
+      .ss-cells {
+        grid-template-columns: repeat(12, 1fr)
+      }
+
+      .sp-slice {
+        max-width: 70px
+      }
+
+      .sp-stage.split .sp-slice:nth-child(1) {
+        transform: translateX(-16px)
+      }
+
+      .sp-stage.split .sp-slice:nth-child(2) {
+        transform: translateX(-5px)
+      }
+
+      .sp-stage.split .sp-slice:nth-child(3) {
+        transform: translateX(5px)
+      }
+
+      .sp-stage.split .sp-slice:nth-child(4) {
+        transform: translateX(16px)
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div id="prog"></div>
-
-<!-- ═══════════ SVG ICONS ═══════════ -->
-<svg style="display:none">
-  <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.2 1.9 1.2 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8 0 3.2.8.8 1.3 1.9 1.3 3.1 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.3v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3"/></symbol>
-  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
-  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
-  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
-  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
-  <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
-  <symbol id="i-server" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="18" r="1" fill="currentColor"/></symbol>
-  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
-  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
-  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 4v14M6.5 13.5 12 19l5.5-5.5"/></symbol>
-  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
-  <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M6 8.5V15.5M8.5 6H15.5"/></symbol>
-  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></symbol>
-  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"/></symbol>
-  <symbol id="i-code" viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></symbol>
-  <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
-</svg>
-
-<!-- ═══════════ TOPBAR ═══════════ -->
-<nav class="topbar">
-  <div class="wrap topbar-in">
-    <span class="brand">
-      <span class="brand-logo"><svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="14" fill="var(--acc)"/><path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5" stroke-linejoin="round" fill="none"/><circle cx="32" cy="28" r="3" fill="var(--bg)"/><circle cx="22" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><circle cx="42" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6"/></svg></span>
-      <span class="fa">عمقِ بک‌اند</span><span class="en">Backend Deep Dives</span>
-    </span>
-    <a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" class="ic sm fill"><use href="#i-github"/></svg>
-      <span class="fa">ریپازیتوری</span><span class="en">Repository</span>
-    </a>
-    <button class="btn iconb" id="themeBtn" title="Toggle theme">
-      <svg viewBox="0 0 24 24" class="ic sm sun"><use href="#i-sun"/></svg>
-      <svg viewBox="0 0 24 24" class="ic sm moon"><use href="#i-moon"/></svg>
-    </button>
-    <button class="btn iconb" id="langBtn" title="English / فارسی">
-      <span class="fa" style="font-size:12px;font-weight:700">EN</span>
-      <span class="en" style="font-size:12px;font-weight:700">فا</span>
-    </button>
-  </div>
-</nav>
-
-<!-- ═══════════ HERO ═══════════ -->
-<header class="hero" id="top">
-  <!-- floating decorative shapes -->
-  <div class="shape" style="top:12%;left:6%;width:44px;animation-delay:0s"><svg viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="1.5" opacity=".5"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-  <div class="shape" style="top:20%;right:8%;width:38px;animation-delay:1.5s"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amb)" stroke-width="1.5" opacity=".5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
-  <div class="shape" style="bottom:22%;left:10%;width:40px;animation-delay:3s"><svg viewBox="0 0 24 24" fill="none" stroke="var(--vio)" stroke-width="1.5" opacity=".5"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
-  <div class="shape" style="bottom:16%;right:6%;width:42px;animation-delay:2.2s"><svg viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="1.5" opacity=".5"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-
-  <div class="wrap">
-    <div class="hero-inner">
-      <div class="logo-mark">
-        <svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="18" fill="var(--acc)"/><path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5" stroke-linejoin="round" fill="none"/><circle cx="32" cy="28" r="3" fill="var(--bg)"/><circle cx="22" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><circle cx="42" cy="36" r="2.5" fill="var(--bg)" opacity=".75"/><path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6"/></svg>
-      </div>
-    <h1>
-  <span class="fa"><span class="uword">بک‌اند زیر ذره‌بین<svg class="uscribble" viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M2 7 Q 20 2 40 6 T 80 6 T 118 4" fill="none" stroke="var(--amb)" stroke-width="3" stroke-linecap="round"/></svg></span></span>
-  <span class="en"><span class="uword">Backend Under the Microscope<svg class="uscribble" viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M2 7 Q 20 2 40 6 T 80 6 T 118 4" fill="none" stroke="var(--amb)" stroke-width="3" stroke-linecap="round"/></svg></span></span>
-</h1>
-<p class="hero-sub">
-  <span class="fa">اینجا فقط «چطور» را یاد نمی‌گیرید — «چرا» و «چه اتفاقی می‌افتد» را هم می‌فهمید. هر موضوع را با نگاه مهندسی واکاوی می‌کنیم: ساختمان داده، الگوریتم، و رفتار واقعی موتور. بدون حاشیه، با مثال عینی.</span>
-  <span class="en">This isn't just about "how" — you'll understand "why" and "what actually happens" too. Every topic is examined in depth with an engineering lens: data structures, algorithms, and real engine behavior. No fluff, real-world examples.</span>
-</p>
-
-      <!-- animated terminal -->
-      <div class="qwin">
-        <div class="qwin-bar"><i></i><i></i><i></i><span>terminal — BackendDeepDives</span></div>
-        <div class="term" id="term"></div>
-      </div>
-
-      <div class="hero-actions">
-        <a class="btn primary" href="#topics">
-          <span class="fa">مشاهده موضوعات</span><span class="en">Browse Topics</span>
-          <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-down"/></svg>
-        </a>
-        <a class="btn" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" class="ic sm fill"><use href="#i-github"/></svg>
-          <span class="fa">گیت‌هاب</span><span class="en">GitHub</span>
-        </a>
-      </div>
-
-      <div class="scroll-hint"><svg viewBox="0 0 24 24" class="ic"><use href="#i-down"/></svg></div>
+  <div id="prog"></div>
+  <!-- ═══════════ SVG ICONS ═══════════ -->
+  <svg style="display:none">
+    <symbol id="i-github" viewBox="0 0 24 24">
+      <path
+        d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.2 1.9 1.2 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8 0 3.2.8.8 1.3 1.9 1.3 3.1 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.3v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3" />
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4" />
+      <path
+        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24">
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </symbol>
+    <symbol id="i-db" viewBox="0 0 24 24">
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+    </symbol>
+    <symbol id="i-server" viewBox="0 0 24 24">
+      <rect x="2" y="2" width="20" height="8" rx="2" />
+      <rect x="2" y="14" width="20" height="8" rx="2" />
+      <circle cx="6" cy="6" r="1" fill="currentColor" />
+      <circle cx="6" cy="18" r="1" fill="currentColor" />
+    </symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24">
+      <path d="M12 2 2 7l10 5 10-5-10-5z" />
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+    </symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+      <path d="M12 4v14M6.5 13.5 12 19l5.5-5.5" />
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </symbol>
+    <symbol id="i-git" viewBox="0 0 24 24">
+      <circle cx="6" cy="6" r="2.5" />
+      <circle cx="18" cy="6" r="2.5" />
+      <circle cx="6" cy="18" r="2.5" />
+      <path d="M6 8.5V15.5M8.5 6H15.5" />
+    </symbol>
+    <symbol id="i-down" viewBox="0 0 24 24">
+      <path d="M12 5v14M19 12l-7 7-7-7" />
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z" />
+      <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20" />
+    </symbol>
+    <symbol id="i-code" viewBox="0 0 24 24">
+      <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M20 6 9 17l-5-5" />
+    </symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24">
+      <path
+        d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10" />
+    </symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24">
+      <path d="M7 16V4m0 12-4-4m4 4 4-4M17 8v12m0-12 4 4m-4-4-4 4" />
+    </symbol>
+  </svg>
+  <!-- ═══════════ TOPBAR ═══════════ -->
+  <nav class="topbar">
+    <div class="wrap topbar-in">
+      <span class="brand">
+        <span class="brand-logo"><svg viewBox="0 0 64 64" fill="none">
+            <rect width="64" height="64" rx="14" fill="var(--acc)" />
+            <path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5"
+              stroke-linejoin="round" fill="none" />
+            <circle cx="32" cy="28" r="3" fill="var(--bg)" />
+            <circle cx="22" cy="36" r="2.5" fill="var(--bg)" opacity=".75" />
+            <circle cx="42" cy="36" r="2.5" fill="var(--bg)" opacity=".75" />
+            <path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6" />
+          </svg></span>
+        <span class="fa">عمقِ بک‌اند</span><span class="en">Backend Deep Dives</span>
+      </span>
+      <a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" class="ic sm fill">
+          <use href="#i-github" />
+        </svg>
+        <span class="fa">ریپازیتوری</span><span class="en">Repository</span>
+      </a>
+      <button class="btn iconb" id="themeBtn" title="Toggle theme">
+        <svg viewBox="0 0 24 24" class="ic sm sun">
+          <use href="#i-sun" />
+        </svg>
+        <svg viewBox="0 0 24 24" class="ic sm moon">
+          <use href="#i-moon" />
+        </svg>
+      </button>
+      <button class="btn iconb" id="langBtn" title="English / فارسی">
+        <span class="fa" style="font-size:12px;font-weight:700">EN</span>
+        <span class="en" style="font-size:12px;font-weight:700">فا</span>
+      </button>
     </div>
-  </div>
-</header>
-
-<main class="wrap">
-<!-- ═══════════ TOPICS ═══════════ -->
-<section id="topics" class="topics">
- <div class="section-head rv"><span class="section-num">02</span>
-  <h2><span class="fa">موضوعات — کدام را اول می‌روی؟</span><span class="en">Topics — which one first?</span></h2>
-</div>
-<p class="lead rv">
-  <span class="fa">هر کارت، یک ایستگاه یادگیری عمیق است. از هرجا که دوست داری شروع کن — یا به ترتیب شماره‌ها جلو برو. انتخاب با توست.</span>
-  <span class="en">Each card is a deep learning station. Start wherever you like — or follow the numbers. Your call.</span>
-</p>
-  <div class="topics-grid">
-
-    <a class="topic-card rv" href="./DatabaseIndexes.html" style="--tc:var(--grn)">
-      <div class="topic-card-top">
-        <div class="topic-icon green"><svg viewBox="0 0 24 24" class="ic"><use href="#i-db"/></svg></div>
-        <div><div class="topic-num">01</div>
-          <div class="topic-title"><span class="fa">ایندکس‌های دیتابیس</span><span class="en">Database Indexes</span></div>
-          <div class="topic-title-en">Database Indexes</div></div>
+  </nav>
+  <!-- ═══════════ HERO ═══════════ -->
+  <header class="hero" id="top">
+    <div class="shape" style="top:12%;left:6%;width:44px;animation-delay:0s"><svg viewBox="0 0 24 24" fill="none"
+        stroke="var(--acc)" stroke-width="1.5" opacity=".5">
+        <path d="M12 2 2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+      </svg></div>
+    <div class="shape" style="top:20%;right:8%;width:38px;animation-delay:1.5s"><svg viewBox="0 0 24 24" fill="none"
+        stroke="var(--amb)" stroke-width="1.5" opacity=".5">
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+      </svg></div>
+    <div class="shape" style="bottom:22%;left:10%;width:40px;animation-delay:3s"><svg viewBox="0 0 24 24" fill="none"
+        stroke="var(--vio)" stroke-width="1.5" opacity=".5">
+        <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
+      </svg></div>
+    <div class="shape" style="bottom:16%;right:6%;width:42px;animation-delay:2.2s"><svg viewBox="0 0 24 24" fill="none"
+        stroke="var(--acc)" stroke-width="1.5" opacity=".5">
+        <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg></div>
+    <div class="wrap">
+      <div class="hero-inner">
+        <div class="logo-mark">
+          <svg viewBox="0 0 64 64" fill="none">
+            <rect width="64" height="64" rx="18" fill="var(--acc)" />
+            <path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5"
+              stroke-linejoin="round" fill="none" />
+            <circle cx="32" cy="28" r="3" fill="var(--bg)" />
+            <circle cx="22" cy="36" r="2.5" fill="var(--bg)" opacity=".75" />
+            <circle cx="42" cy="36" r="2.5" fill="var(--bg)" opacity=".75" />
+            <path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6" />
+          </svg>
+        </div>
+        <h1>
+          <span class="fa"><span class="uword">بک‌اند زیر ذره‌بین<svg class="uscribble" viewBox="0 0 120 10"
+                preserveAspectRatio="none">
+                <path d="M2 7 Q 20 2 40 6 T 80 6 T 118 4" fill="none" stroke="var(--amb)" stroke-width="3"
+                  stroke-linecap="round" />
+              </svg></span></span>
+          <span class="en"><span class="uword">Backend Under the Microscope<svg class="uscribble" viewBox="0 0 120 10"
+                preserveAspectRatio="none">
+                <path d="M2 7 Q 20 2 40 6 T 80 6 T 118 4" fill="none" stroke="var(--amb)" stroke-width="3"
+                  stroke-linecap="round" />
+              </svg></span></span>
+        </h1>
+        <p class="hero-sub">
+          <span class="fa">اینجا فقط «چطور» را یاد نمی‌گیرید — «چرا» و «چه اتفاقی می‌افتد» را هم می‌فهمید. هر موضوع را
+            با نگاه مهندسی واکاوی می‌کنیم: ساختمان داده، الگوریتم، و رفتار واقعی موتور. بدون حاشیه، با مثال عینی.</span>
+          <span class="en">This isn't just about "how" — you'll understand "why" and "what actually happens" too. Every
+            topic is examined in depth with an engineering lens: data structures, algorithms, and real engine behavior.
+            No fluff, real-world examples.</span>
+        </p>
+        <div class="qwin">
+          <div class="qwin-bar"><i></i><i></i><i></i><span>terminal — BackendDeepDives</span></div>
+          <div class="term" id="term"></div>
+        </div>
+        <div class="hero-actions">
+          <a class="btn primary" href="#topics">
+            <span class="fa">مشاهده موضوعات</span><span class="en">Browse Topics</span>
+            <svg viewBox="0 0 24 24" class="ic sm">
+              <use href="#i-down" />
+            </svg>
+          </a>
+          <a class="btn" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" class="ic sm fill">
+              <use href="#i-github" />
+            </svg>
+            <span class="fa">گیت‌هاب</span><span class="en">GitHub</span>
+          </a>
+        </div>
+        <div class="scroll-hint"><svg viewBox="0 0 24 24" class="ic">
+            <use href="#i-down" />
+          </svg></div>
       </div>
-      <div class="topic-card-body"><p>
-        <span class="fa">چطور دیتابیس بین یک میلیون سطر، یک سطر را پیدا می‌کند؟ از Hash Index تا B-Tree و LSM، از Clustered تا Non-Clustered، و ایندکس‌های ترکیبی با مثال SQL Server.</span>
-        <span class="en">How does a database find one row in a million? From Hash Index to B-Tree and LSM, Clustered to Non-Clustered, and composite indexes with SQL Server examples.</span></p></div>
-      <div class="topic-card-foot">
-        <div class="topic-tags"><span>B-Tree</span><span>LSM</span><span>SQL Server</span></div>
-        <div class="topic-arrow"><svg viewBox="0 0 24 24" class="ic sm"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
+    </div>
+  </header>
+  <main class="wrap">
+    <!-- ═══════════ TOPICS — RESUME STYLE ═══════════ -->
+    <section id="topics" class="topics">
+      <div class="section-head rv"><span class="section-num">02</span>
+        <h2><span class="fa">موضوعات — هرکدام با دموِ زندهٔ ایدهٔ مرکزی‌اش</span><span class="en">Topics — each with a
+            live demo of its core idea</span></h2>
       </div>
-    </a>    
-
-  </div>
-</section>
-</main>
-
-<!-- ═══════════ FOOTER ═══════════ -->
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div class="foot-profile">
-        <img src="https://github.com/alireza-haeri.png" alt="Alireza Haeri">
-        <div>
-          <div class="name"><span class="fa">علیرضا حایری</span><span class="en">Alireza Haeri</span></div>
-          <div class="role"><span class="fa">توسعه‌دهندهٔ بک‌اند ‎.NET · پروژهٔ آموزش مبانی عمیق برنامه‌نویسی</span><span class="en">.NET Backend Developer · deep programming fundamentals</span></div>
+      <p class="lead rv">
+        <span class="fa">هر کارت، یک ایستگاه یادگیری عمیق است. کنار هر موضوع یک <b>انیمیشن کوچک</b> هست که نشان می‌دهد
+          آن موضوع واقعاً چه می‌کند — کمی مکث کنید و تماشا کنید.</span>
+        <span class="en">Each card is a deep learning station. Next to each topic, a small <b>animation</b> shows what
+          it actually does — pause for a moment and watch.</span>
+      </p>
+    <div class="proj-list">
+  <!-- ★ TOPIC 01 — Database Indexes -->
+  <div class="feat-card rv" style="--tc:var(--grn)">
+    <div class="feat-top">
+      <div class="feat-info">
+        <div class="feat-head">
+          <span class="pnum">TOPIC-01</span>
+          <h3>Database Indexes</h3>
+          <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+        </div>
+        <p class="feat-desc">
+          <span class="fa">چطور دیتابیس بین یک میلیون سطر، <b>یک سطر</b> را پیدا می‌کند؟ از ایندکس هش و درخت B تا LSM، از ایندکس خوشه‌ای تا غیرخوشه‌ای، و ایندکس‌های ترکیبی — همراه با مثال‌های SQL Server و دموهای تعاملی.</span>
+          <span class="en">How does a database find <b>one row</b> in a million? From Hash Index and B-Tree to LSM, Clustered to Non-Clustered, and composite indexes — with SQL Server examples and interactive demos.</span>
+        </p>
+        <div class="ftags"><span>B-Tree</span><span>LSM-Tree</span><span>Hash Index</span><span>SQL Server</span><span>Clustered</span></div>
+        <div class="feat-links">
+          <a class="btn primary sm" href="./DatabaseIndexes.html">
+            <span class="fa">خواندن</span><span class="en">Read</span>
+            <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+          </a>
         </div>
       </div>
-      <div class="foot-links">
-        <a class="btn sm" href="https://github.com/alireza-haeri" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" class="ic sm fill"><use href="#i-github"/></svg>
-          <span class="fa">گیت‌هاب من</span><span class="en">My GitHub</span></a>
-        <a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-git"/></svg>
-          <span class="fa">ریپازیتوری پروژه</span><span class="en">Project Repo</span></a>
+      <div class="feat-stage" aria-hidden="true">
+        <div class="qwin-bar"><i></i><i></i><i></i><span>scan vs seek — the race</span></div>
+        <div class="st-cap" id="ssCap"><span class="fa"></span><span class="en"></span></div>
+        <div class="ss-stage" id="ssStage">
+          <div class="ss-query"><span class="kw">SELECT</span> * <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> CustomerId = <span class="st">1042</span></div>
+          <div class="ss-lanes">
+            <div class="ss-lane">
+              <div class="ss-lane-head">
+                <span class="ss-lane-label">FULL SCAN</span>
+                <span class="ss-cnt"><span id="ssScanCnt">0</span> <small>rows</small></span>
+              </div>
+              <div class="ss-cells" id="ssScanCells"></div>
+              <div class="ss-result" id="ssScanRes"></div>
+            </div>
+            <div class="ss-lane">
+              <div class="ss-lane-head">
+                <span class="ss-lane-label">INDEX SEEK</span>
+                <span class="ss-cnt"><span id="ssSeekCnt">0</span> <small>pages</small></span>
+              </div>
+              <div class="ss-path" id="ssSeekPath">
+                <span class="ss-node">root</span><span class="ss-arrow">→</span>
+                <span class="ss-node">branch</span><span class="ss-arrow">→</span>
+                <span class="ss-node">leaf</span><span class="ss-arrow">→</span>
+                <span class="ss-node">row ✓</span>
+              </div>
+              <div class="ss-result highlight" id="ssSeekRes"></div>
+            </div>
+          </div>
+        </div>
+        <div class="mini-banner" id="ssBanner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+          <span class="fa"><b>۴ صفحه</b> به‌جای <b>۱٬۰۰۰٬۰۰۰ سطر</b> — قدرت ایندکس</span>
+          <span class="en"><b>4 pages</b> instead of <b>1,000,000 rows</b> — the power of an index</span>
+        </div>
       </div>
     </div>
-    <div class="foot-meta">
-      <span class="fa">ساخته‌شده با ❤️ برای جامعهٔ توسعه‌دهنده‌های فارسی‌زبان · <a href="https://github.com/alireza-haeri/BackendDeepDives">BackendDeepDives</a></span>
-      <span class="en">Built with ❤️ for the Persian-speaking developer community · <a href="https://github.com/alireza-haeri/BackendDeepDives">BackendDeepDives</a></span>
+  </div>
+
+  <!-- ★ TOPIC 02 — Data Partitioning -->
+  <div class="feat-card rv" style="--tc:var(--vio)">
+    <div class="feat-top">
+      <div class="feat-info">
+        <div class="feat-head">
+          <span class="pnum">TOPIC-02</span>
+          <h3>Data Partitioning</h3>
+          <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+        </div>
+        <p class="feat-desc">
+          <span class="fa">میلیاردها سطر در یک جدول — چطور فقط <b>همان یک سطر</b> را پیدا می‌کنید؟ از RANGE و LIST تا HASH و KEY، از Sliding Window تا Tiered Storage، و تفاوت Partitioning با Sharding — همراه با مثال‌های SQL Server و MySQL.</span>
+          <span class="en">Billions of rows in one table — how do you find <b>just the one row</b> you need? From RANGE and LIST to HASH and KEY, Sliding Window to Tiered Storage, and Partitioning vs Sharding — with SQL Server &amp; MySQL examples.</span>
+        </p>
+        <div class="ftags"><span>RANGE</span><span>LIST</span><span>HASH</span><span>KEY</span><span>SQL Server</span><span>MySQL</span></div>
+        <div class="feat-links">
+          <a class="btn primary sm" href="./DataPartitioning.html">
+            <span class="fa">خواندن</span><span class="en">Read</span>
+            <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+          </a>
+        </div>
+      </div>
+      <div class="feat-stage" aria-hidden="true">
+        <div class="qwin-bar"><i></i><i></i><i></i><span>the split — one table, four partitions</span></div>
+        <div class="st-cap" id="spCap"><span class="fa"></span><span class="en"></span></div>
+        <div class="sp-stage" id="spStage">
+          <div class="sp-query"><span class="kw">SELECT</span> COUNT(*) <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> OrderDate >= <span class="st">'2025-03-01'</span></div>
+          <div class="sp-area">
+            <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P1</div></div>
+            <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P2</div></div>
+            <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P3</div></div>
+            <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P4</div></div>
+          </div>
+        </div>
+        <div class="mini-banner" id="spBanner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+          <span class="fa">یک جدول ← <b>۴ پارتیشن</b> — کوئری‌ها فقط تکهٔ لازم را می‌خوانند</span>
+          <span class="en">one table → <b>4 partitions</b> — queries read only the piece they need</span>
+        </div>
+      </div>
     </div>
   </div>
-</footer>
-
-<script>
-/* ═══════════ THEME ═══════════ */
-const themeBtn=document.getElementById('themeBtn');
-themeBtn.addEventListener('click',()=>{const h=document.documentElement;const n=h.getAttribute('data-theme')==='dark'?'light':'dark';h.setAttribute('data-theme',n);localStorage.setItem('theme',n);});
-(function(){const s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);else if(window.matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.setAttribute('data-theme','dark');})();
-
-/* ═══════════ LANGUAGE ═══════════ */
-const langBtn=document.getElementById('langBtn');
-langBtn.addEventListener('click',()=>{const h=document.documentElement;const isFa=h.getAttribute('lang')==='fa';h.setAttribute('lang',isFa?'en':'fa');h.setAttribute('dir',isFa?'ltr':'rtl');localStorage.setItem('lang',isFa?'en':'fa');});
-(function(){const s=localStorage.getItem('lang');if(s==='en'){document.documentElement.setAttribute('lang','en');document.documentElement.setAttribute('dir','ltr');}})();
-
-/* ═══════════ SCROLL PROGRESS BAR ═══════════ */
-const prog=document.getElementById('prog');
-window.addEventListener('scroll',()=>{const h=document.documentElement;const sc=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;prog.style.width=sc+'%';},{passive:true});
-
-/* ═══════════ HERO TERMINAL TYPING ═══════════ */
-const termEl=document.getElementById('term');
-const script=[
-  {t:'~/BackendDeepDives $ ',c:'pr',type:true},
-  {t:'ls topics/\n',c:'',type:true},
-  {t:'DatabaseIndexes.html\n',c:'hl',type:true,delay:60},
-  {t:'~/BackendDeepDives $ ',c:'pr',type:true},
-  {t:'cat README.md\n',c:'',type:true},
-  {t:'> Deep dives into backend fundamentals for .NET devs.\n',c:'cm',type:true},
-  {t:'> No fluff. Real examples. Straight to the point.\n\n',c:'cm',type:true},
-  {t:'~/BackendDeepDives $ ',c:'pr',type:true},
-  {t:'./start-learning\n',c:'',type:true},
-  {t:'Loading knowledge ',c:'',type:true},
-  {t:'██████████████',c:'ok',type:true,delay:40},
-  {t:' 100%\n',c:'',type:true},
-  {t:'Ready! Pick a topic below ↓',c:'ok',type:true}
-];
-let si=0,ci=0;
-const cur=document.createElement('span');cur.className='cursor';
-function typeStep(){
-  if(si>=script.length){termEl.appendChild(cur);return;}
-  const seg=script[si];
-  if(ci===0){const sp=document.createElement('span');sp.className=seg.c;sp.id='seg'+si;termEl.appendChild(sp);}
-  const sp=document.getElementById('seg'+si);
-  if(ci<seg.t.length){sp.textContent+=seg.t[ci];ci++;termEl.appendChild(cur);
-    setTimeout(typeStep,seg.type?(seg.delay||28):8);}
-  else{si++;ci=0;setTimeout(typeStep,seg.type?120:60);}
-}
-// start terminal after hero entrance
-setTimeout(typeStep,900);
-
-/* ═══════════ REVEAL ON SCROLL (staggered) ═══════════ */
-const io=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      e.target.classList.add('in');
-      // stagger siblings
-      const parent=e.target.parentElement;
-      if(parent){[...parent.children].forEach((c,i)=>{if(c.classList.contains('rv')||c.classList.contains('rv-scale')){c.style.transitionDelay=(i*0.08)+'s';}});}
-      io.unobserve(e.target);
+</div>
+    </section>
+  </main>
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-profile">
+          <img src="https://github.com/alireza-haeri.png" alt="Alireza Haeri">
+          <div>
+            <div class="name"><span class="fa">علیرضا حایری</span><span class="en">Alireza Haeri</span></div>
+            <div class="role"><span class="fa">توسعه‌دهندهٔ بک‌اند ‎.NET · پروژهٔ آموزش مبانی عمیق
+                برنامه‌نویسی</span><span class="en">.NET Backend Developer · deep programming fundamentals</span></div>
+          </div>
+        </div>
+        <div class="foot-links">
+          <a class="btn sm" href="https://github.com/alireza-haeri" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" class="ic sm fill">
+              <use href="#i-github" />
+            </svg>
+            <span class="fa">گیت‌هاب من</span><span class="en">My GitHub</span></a>
+          <a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" class="ic sm">
+              <use href="#i-git" />
+            </svg>
+            <span class="fa">ریپازیتوری پروژه</span><span class="en">Project Repo</span></a>
+        </div>
+      </div>
+      <div class="foot-meta">
+        <span class="fa">ساخته‌شده با ❤️ برای جامعهٔ توسعه‌دهنده‌های فارسی‌زبان · <a
+            href="https://github.com/alireza-haeri/BackendDeepDives">BackendDeepDives</a></span>
+        <span class="en">Built with ❤️ for the Persian-speaking developer community · <a
+            href="https://github.com/alireza-haeri/BackendDeepDives">BackendDeepDives</a></span>
+      </div>
+    </div>
+  </footer>
+  <script>
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    function setCap(el, fa, en) {
+      const f = el.querySelector('.fa'), e = el.querySelector('.en');
+      if (f) f.textContent = fa; if (e) e.textContent = en;
+      el.classList.add('switching');
+      requestAnimationFrame(() => el.classList.remove('switching'));
     }
-  });
-},{threshold:0.12});
-document.querySelectorAll('.rv,.rv-l,.rv-r,.rv-scale').forEach(el=>io.observe(el));
-
-/* ═══════════ ANIMATED COUNTERS ═══════════ */
-const cio=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      const el=e.target;const target=+el.dataset.count;const suf=el.dataset.suffix||'';
-      let cur=0;const step=Math.max(1,Math.ceil(target/40));
-      const tick=()=>{cur+=step;if(cur>=target){cur=target;el.textContent=cur+suf;}else{el.textContent=cur+suf;requestAnimationFrame(()=>setTimeout(tick,30));}};
-      tick();cio.unobserve(el);
+    /* ═══════════ THEME ═══════════ */
+    const themeBtn = document.getElementById('themeBtn');
+    themeBtn.addEventListener('click', () => { const h = document.documentElement; const n = h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; h.setAttribute('data-theme', n); localStorage.setItem('theme', n); });
+    (function () { const s = localStorage.getItem('theme'); if (s) document.documentElement.setAttribute('data-theme', s); else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark'); })();
+    /* ═══════════ LANGUAGE ═══════════ */
+    const langBtn = document.getElementById('langBtn');
+    langBtn.addEventListener('click', () => { const h = document.documentElement; const isFa = h.getAttribute('lang') === 'fa'; h.setAttribute('lang', isFa ? 'en' : 'fa'); h.setAttribute('dir', isFa ? 'ltr' : 'rtl'); localStorage.setItem('lang', isFa ? 'en' : 'fa'); });
+    (function () { const s = localStorage.getItem('lang'); if (s === 'en') { document.documentElement.setAttribute('lang', 'en'); document.documentElement.setAttribute('dir', 'ltr'); } })();
+    /* ═══════════ SCROLL PROGRESS BAR ═══════════ */
+    const prog = document.getElementById('prog');
+    window.addEventListener('scroll', () => { const h = document.documentElement; const sc = h.scrollTop / (h.scrollHeight - h.clientHeight) * 100; prog.style.width = sc + '%'; }, { passive: true });
+    /* ═══════════ HERO TERMINAL TYPING ═══════════ */
+    const termEl = document.getElementById('term');
+    const script = [
+      { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
+      { t: 'ls topics/\n', c: '', type: true },
+      { t: 'DatabaseIndexes.html  DataPartitioning.html\n', c: 'hl', type: true, delay: 60 },
+      { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
+      { t: 'cat README.md\n', c: '', type: true },
+      { t: '> Deep dives into backend fundamentals for .NET devs.\n', c: 'cm', type: true },
+      { t: '> No fluff. Real examples. Straight to the point.\n', c: 'cm', type: true },
+      { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
+      { t: './start-learning\n', c: '', type: true },
+      { t: 'Loading knowledge ', c: '', type: true },
+      { t: '██████████████', c: 'ok', type: true, delay: 40 },
+      { t: ' 100%\n', c: '', type: true },
+      { t: 'Ready! Pick a topic below ↓', c: 'ok', type: true }
+    ];
+    let si = 0, ci = 0;
+    const cur = document.createElement('span'); cur.className = 'cursor';
+    function typeStep() {
+      if (si >= script.length) { termEl.appendChild(cur); return; }
+      const seg = script[si];
+      if (ci === 0) { const sp = document.createElement('span'); sp.className = seg.c; sp.id = 'seg' + si; termEl.appendChild(sp); }
+      const sp = document.getElementById('seg' + si);
+      if (ci < seg.t.length) {
+        sp.textContent += seg.t[ci]; ci++; termEl.appendChild(cur);
+        setTimeout(typeStep, seg.type ? (seg.delay || 28) : 8);
+      }
+      else { si++; ci = 0; setTimeout(typeStep, seg.type ? 120 : 60); }
     }
-  });
-},{threshold:0.5});
-document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
-
-/* ═══════════ ROADMAP PROGRESS LINE ═══════════ */
-const roadProg=document.getElementById('roadProg');
-const roadItems=document.querySelectorAll('.roadmap-item');
-const rio=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');}});
-},{threshold:0.3});
-roadItems.forEach(el=>rio.observe(el));
-window.addEventListener('scroll',()=>{
-  const sec=document.getElementById('roadmap');
-  const rect=sec.getBoundingClientRect();
-  const vh=window.innerHeight;
-  const p=Math.min(1,Math.max(0,(vh-rect.top)/(rect.height+vh*0.3)));
-  roadProg.style.height=(p*100)+'%';
-},{passive:true});
-</script>
+    setTimeout(typeStep, 900);
+    /* ═══════════ ANIMATION 1: SCAN vs SEEK (DatabaseIndexes) ═══════════ */
+    (function () {
+      const stage = document.getElementById('ssStage');
+      if (!stage) return;
+      const cap = document.getElementById('ssCap');
+      const banner = document.getElementById('ssBanner');
+      const scanBox = document.getElementById('ssScanCells');
+      for (let i = 0; i < 16; i++)scanBox.appendChild(document.createElement('i'));
+      const scanCells = [...scanBox.querySelectorAll('i')];
+      const seekNodes = [...document.querySelectorAll('#ssSeekPath .ss-node')];
+      const scanCnt = document.getElementById('ssScanCnt');
+      const seekCnt = document.getElementById('ssSeekCnt');
+      const scanRes = document.getElementById('ssScanRes');
+      const seekRes = document.getElementById('ssSeekRes');
+      const fmt = n => Math.round(n).toLocaleString('en-US');
+      function reset() {
+        scanCells.forEach(c => c.classList.remove('scan', 'done'));
+        seekNodes.forEach(n => n.classList.remove('walk', 'done'));
+        scanCnt.textContent = '0'; seekCnt.textContent = '0';
+        scanRes.textContent = ''; seekRes.textContent = '';
+        banner.classList.remove('show');
+      }
+      async function cycle() {
+        while (true) {
+          reset();
+          setCap(cap, 'کوئری اجرا می‌شود…', 'running the query…');
+          await wait(1600);
+          setCap(cap, 'دو موتور، دو روش — مسابقه شروع شد!', 'two engines, two methods — the race begins!');
+          const scanP = (async () => {
+            for (let i = 0; i < scanCells.length; i++) {
+              scanCells[i].classList.add('scan');
+              scanCnt.textContent = fmt((i + 1) * 1000000 / scanCells.length);
+              await wait(110);
+            }
+            scanCells.forEach(c => c.classList.add('done'));
+            scanRes.innerHTML = '<span class="fa">کند — همهٔ جدول خوانده شد 😴</span><span class="en">Slow — full table scanned 😴</span>';
+          })();
+          const seekP = (async () => {
+            for (let i = 0; i < seekNodes.length; i++) {
+              seekNodes[i].classList.add('walk');
+              seekCnt.textContent = String(i + 1);
+              await wait(340);
+              seekNodes[i].classList.add('done');
+            }
+            seekRes.innerHTML = '<span class="fa">سریع — فقط ۴ صفحه! ⚡</span><span class="en">Fast — only 4 pages! ⚡</span>';
+          })();
+          await seekP;
+          setCap(cap, 'جست‌وجوی ایندکسی تمام شد — اسکن هنوز در حال خواندن…', 'index seek finished — scan still reading…');
+          banner.classList.add('show');
+          await scanP;
+          await wait(3400);
+          banner.classList.remove('show');
+          await wait(700);
+        }
+      }
+      cycle();
+    })();
+    /* ═══════════ ANIMATION 2: THE SPLIT (DataPartitioning) ═══════════ */
+    (function () {
+      const stage = document.getElementById('spStage');
+      if (!stage) return;
+      const cap = document.getElementById('spCap');
+      const banner = document.getElementById('spBanner');
+      const slices = [...stage.querySelectorAll('.sp-slice')];
+      slices.forEach(s => {
+        const g = s.querySelector('.sp-cells');
+        for (let i = 0; i < 12; i++)g.appendChild(document.createElement('i'));
+      });
+      const cells = [...stage.querySelectorAll('.sp-cells i')];
+      async function cycle() {
+        let first = true;
+        while (true) {
+          stage.classList.remove('split', 'labeled');
+          cells.forEach(c => c.classList.remove('on'));
+          banner.classList.remove('show');
+          setCap(cap, 'یک جدولِ بزرگ — ۱۲۰ میلیون سطر', 'one big table — 120M rows');
+          await wait(2100);
+          stage.classList.add('split');
+          setCap(cap, 'بر اساس OrderDate تکه‌تکه می‌شود…', 'splitting by OrderDate…');
+          await wait(950);
+          slices.forEach((s, si) => {
+            [...s.querySelectorAll('i')].forEach((c, ci) => {
+              setTimeout(() => c.classList.add('on'), si * 150 + ci * 18);
+            });
+          });
+          await wait(150 * 3 + 18 * 11 + 600);
+          stage.classList.add('labeled');
+          setCap(cap, 'هر تکه، یک پارتیشنِ فیزیکیِ جداست', 'each piece is a separate physical partition');
+          if (first) { banner.classList.add('show'); first = false; }
+          else banner.classList.add('show');
+          await wait(3400);
+          stage.classList.remove('labeled');
+          cells.forEach(c => c.classList.remove('on'));
+          banner.classList.remove('show');
+          await wait(500);
+          stage.classList.remove('split');
+          await wait(1700);
+        }
+      }
+      cycle();
+    })();
+    /* ═══════════ REVEAL ON SCROLL (staggered) ═══════════ */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          const parent = e.target.parentElement;
+          if (parent) { [...parent.children].forEach((c, i) => { if (c.classList.contains('rv') || c.classList.contains('rv-scale')) { c.style.transitionDelay = (i * 0.08) + 's'; } }); }
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.rv,.rv-l,.rv-r,.rv-scale').forEach(el => io.observe(el));
+    /* ═══════════ ANIMATED COUNTERS ═══════════ */
+    const cio = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const el = e.target; const target = +el.dataset.count; const suf = el.dataset.suffix || '';
+          let cur = 0; const step = Math.max(1, Math.ceil(target / 40));
+          const tick = () => { cur += step; if (cur >= target) { cur = target; el.textContent = cur + suf; } else { el.textContent = cur + suf; requestAnimationFrame(() => setTimeout(tick, 30)); } };
+          tick(); cio.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('[data-count]').forEach(el => cio.observe(el));
+  </script>
 </body>
+
 </html>
