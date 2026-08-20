@@ -2207,6 +2207,41 @@ RESPONSIVE
       </div>
     </div>
   </div>
+
+  <!-- ★ TOPIC 03 — Data Sharding -->
+  <div class="feat-card rv" style="--tc:var(--red)">
+    <div class="feat-top">
+      <div class="feat-info">
+        <div class="feat-head">
+          <span class="pnum">TOPIC-03</span>
+          <h3>Data Sharding</h3>
+          <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+        </div>
+        <p class="feat-desc">
+          <span class="fa">وقتی یک دیتابیس دیگر کافی نیست، داده را بین چند دیتابیس مستقل پخش می‌کنیم. از انتخاب <b>Shard Key</b> و range/hash تا مسیریابی targeted، fan-out، rebalancing و تراکنش‌های بین‌شارد — با مثال‌های .NET.</span>
+          <span class="en">When one database is no longer enough, distribute data across independent databases. Learn <b>shard keys</b>, range/hash strategies, targeted routing, fan-out, rebalancing, and cross-shard transactions — with .NET examples.</span>
+        </p>
+        <div class="ftags"><span>Shard Key</span><span>Range</span><span>Hash</span><span>Routing</span><span>Rebalancing</span><span>.NET</span></div>
+        <div class="feat-links">
+          <a class="btn primary sm" href="./DataSarding.html">
+            <span class="fa">خواندن</span><span class="en">Read</span>
+            <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+          </a>
+        </div>
+      </div>
+      <div class="feat-stage" aria-hidden="true">
+        <div class="qwin-bar"><i></i><i></i><i></i><span>router — targeted vs fan-out</span></div>
+        <div style="padding:22px 18px 26px;direction:ltr">
+          <div style="margin:auto auto 18px;max-width:180px;padding:9px 12px;border:1px solid #D09A4E;border-radius:8px;background:#322B1D;color:#F2D39B;font:10px var(--mono);text-align:center">shard map / router</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
+            <div style="padding:16px 5px;border:1px solid #5CC08F;border-radius:8px;background:rgba(31,122,82,.32);color:#8EE1B2;font:10px var(--mono);text-align:center">Shard A<br><small>Tenant 1–100</small></div>
+            <div style="padding:16px 5px;border:1px solid #35483B;border-radius:8px;background:#202A23;color:#8CA08E;font:10px var(--mono);text-align:center">Shard B<br><small>Tenant 101–200</small></div>
+            <div style="padding:16px 5px;border:1px solid #35483B;border-radius:8px;background:#202A23;color:#8CA08E;font:10px var(--mono);text-align:center">Shard C<br><small>Tenant 201–300</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
     </section>
   </main>
@@ -2267,7 +2302,7 @@ RESPONSIVE
     const script = [
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'ls topics/\n', c: '', type: true },
-      { t: 'DatabaseIndexes.html  DataPartitioning.html\n', c: 'hl', type: true, delay: 60 },
+      { t: 'DatabaseIndexes.html  DataPartitioning.html  DataSarding.html\n', c: 'hl', type: true, delay: 60 },
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'cat README.md\n', c: '', type: true },
       { t: '> Deep dives into backend fundamentals for .NET devs.\n', c: 'cm', type: true },
