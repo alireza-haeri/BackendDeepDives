@@ -1,0 +1,1146 @@
+ <!doctype html>
+<html lang="fa" dir="rtl" data-theme="light" class="no-js">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="راهنمای جامع Data Sharding برای توسعه‌دهندگان بک‌اند: انتخاب shard key، مسیریابی، توزیع بار، تراکنش‌ها و پیاده‌سازی در NET.">
+  <meta name="theme-color" content="#f6f2e9">
+  <title>تقسیم افقی داده — Data Sharding | Backend Deep Dives</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F7A52'/%3E%3Cpath d='M32 14 L18 22 V34 L32 42 L46 34 V22 Z' fill='none' stroke='%23F6F2E9' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='22' cy='28' r='3' fill='%23F6F2E9'/%3E%3Ccircle cx='42' cy='28' r='3' fill='%23F6F2E9'/%3E%3Cpath d='M25 28h14M32 31v9' stroke='%23F6F2E9' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M20 47 H44 M24 51 H40' stroke='%23F6F2E9' stroke-width='2.5' stroke-linecap='round' opacity='.6'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+  <style>
+    :root {
+      --bg: #f6f2e9;
+      --bg-alt: #efeadd;
+      --surface: #fdfbf5;
+      --surface-alt: #f3efe3;
+      --line: #e0d8c3;
+      --line-strong: #cdc3a8;
+      --ink: #242920;
+      --muted: #5f624f;
+      --dim: #8f8c74;
+      --accent: #1f7a52;
+      --accent-soft: rgba(31, 122, 82, .11);
+      --accent-line: rgba(31, 122, 82, .4);
+      --amber: #c27803;
+      --amber-soft: rgba(194, 120, 3, .13);
+      --red: #c2492f;
+      --red-soft: rgba(194, 73, 47, .1);
+      --violet: #a05b2c;
+      --violet-soft: rgba(160, 91, 44, .11);
+      --blue: #2d6a9f;
+      --blue-soft: rgba(45, 106, 159, .11);
+      --code-bg: #1c241e;
+      --code-ink: #d8e2d4;
+      --code-muted: #8ca08e;
+      --shadow: 0 1px 2px rgba(36, 41, 32, .06);
+      --shadow-lg: 0 18px 46px -22px rgba(36, 41, 32, .26);
+      --dot: rgba(36, 41, 32, .06);
+      --mono: "JetBrains Mono", Consolas, monospace;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #171a14;
+      --bg-alt: #121510;
+      --surface: #1f231b;
+      --surface-alt: #1a1e16;
+      --line: #31362a;
+      --line-strong: #424836;
+      --ink: #eae7d9;
+      --muted: #b3b29c;
+      --dim: #83846e;
+      --accent: #5cc08f;
+      --accent-soft: rgba(92, 192, 143, .14);
+      --accent-line: rgba(92, 192, 143, .45);
+      --amber: #e3a63c;
+      --amber-soft: rgba(227, 166, 60, .14);
+      --red: #e5745a;
+      --red-soft: rgba(229, 116, 90, .12);
+      --violet: #d08b4f;
+      --violet-soft: rgba(208, 139, 79, .13);
+      --blue: #6ba8d4;
+      --blue-soft: rgba(107, 168, 212, .14);
+      --code-bg: #121813;
+      --code-ink: #d5e0d2;
+      --code-muted: #7e937f;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .32);
+      --shadow-lg: 0 18px 46px -22px rgba(0, 0, 0, .55);
+      --dot: rgba(234, 231, 217, .05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-width: 320px;
+      overflow-x: hidden;
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--dot) .8px, transparent .8px);
+      background-size: 22px 22px;
+      color: var(--ink);
+      font: 400 16px/1.95 "Vazirmatn", Tahoma, system-ui, sans-serif;
+      transition: background-color .3s ease, color .3s ease;
+    }
+
+    body::before { position: fixed; z-index: 60; inset: 0 0 auto; height: 3px; background: var(--accent); content: ""; }
+    html[lang="fa"] .en, html[lang="en"] .fa { display: none !important; }
+    html[lang="en"] body { line-height: 1.75; }
+    html[lang="en"] .en { font-size: .92em; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    :focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+    ::selection { background: var(--accent-soft); }
+    button, input { font: inherit; color: inherit; }
+    img, svg { max-width: 100%; }
+    code, .mono { direction: ltr; unicode-bidi: embed; font-family: var(--mono); }
+
+    p code, li code, td code {
+      border: 1px solid var(--line); border-radius: 5px; padding: .04em .38em;
+      background: var(--surface-alt); color: var(--accent); font-size: .86em;
+    }
+
+    .wrap { width: min(1080px, calc(100% - 40px)); margin-inline: auto; }
+
+    .ic { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    .ic.sm { width: 15px; height: 15px; }
+    .ic.lg { width: 23px; height: 23px; }
+    .ic.fill { fill: currentColor; stroke: none; }
+
+    #progress { position: fixed; z-index: 61; top: 3px; inset-inline-start: 0; width: 0; height: 3px; background: var(--amber); transition: width .12s linear; }
+
+    .topbar { position: sticky; z-index: 50; top: 0; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(13px); -webkit-backdrop-filter: blur(13px); }
+    .topbar-inner { display: flex; align-items: center; gap: 12px; min-height: 58px; }
+
+    .brand { display: inline-flex; align-items: center; gap: 9px; flex: 1; min-width: 0; color: var(--ink); font-size: 15px; font-weight: 900; white-space: nowrap; }
+    .brand-mark { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; overflow: hidden; border-radius: 9px; background: var(--accent); }
+    .brand-mark svg { width: 100%; height: 100%; }
+
+    .nav-link, .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; transition: transform .22s ease, border-color .22s ease, background-color .22s ease, color .22s ease, box-shadow .22s ease; }
+    .nav-link { padding: 6px 12px; white-space: nowrap; }
+    .nav-link:hover, .btn:hover { border-color: var(--accent-line); color: var(--accent); text-decoration: none; transform: translateY(-2px); }
+    .btn { padding: 9px 17px; }
+    .btn.sm { padding: 6px 12px; font-size: 12px; }
+    .btn.icon { width: 36px; height: 36px; padding: 7px; }
+    .btn.primary { border-color: var(--accent); background: var(--accent); color: var(--bg); }
+    .btn.primary:hover { border-color: var(--accent); color: var(--bg); box-shadow: 0 8px 22px var(--accent-soft); filter: brightness(1.08); }
+
+    html[data-theme="light"] .moon, html[data-theme="dark"] .sun { display: none; }
+
+    .hero { position: relative; overflow: hidden; padding: 66px 0 62px; border-bottom: 1px solid var(--line); }
+    .hero::after { position: absolute; right: -150px; bottom: -180px; width: 460px; height: 460px; border: 1px solid var(--accent-line); border-radius: 50%; content: ""; opacity: .18; pointer-events: none; }
+    .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: center; gap: 48px; }
+    .hero-copy { animation: fade-up .7s ease-out both; }
+
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; color: var(--accent); font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+    .eyebrow::before { width: 32px; height: 2px; background: var(--amber); content: ""; }
+
+    .hero h1 { max-width: 13ch; font-size: clamp(34px, 5vw, 60px); font-weight: 900; line-height: 1.28; letter-spacing: -.025em; }
+    .underword { position: relative; display: inline-block; white-space: nowrap; }
+    .underword::after { position: absolute; right: 0; bottom: -7px; left: 0; height: 8px; border-bottom: 3px solid var(--amber); border-radius: 50%; content: ""; transform: rotate(-1deg); }
+
+    .hero-lead { max-width: 57ch; margin-top: 22px; color: var(--muted); font-size: clamp(16px, 2vw, 19px); line-height: 1.95; }
+    .hero-note { max-width: 59ch; margin-top: 18px; padding: 13px 16px; border-inline-start: 3px solid var(--accent); border-radius: 0 9px 9px 0; background: var(--accent-soft); font-size: 13.5px; line-height: 1.9; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+
+    .hero-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 25px; }
+    .hero-chips a { padding: 4px 10px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); color: var(--muted); font-size: 11.5px; transition: transform .22s ease, border-color .22s ease, color .22s ease; }
+    .hero-chips a:hover { border-color: var(--accent-line); color: var(--accent); text-decoration: none; transform: translateY(-2px); }
+    .hero-chips b { margin-inline-end: 4px; color: var(--accent); font-family: var(--mono); font-size: 10px; }
+
+    .architecture { overflow: hidden; border: 1px solid var(--line-strong); border-radius: 17px; background: var(--code-bg); box-shadow: var(--shadow-lg); animation: fade-up .8s .12s ease-out both; display: flex; flex-direction: column; }
+    .window-bar { display: flex; align-items: center; gap: 7px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); direction: ltr; }
+    .window-bar i { width: 11px; height: 11px; border-radius: 50%; }
+    .window-bar i:nth-child(1) { background: #e0655a; }
+    .window-bar i:nth-child(2) { background: #e5b45a; }
+    .window-bar i:nth-child(3) { background: #58b78c; }
+    .window-bar span { margin-inline-start: 10px; color: var(--code-muted); font: 11px var(--mono); }
+
+    .architecture-query { padding: 17px 20px; min-height: 76px; color: var(--code-ink); direction: ltr; font: 12.5px/1.8 var(--mono); display: flex; align-items: center; white-space: pre-wrap; }
+    .architecture-query .kw { color: #7fc79f; }
+    .architecture-query .str { color: #e5b45a; }
+    .architecture-query .comment { color: #6e7f70; }
+    .architecture-query .sql-kw { color: #7fc79f; font-weight: 600; }
+    .architecture-query .sql-fn { color: #d08b4f; }
+    .architecture-query .sql-num { color: #e5b45a; }
+    .architecture-query .sql-str { color: #e5b45a; }
+
+    .cursor-blink { display: inline-block; width: 8px; height: 16px; background: #5cc08f; margin-inline-start: 2px; animation: blink 1s step-end infinite; }
+
+    .flow-board { display: flex; align-items: center; gap: 15px; padding: 25px 20px; direction: ltr; flex: 1; background: rgba(0,0,0,0.1); }
+    .flow-node { padding: 12px 15px; border: 1px solid #4d705b; border-radius: 8px; background: rgba(31,122,82,.15); color: #b9d1bd; font: 11px/1.4 var(--mono); text-align: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: border-color .3s ease, color .3s ease; }
+    .flow-node.router { border-color: #d09a4e; background: rgba(194,120,3,.16); color: #f2d39b; }
+    .flow-node.router.thinking { border-color: #e5b45a; color: #ffe3ae; animation: router-think .45s ease-in-out infinite alternate; }
+    .flow-node.ping { animation: node-ping .55s ease-out; }
+
+    .flow-connector { flex: 1; height: 2px; background: #35483b; position: relative; min-width: 40px; border-radius: 2px; }
+    .packet { position: absolute; top: 50%; left: 0; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #5cc08f; box-shadow: 0 0 10px rgba(92,192,143,.85); opacity: 0; }
+    .packet.go { animation: packet-move .6s ease-in forwards; }
+
+    .shards { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; width: 140px; }
+    .shard { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border: 1px solid #35483b; border-radius: 8px; background: #202a23; color: #8ca08e; font: 11px var(--mono); transition: all 0.3s ease; }
+    .shard.selected { border-color: #5cc08f; background: rgba(31,122,82,.34); color: #d5e0d2; transform: scale(1.05); animation: shard-ping .8s ease-out; }
+    .shard.selected strong { color: #8ee1b2; }
+    .shard.scatter { border-color: #e5b45a; background: rgba(229,180,90,.15); color: #f2d39b; transform: scale(1.04); animation: shard-ping-amber .8s ease-out; }
+    .shard.scatter strong { color: #ffd98a; }
+    .shard.selected .replica-dots i, .shard.scatter .replica-dots i { background: #5cc08f; }
+    .shard.scatter .replica-dots i { background: #e5b45a; }
+    .shard .range { font-size: 9px; }
+
+    .replica-dots { display: flex; gap: 3px; margin-inline-start: auto; }
+    .replica-dots i { width: 5px; height: 5px; border-radius: 50%; background: #5b7463; transition: background-color .3s ease; }
+
+    .architecture-caption { min-height: 42px; padding: 9px 16px 13px; border-top: 1px solid rgba(255,255,255,.07); color: var(--code-muted); font-size: 12px; line-height: 1.75; text-align: center; }
+
+    main { padding-bottom: 30px; }
+    .section { padding: 68px 0 0; scroll-margin-top: 74px; }
+    .section+.section { border-top: 1px dashed var(--line-strong); margin-top: 60px; padding-top: 62px; }
+
+    .section-heading { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+    .section-number { display: inline-grid; min-width: 39px; height: 31px; place-items: center; border: 1px solid var(--accent-line); border-radius: 8px; background: var(--accent-soft); color: var(--accent); font: 700 12px var(--mono); }
+    .section h2 { font-size: clamp(23px, 3.2vw, 33px); font-weight: 800; line-height: 1.45; }
+
+    .lead { max-width: 78ch; margin-bottom: 22px; font-size: 17px; line-height: 2; }
+    .sublead { max-width: 78ch; margin-bottom: 22px; color: var(--muted); font-size: 14.5px; line-height: 1.95; }
+
+    .source-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+    .source-row a { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); color: var(--muted); font-size: 11.5px; }
+    .source-row a:hover { border-color: var(--accent-line); color: var(--accent); text-decoration: none; }
+
+    .grid-2, .grid-3 { display: grid; gap: 17px; margin: 23px 0; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card { position: relative; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease; }
+    .card:hover { border-color: var(--accent-line); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+    .card h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; font-size: 15.5px; font-weight: 800; line-height: 1.55; }
+    .card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.9; }
+    .card ul { padding-inline-start: 20px; }
+
+    .icon-box { display: grid; width: 33px; height: 33px; flex: 0 0 auto; place-items: center; border-radius: 9px; }
+    .icon-box.green { background: var(--accent-soft); color: var(--accent); }
+    .icon-box.amber { background: var(--amber-soft); color: var(--amber); }
+    .icon-box.red { background: var(--red-soft); color: var(--red); }
+    .icon-box.violet { background: var(--violet-soft); color: var(--violet); }
+    .icon-box.blue { background: var(--blue-soft); color: var(--blue); }
+
+    .callout { margin: 24px 0; padding: 17px 20px; border: 1px solid var(--accent-line); border-inline-start: 4px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
+    .callout.warning { border-color: rgba(194,120,3,.38); border-inline-start-color: var(--amber); background: var(--amber-soft); }
+    .callout strong.label { display: inline-block; margin-bottom: 7px; color: var(--accent); font: 700 11px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+    .callout.warning strong.label { color: var(--amber); }
+    .callout p { font-size: 14px; line-height: 1.95; }
+
+    .net-note { margin: 24px 0; padding: 18px 20px; border: 1px solid var(--accent-line); border-radius: 11px; background: var(--surface-alt); }
+    .net-note .badge { display: inline-block; margin-bottom: 8px; padding: 2px 9px; border-radius: 5px; background: var(--accent); color: var(--bg); font: 700 10px var(--mono); }
+    .net-note p { font-size: 14px; line-height: 1.95; }
+
+    .compare-wrap { overflow-x: auto; margin: 24px 0; border: 1px solid var(--line); border-radius: 11px; box-shadow: var(--shadow); }
+    .compare-table { width: 100%; min-width: 690px; border-collapse: collapse; font-size: 13px; }
+    .compare-table th, .compare-table td { padding: 12px 15px; border-bottom: 1px solid var(--line); text-align: start; vertical-align: top; }
+    .compare-table tr:last-child td { border-bottom: 0; }
+    .compare-table th { background: var(--surface-alt); color: var(--muted); font-size: 12px; }
+    .compare-table td { background: var(--surface); color: var(--muted); line-height: 1.8; }
+    .compare-table td:first-child { color: var(--ink); font-weight: 700; }
+
+    .good { color: var(--accent) !important; }
+    .caution { color: var(--amber) !important; }
+    .bad { color: var(--red) !important; }
+
+    .concept-diagram { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: stretch; margin: 25px 0; }
+    .concept-side { display: grid; gap: 9px; align-content: center; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); text-align: center; }
+    .concept-side h3 { font-size: 15px; }
+    .concept-side p { color: var(--muted); font-size: 13px; line-height: 1.8; }
+    .concept-arrow { display: grid; min-width: 62px; place-items: center; color: var(--accent); font: 700 24px var(--mono); }
+    .concept-tag { display: inline-block; justify-self: center; padding: 3px 9px; border-radius: 5px; background: var(--surface-alt); color: var(--accent); font: 700 10px var(--mono); }
+
+    .codebox { margin: 24px 0; overflow: hidden; border: 1px solid rgba(0,0,0,.17); border-radius: 11px; background: var(--code-bg); direction: ltr; box-shadow: var(--shadow); }
+    .code-title { padding: 9px 16px; border-bottom: 1px solid rgba(255,255,255,.08); color: var(--code-muted); font: 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+    .codebox pre { margin: 0; padding: 17px 19px; overflow-x: auto; color: var(--code-ink); font: 13px/1.75 var(--mono); text-align: left; white-space: pre; }
+    .codebox .kw { color: #7fc79f; }
+    .codebox .str { color: #e5b45a; }
+    .codebox .cm { color: #6e7f70; }
+    .codebox .fn { color: #d08b4f; }
+
+    .demo { margin: 29px 0; padding: 23px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); box-shadow: var(--shadow); }
+    .demo-title { display: flex; align-items: center; gap: 9px; padding-bottom: 13px; border-bottom: 1px dashed var(--line-strong); font-size: 16px; font-weight: 800; }
+    .demo-title .ic { color: var(--accent); }
+    .demo-intro { margin: 14px 0 17px; color: var(--muted); font-size: 13.5px; line-height: 1.9; }
+
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .tab { padding: 8px 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--muted); cursor: pointer; font-size: 12.5px; font-weight: 700; transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease; }
+    .tab:hover { border-color: var(--accent-line); color: var(--accent); transform: translateY(-1px); }
+    .tab[aria-selected="true"] { border-color: var(--accent); background: var(--accent); color: var(--bg); }
+
+    .strategy-panel[hidden] { display: none; }
+    .strategy-panel { animation: fade-in .35s ease both; }
+    .strategy-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 17px; align-items: stretch; }
+    .strategy-visual { min-height: 178px; padding: 16px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-alt); }
+    .strategy-visual h4 { margin-bottom: 12px; color: var(--muted); font: 700 12px var(--mono); text-transform: uppercase; }
+    .strategy-buckets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; align-items: end; min-height: 95px; }
+    .strategy-bucket { display: grid; align-content: center; min-height: 82px; padding: 6px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); color: var(--dim); font: 10px/1.5 var(--mono); text-align: center; }
+    .strategy-bucket .sample { display: inline-block; margin-top: 6px; padding: 3px 4px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); opacity: 0; transform: translateY(7px); }
+    .strategy-panel.active .strategy-bucket .sample { animation: chip-in .45s ease forwards; }
+    .strategy-panel.active .strategy-bucket:nth-child(2) .sample { animation-delay: .08s; }
+    .strategy-panel.active .strategy-bucket:nth-child(3) .sample { animation-delay: .16s; }
+    .strategy-panel.active .strategy-bucket:nth-child(4) .sample { animation-delay: .24s; }
+
+    .strategy-copy { padding: 16px 18px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); }
+    .strategy-copy h4 { margin-bottom: 8px; font-size: 15px; }
+    .strategy-copy p { color: var(--muted); font-size: 13.5px; line-height: 1.9; }
+    .strategy-rule { margin-top: 12px; color: var(--accent); font: 11px/1.7 var(--mono); direction: ltr; text-align: left; }
+
+    .query-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 17px; }
+    .query-button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 600; text-align: start; transition: .2s ease; }
+    .query-button:hover, .query-button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    .router-demo { overflow: hidden; border-radius: 11px; background: var(--code-bg); color: var(--code-ink); direction: ltr; }
+    .route-query { min-height: 50px; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,.08); color: #e5b45a; font: 11.5px/1.7 var(--mono); text-align: left; display: flex; align-items: center; white-space: pre-wrap; }
+    .route-board { display: grid; grid-template-columns: 92px 1fr; gap: 15px; align-items: center; padding: 19px 16px; }
+    .route-client { display: grid; min-height: 58px; place-items: center; border: 1px solid #4d705b; border-radius: 8px; background: rgba(31,122,82,.2); color: #b9d1bd; font: 10px/1.5 var(--mono); text-align: center; }
+
+    .route-network { position: relative; display: grid; gap: 11px; }
+    .route-network::before { position: absolute; top: 29px; right: 0; left: 0; height: 1px; background: #405146; content: ""; }
+    .route-router { position: relative; z-index: 1; justify-self: center; padding: 7px 15px; border: 1px solid #d09a4e; border-radius: 8px; background: #322b1d; color: #f2d39b; font: 10px var(--mono); }
+    .route-shards { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+    .route-shard { position: relative; min-height: 79px; padding: 9px 5px; border: 1px solid #35483b; border-radius: 8px; background: #202a23; color: #829286; font: 9px/1.5 var(--mono); text-align: center; transition: opacity .35s ease, border-color .35s ease, background-color .35s ease, transform .35s ease; }
+    .route-shard strong { display: block; color: #cfe0cf; font-size: 10px; }
+    .route-shard .shard-range { display: block; margin-top: 4px; }
+    .route-shard .shard-role { display: block; margin-top: 6px; color: #6e7f70; font-size: 8px; }
+    .route-shard.selected { border-color: #5cc08f; background: rgba(31,122,82,.34); transform: translateY(-3px); animation: shard-ping 0.8s ease-out; }
+    .route-shard.selected strong { color: #8ee1b2; }
+    .route-shard.dimmed { opacity: .34; }
+
+    .route-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 16px 16px; }
+    .route-stat { padding: 8px; border: 1px solid #35483b; border-radius: 7px; color: #8ca08e; font: 9px/1.5 var(--mono); text-align: center; }
+    .route-stat b { display: block; margin-top: 2px; color: #cfe0cf; font-size: 13px; }
+    .route-status { min-height: 48px; margin: 0 16px 16px; padding: 10px 13px; border: 1px solid #35483b; border-radius: 8px; color: #b3c3b4; font-size: 12px; line-height: 1.75; text-align: center; }
+    html[lang="fa"] .route-status { text-align: right; direction: rtl; }
+
+    .rebalance-stage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch; min-height: 146px; padding: 17px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-alt); }
+    .rebalance-shard { display: flex; flex-direction: column; gap: 7px; min-height: 110px; padding: 11px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); transition: border-color .3s ease, background-color .3s ease; }
+    .rebalance-shard strong { font: 700 11px var(--mono); }
+    .rebalance-shard small { color: var(--muted); font-size: 10px; }
+    .range-chip { display: inline-block; width: fit-content; padding: 3px 7px; border: 1px solid var(--accent-line); border-radius: 5px; background: var(--accent-soft); color: var(--accent); font: 10px var(--mono); transition: transform .55s ease, opacity .35s ease; }
+    .rebalance-stage.has-new { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .rebalance-stage.has-new .rebalance-shard.new { border-color: var(--accent-line); background: var(--accent-soft); animation: slide-in .4s ease both; }
+    .rebalance-caption { min-height: 45px; margin-top: 12px; padding: 9px 13px; border-radius: 8px; background: var(--surface-alt); color: var(--muted); font-size: 12.5px; line-height: 1.8; }
+
+    .qa { overflow: hidden; margin: 10px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: var(--shadow); }
+    .qa-question { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 16px 19px; border: 0; background: transparent; color: var(--ink); cursor: pointer; font-size: 14.5px; font-weight: 700; line-height: 1.8; text-align: start; }
+    .qa-question::after { margin-inline-start: auto; color: var(--accent); content: "+"; font: 400 21px/1 var(--mono); transition: transform .3s ease; }
+    .qa.open .qa-question::after { transform: rotate(45deg); }
+    .qa-number { flex: 0 0 auto; color: var(--accent); font: 700 12px var(--mono); }
+    .qa-answer { display: grid; grid-template-rows: 0fr; color: var(--muted); font-size: 13.5px; line-height: 1.9; transition: grid-template-rows .35s ease; }
+    .qa-answer>div { overflow: hidden; padding: 0 19px 0; border-top: 1px dashed transparent; transition: padding .35s ease, border-color .35s ease; }
+    .qa.open .qa-answer { grid-template-rows: 1fr; }
+    .qa.open .qa-answer>div { padding: 14px 19px 17px 50px; border-color: var(--line-strong); }
+
+    .js .reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s cubic-bezier(.2,.8,.3,1); }
+    .js .reveal.in { opacity: 1; transform: none; }
+
+    @keyframes fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes chip-in { to { opacity: 1; transform: none; } }
+    @keyframes slide-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes router-think { from { box-shadow: 0 0 0 0 rgba(229,180,90,0); } to { box-shadow: 0 0 18px 3px rgba(229,180,90,.38); } }
+    @keyframes node-ping { 0% { box-shadow: 0 0 0 0 rgba(92,192,143,.55); } 100% { box-shadow: 0 0 0 14px rgba(92,192,143,0); } }
+    @keyframes packet-move { 0% { left: 0; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { left: calc(100% - 8px); opacity: 0; } }
+    @keyframes shard-ping { 0% { box-shadow: 0 0 0 0 rgba(92,192,143,0.7); } 70% { box-shadow: 0 0 0 12px rgba(92,192,143,0); } 100% { box-shadow: 0 0 0 0 rgba(92,192,143,0); } }
+    @keyframes shard-ping-amber { 0% { box-shadow: 0 0 0 0 rgba(229,180,90,0.6); } 70% { box-shadow: 0 0 0 12px rgba(229,180,90,0); } 100% { box-shadow: 0 0 0 0 rgba(229,180,90,0); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid, .strategy-grid { grid-template-columns: 1fr; }
+      .hero h1 { max-width: none; }
+      .hero-copy { text-align: center; }
+      .eyebrow { justify-content: center; }
+      .hero-lead, .hero-note { margin-inline: auto; text-align: start; }
+      .hero-actions, .hero-chips { justify-content: center; }
+      .grid-3 { grid-template-columns: 1fr; }
+      .concept-diagram { grid-template-columns: 1fr; }
+      .concept-arrow { min-height: 28px; transform: rotate(90deg); }
+    }
+
+    @media (max-width: 650px) {
+      .wrap { width: min(100% - 28px, 1080px); }
+      .topbar-inner { gap: 7px; }
+      .brand { font-size: 13px; }
+      .brand-mark { width: 28px; height: 28px; }
+      .nav-link { padding: 5px 8px; font-size: 11px; }
+      .btn.icon { width: 34px; height: 34px; }
+      .hero { padding: 45px 0 48px; }
+      .hero-grid { gap: 29px; }
+      .hero h1 { font-size: clamp(31px, 10vw, 46px); }
+      .flow-board { flex-direction: column; gap: 10px; padding: 15px; }
+      .flow-connector { width: 2px; height: 26px; min-width: 0; }
+      .packet { top: 0; left: 50%; margin: 0 0 0 -4px; }
+      @keyframes packet-move { 0% { top: 0; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { top: calc(100% - 8px); opacity: 0; } }
+      .shards { width: 100%; flex-direction: row; justify-content: space-between; }
+      .route-board { grid-template-columns: 1fr; }
+      .route-client { width: 80px; margin-inline: auto; }
+      .route-shards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .route-network::before { top: 39px; }
+      .route-stats { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .demo { padding: 17px; }
+      .strategy-buckets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .rebalance-stage, .rebalance-stage.has-new { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .qa.open .qa-answer>div { padding-inline-start: 19px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="progress" aria-hidden="true"></div>
+  <nav class="topbar" aria-label="Primary navigation">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark" aria-hidden="true">
+            <span class="brand-logo"><svg viewBox="0 0 64 64" fill="none">
+            <rect width="64" height="64" rx="14" fill="var(--acc)" />
+            <path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5"
+              stroke-linejoin="round" fill="none" />
+            <circle cx="32" cy="28" r="3" fill="var(--bg)" />
+            <path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" opacity=".6" />
+          </svg></span>
+        </span>
+        <span class="fa">تقسیم افقی داده</span><span class="en">Data Sharding</span>
+      </a>
+      <a class="nav-link" href="./index.html">
+        <svg class="ic sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M5 10v10h14V10M9 20v-6h6v6" /></svg>
+        <span class="fa">صفحه اصلی</span><span class="en">Home</span>
+      </a>
+      <button class="btn icon" id="themeButton" type="button" aria-label="تغییر پوسته / Toggle theme" title="تغییر پوسته / Toggle theme">
+        <svg class="ic sm sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+        <svg class="ic sm moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" /></svg>
+      </button>
+      <button class="btn icon" id="languageButton" type="button" aria-label="تغییر زبان / Switch language" title="تغییر زبان / Switch language">
+        <span class="fa" aria-hidden="true">EN</span><span class="en" aria-hidden="true">فا</span>
+      </button>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="fa">Backend Deep Dives · موضوع ۰۳</span><span class="en">Backend Deep Dives · Topic 03</span></div>
+        <h1>
+          <span class="fa">تقسیم افقی <span class="underword">داده</span></span>
+          <span class="en">Data <span class="underword">Sharding</span></span>
+        </h1>
+        <p class="hero-lead">
+          <span class="fa">وقتی یک دیتابیس دیگر جوابگوی حجم داده‌ها، نرخ نوشتن یا تعداد درخواست‌ها نیست، داده‌ها را بین چند دیتابیس مستقل توزیع می‌کنیم. در عوض، پیچیدگی مسیریابی، تراکنش‌ها و نگهداری سیستم بر عهده ما می‌افتد.</span>
+          <span class="en">When one database can no longer handle the data volume, write rate, or request load, we distribute data across independent databases. In return, routing, transactions, and operations become our responsibility.</span>
+        </p>
+        <div class="hero-note">
+          <span class="fa"><b>نکته کلیدی:</b> شاردینگ نه یک «ایندکس بزرگ‌تر» است و نه جایگزینی برای پارتیشن‌بندی درون یک دیتابیس؛ بلکه یک تصمیم معماری برای مقیاس‌پذیری افقی (Scale-out) است.</span>
+          <span class="en"><b>The central idea:</b> sharding is not a bigger index, nor a drop-in replacement for table partitioning; it is an architectural decision for scale-out.</span>
+        </div>
+        <div class="hero-actions">
+          <a class="btn primary" href="#s1"><span class="fa">شروع از مبانی</span><span class="en">Start with the basics</span><span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="hero-chips" aria-label="Section shortcuts">
+          <a href="#s1"><b>01</b><span class="fa">تعریف دقیق</span><span class="en">Definition</span></a>
+          <a href="#s2"><b>02</b><span class="fa">چه زمانی؟</span><span class="en">When?</span></a>
+          <a href="#s3"><b>03</b><span class="fa"> Shard Key</span><span class="en">Shard key</span></a>
+          <a href="#s4"><b>04</b><span class="fa">استراتژی‌ها</span><span class="en">Strategies</span></a>
+          <a href="#s5"><b>05</b><span class="fa">مسیریابی</span><span class="en">Routing</span></a>
+          <a href="#s6"><b>06</b><span class="fa">تراکنش و JOIN</span><span class="en">Transactions</span></a>
+          <a href="#s7"><b>07</b><span class="fa">.NET</span><span class="en">.NET</span></a>
+          <a href="#s8"><b>✓</b><span class="fa">خودآزمایی</span><span class="en">Self-check</span></a>
+        </div>
+      </div>
+      <div class="architecture" aria-label="Live sharding routing demo">
+        <div class="window-bar"><i></i><i></i><i></i><span>shard-router.live</span></div>
+        <div class="architecture-query"><span id="heroQuery"><span class="sql-kw">SELECT</span> * <span class="sql-kw">FROM</span> Orders <span class="sql-kw">WHERE</span> TenantId = <span class="sql-num">42</span>;</span><span class="cursor-blink"></span></div>
+        <div class="flow-board" id="heroFlow" aria-hidden="true">
+          <div class="flow-node" id="heroClient">API<br>Request</div>
+          <div class="flow-connector"><i class="packet"></i></div>
+          <div class="flow-node router" id="heroRouter">Router<br>(Shard Map)</div>
+          <div class="flow-connector"><i class="packet"></i></div>
+          <div class="shards">
+            <div class="shard selected" data-shard="A"><strong>Shard A</strong><span class="range">1–100</span><span class="replica-dots"><i></i><i></i></span></div>
+            <div class="shard" data-shard="B"><strong>Shard B</strong><span class="range">101–200</span><span class="replica-dots"><i></i><i></i></span></div>
+            <div class="shard" data-shard="C"><strong>Shard C</strong><span class="range">201–300</span><span class="replica-dots"><i></i><i></i></span></div>
+          </div>
+        </div>
+        <div class="architecture-caption" id="heroCaption">
+          <span class="fa">TenantId = 42 در بازه Shard A قرار دارد؛ روتر مستقیم به همان‌جا می‌زند. نقاط کوچک Replicaهای همان شاردند (کپی، نه شارد جدید).</span>
+          <span class="en">TenantId = 42 lives on Shard A; the router hits it directly. The small dots are its replicas (copies, not new shards).</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ============ SECTION 1 ============ -->
+    <section class="section reveal" id="s1">
+      <div class="section-heading"><span class="section-number">01</span>
+        <h2><span class="fa">شاردینگ دقیقاً چیست؟</span><span class="en">What exactly is sharding?</span></h2>
+      </div>
+      <div class="source-row">
+        <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding" target="_blank" rel="noopener"><span>↗</span><span class="fa">Microsoft · Sharding pattern</span><span class="en">Microsoft · Sharding pattern</span></a>
+        <a href="https://www.mongodb.com/docs/manual/sharding/" target="_blank" rel="noopener"><span>↗</span><span class="fa">MongoDB · Sharding</span><span class="en">MongoDB · Sharding</span></a>
+      </div>
+      <p class="lead">
+        <span class="fa">شاردینگ یعنی تقسیم افقی داده‌ها بین چند <b>دیتابیس یا نود مستقل</b>. هر شارد مالک بخش جداگانه‌ای از داده‌هاست و معمولاً ساختار جداول (Schema) در همه شاردها یکسان است. برای رساندن هر درخواست به مقصد درست، یک روتر، پروکسی یا خود موتور دیتابیس از کلیدی به نام <b>Shard Key</b> استفاده می‌کند.</span>
+        <span class="en">Sharding is horizontal distribution of data across multiple <b>independent databases or nodes</b>. Each shard owns a disjoint subset of the data, usually with the same schema. A router, proxy, or the database engine uses a <b>shard key</b> to find the right destination.</span>
+      </p>
+
+      <p class="sublead"><span class="fa">یکی از مفاهیمی که اغلب با شارد اشتباه گرفته می‌شود <b>Replica</b> است. Replica یک کپی از همان شارد است که برای افزایش دسترس‌پذیری (Availability) یا توزیع بار خواندن ساخته می‌شود. شارد داده‌های <b>متفاوتی</b> دارد؛ Replica داده‌های <b>یکسانی</b> دارد. مثلاً اگر ۳ شارد داشته باشید و هرکدام ۲ Replica، در مجموع ۳ مجموعه داده دارید که هرکدام در ۳ نسخه (۱ اصلی + ۲ کپی) نگهداری می‌شوند.</span>
+      <span class="en">A concept often confused with a shard is a <b>Replica</b>. A replica is a copy of the same shard, created for higher availability or to distribute read load. A shard holds <b>different</b> data; a replica holds the <b>same</b> data. For example, 3 shards with 2 replicas each means 3 distinct datasets, each maintained in 3 copies (1 primary + 2 replicas).</span></p>
+
+      <div class="concept-diagram" aria-label="Difference between a shard and a replica">
+        <div class="concept-side"><span class="concept-tag">SHARD</span>
+          <h3><span class="fa">مالک بخشی از داده‌ها</span><span class="en">Owns a subset of data</span></h3>
+          <p><span class="fa">مثلاً Shard A ممکن است Tenantهای ۱ تا ۱۰۰ را نگه دارد و Shard B Tenantهای ۱۰۱ تا ۲۰۰ را.</span><span class="en">Shard A may own tenants 1–100 while Shard B owns tenants 101–200.</span></p>
+        </div>
+        <div class="concept-arrow" aria-hidden="true">≠</div>
+        <div class="concept-side"><span class="concept-tag">REPLICA</span>
+          <h3><span class="fa">کپی همان بخش داده</span><span class="en">Copies the same subset</span></h3>
+          <p><span class="fa">Replica A دقیقاً همان داده‌های Shard A را نگه می‌دارد. اگر Shard A از کار بیفتد، Replica جایگزین می‌شود. Replica شارد جدید نیست.</span><span class="en">Replica A holds the exact same data as Shard A. If Shard A fails, a replica can take over. A replica is not a new shard.</span></p>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <article class="card">
+          <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></span><span class="fa">تقسیم افقی داده‌ها</span><span class="en">Rows are split horizontally</span></h3>
+          <p><span class="fa">هر شارد تمام ستون‌های جدول را دارد، ولی فقط مالک بخشی از سطرهاست.</span><span class="en">Each shard has the schema's columns, but owns only part of the rows.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M5 5l14 14M19 5 5 19" /></svg></span><span class="fa">مسیریابی وارد بازی می‌شود</span><span class="en">Routing becomes a concern</span></h3>
+          <p><span class="fa">برای هر درخواست باید بدانید کلید در کدام شارد است؛ وگرنه مجبورید درخواست را به همه شاردها بفرستید (Fan-out).</span><span class="en">Each request needs a destination; otherwise it may fan out to every shard.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box violet"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M6 16V5h12v11M9 9h6M9 12h6" /></svg></span><span class="fa">هر شارد یک دیتابیس مجزاست</span><span class="en">Each shard is a data store</span></h3>
+          <p><span class="fa">ظرفیت، خرابی، بکاپ، مهاجرت داده و مانیتورینگ دیگر به یک نمونه محدود نیستند.</span><span class="en">Capacity, failure, backups, migrations, and monitoring are no longer single-instance concerns.</span></p>
+        </article>
+      </div>
+
+      <div class="callout warning"><strong class="label">تفاوت مهم</strong>
+        <p><span class="fa">واژه «Partition» اصطلاحی عمومی برای تکه‌تکه کردن داده‌هاست. «Table Partitioning» معمولاً درون یک دیتابیس انجام می‌شود (موتور دیتابیس خودش داده‌ها را تکه‌تکه نگه می‌دارد)، ولی «Sharding» داده‌ها را بین چند دیتابیس یا سرور جداگانه توزیع می‌کند. مرز این دو در محصولات مختلف فرق دارد؛ همیشه معماری دیتابیس خودتان را بررسی کنید.</span><span class="en">"Partition" is a broad term. Table partitioning usually keeps the data inside one database, while sharding distributes it across databases or nodes. Product terminology varies, so verify the actual architecture of the platform you use.</span></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2 ============ -->
+    <section class="section reveal" id="s2">
+      <div class="section-heading"><span class="section-number">02</span>
+        <h2><span class="fa">چه زمانی شاردینگ منطقی است؟</span><span class="en">When does sharding make sense?</span></h2>
+      </div>
+      <p class="lead"><span class="fa">شاردینگ اولین راه‌حل برای کندی کوئری‌ها نیست. قبل از آن راهکارهای ساده‌تری وجود دارد. جدول زیر این راهکارها را از ساده‌ترین تا پیچیده‌ترین مرتب کرده و نشان می‌دهد هرکدام چه مشکلی را حل می‌کنند و چه هزینه‌ای دارند. شاردینگ آخرین گزینه در این لیست است.</span><span class="en">Sharding is not the first tool for a slow query. Simpler options exist. The table below lists them from simplest to most complex, showing what each solves and what it costs. Sharding is the last resort.</span></p>
+
+      <div class="compare-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th><span class="fa">مرحله</span><span class="en">Step</span></th>
+              <th><span class="fa">راهکار</span><span class="en">Option</span></th>
+              <th><span class="fa">چه مشکلی را حل می‌کند؟</span><span class="en">What problem it solves</span></th>
+              <th><span class="fa">هزینه و محدودیت</span><span class="en">Cost and limitation</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>۱</td>
+              <td><span class="fa">بهینه‌سازی کوئری و ایندکس</span><span class="en">Query and index optimization</span></td>
+              <td><span class="fa">کوئری‌های کند، اسکن‌های غیرضروری جدول</span><span class="en">Slow queries, unnecessary table scans</span></td>
+              <td class="good"><span class="fa">کم؛ بدون تغییر معماری</span><span class="en">Low; no architectural change</span></td>
+            </tr>
+            <tr>
+              <td>۲</td>
+              <td><span class="fa">ارتقای سخت‌افزار (Scale-up)</span><span class="en">Scale up (bigger hardware)</span></td>
+              <td><span class="fa">کمبود CPU، RAM یا دیسک در یک سرور</span><span class="en">CPU, RAM, or storage shortage on one instance</span></td>
+              <td class="good"><span class="fa">کم؛ کوئری‌ها تغییر نمی‌کنند. سقف فیزیکی و هزینه‌ای دارد</span><span class="en">Low; queries stay the same. Has a physical and cost ceiling</span></td>
+            </tr>
+            <tr>
+              <td>۳</td>
+              <td><span class="fa">Replica خواندنی (Read Replica)</span><span class="en">Read replicas</span></td>
+              <td><span class="fa">بار زیاد خواندن؛ درخواست‌های خواندن به کپی‌ها هدایت می‌شوند</span><span class="en">High read load; reads are routed to copies of the database</span></td>
+              <td class="good"><span class="fa">متوسط؛ فقط خواندن را مقیاس می‌دهد. گلوگاه نوشتن باقی می‌ماند</span><span class="en">Medium; scales reads only. Write bottleneck remains</span></td>
+            </tr>
+            <tr>
+              <td>۴</td>
+              <td><span class="fa">پارتیشن‌بندی جدول (Table Partitioning)</span><span class="en">Table partitioning</span></td>
+              <td><span class="fa">جداول بسیار بزرگ درون یک دیتابیس؛ موتور دیتابیس خودش مدیریت می‌کند</span><span class="en">Very large tables inside one database; engine-managed</span></td>
+              <td class="good"><span class="fa">کم تا متوسط؛ همه داده‌ها هنوز روی یک سرورند</span><span class="en">Low to medium; all data still on one server</span></td>
+            </tr>
+            <tr>
+              <td>۵</td>
+              <td><span class="fa">شاردینگ (Sharding)</span><span class="en">Sharding</span></td>
+              <td><span class="fa">ظرفیت و توان پردازشی از یک سرور فراتر رفته؛ داده‌ها بین چند دیتابیس توزیع می‌شوند</span><span class="en">Capacity and throughput exceed one server; data is distributed across databases</span></td>
+              <td class="caution"><span class="fa">زیاد؛ نیاز به مسیریابی، مدیریت تراکنش توزیع‌شده و عملیات پیچیده‌تر</span><span class="en">High; requires routing, distributed transaction handling, and complex operations</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout"><strong class="label fa">نکته</strong><strong class="label en">Tip</strong>
+        <p><span class="fa">این ترتیب قانون مطلق نیست، ولی یک قاعده سرانگشتی خوب است: <b>همیشه ساده‌ترین راهکاری که مشکل را حل می‌کند انتخاب کنید.</b> شاردینگ را فقط وقتی انتخاب کنید که راهکارهای قبلی مشکل شما را حل نکنند.</span><span class="en">This order is not absolute, but it is a good rule of thumb: <b>always pick the simplest option that solves the problem.</b> Choose sharding only when the simpler options are insufficient.</span></p>
+      </div>
+
+      <p class="sublead"><span class="fa">حالا ببینیم چه نشانه‌هایی نشان می‌دهد که واقعاً به شاردینگ نیاز دارید و چه نشانه‌هایی می‌گویند هنوز زود است:</span><span class="en">Now let's see which signals suggest you actually need sharding, and which suggest it's too early:</span></p>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 16v-4M12 16V8M16 16V6" /></svg></span><span class="fa">نشانه‌های مناسب</span><span class="en">Signals that may justify it</span></h3>
+          <ul>
+            <li><span class="fa">حجم داده‌ها یا Working Set از ظرفیت عملی یک سرور فراتر می‌رود.</span><span class="en">The total data or working set exceeds one instance's practical capacity.</span></li>
+            <li><span class="fa">نرخ نوشتن از توان یک سرور بیشتر می‌شود و Replica مشکل نوشتن را حل نمی‌کند.</span><span class="en">Write throughput exceeds one instance, and replicas do not solve write pressure.</span></li>
+            <li><span class="fa">بیشتر درخواست‌ها ذاتاً به یک Tenant یا حساب کاربری محدودند.</span><span class="en">Most requests are naturally scoped to one tenant or account.</span></li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box red"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></span><span class="fa">نشانه‌های نامناسب</span><span class="en">Signals to stop and reconsider</span></h3>
+          <ul>
+            <li><span class="fa">مشکل فقط یک کوئری بد یا ایندکس ناقص است.</span><span class="en">The problem is one bad query or a missing index.</span></li>
+            <li><span class="fa">گزارش‌های کلان و JOINهای سراسری بخش عمده بار سیستم‌اند.</span><span class="en">Global reports and cross-entity joins dominate the workload.</span></li>
+            <li><span class="fa">تراکنش‌ها دائماً نیاز به تغییر اتمیک داده در چند شارد دارند.</span><span class="en">Transactions frequently need atomic writes across several shards.</span></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3 ============ -->
+    <section class="section reveal" id="s3">
+      <div class="section-heading"><span class="section-number">03</span>
+        <h2><span class="fa">Shard Key؛ حیاتی‌ترین تصمیم طراحی</span><span class="en">The shard key: the most important design decision</span></h2>
+      </div>
+      <div class="source-row">
+        <a href="https://www.mongodb.com/docs/manual/core/sharding-choose-a-shard-key/" target="_blank" rel="noopener"><span>↗</span><span class="fa">MongoDB · انتخاب Shard Key</span><span class="en">MongoDB · Choose a Shard Key</span></a><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding" target="_blank" rel="noopener"><span>↗</span><span class="fa">Azure Architecture · Sharding</span><span class="en">Azure Architecture · Sharding</span></a></div>
+      <p class="lead"><span class="fa">Shard Key ستون یا ترکیبی از ستون‌هاست که مشخص می‌کند هر رکورد در کدام شارد ذخیره شود. یک کلید خوب هم بار را توزیع می‌کند و هم کوئری‌های پرتکرار را تک‌شاردی نگه می‌دارد؛ هیچ کلیدی برای همه سناریوها بی‌نقص نیست.</span><span class="en">A shard key is the field or compound key that determines where a row or entity lives. A good key balances load and keeps common queries targeted; no key is best for every workload.</span></p>
+
+      <p class="sublead"><span class="fa">یک Shard Key خوب باید سه ویژگی اصلی داشته باشد:</span><span class="en">A good shard key must have three main properties:</span></p>
+
+      <div class="grid-3">
+        <article class="card">
+          <h3><span class="icon-box green">1</span><span class="fa">قابلیت توزیع</span><span class="en">Distributable</span></h3>
+          <p><span class="fa">باید مقادیر متنوعی با توزیع نسبتاً یکنواخت داشته باشد. کلیدی مثل <code>Status</code> که فقط سه مقدار دارد برای توزیع بار مناسب نیست.</span><span class="en">It should have enough values and reasonably even distribution; a three-value field such as <code>Status</code> is usually a poor distribution key.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box amber">2</span><span class="fa">قابلیت مسیریابی</span><span class="en">Routable</span></h3>
+          <p><span class="fa">باید در کوئری‌های پرکاربرد حضور داشته باشد تا روتر مجبور به Broadcast به همه شاردها نشود.</span><span class="en">It should appear in important queries so the router can avoid broadcasting to every shard.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box violet">3</span><span class="fa">پایدار و غیرقابل تغییر</span><span class="en">Stable and immutable</span></h3>
+          <p><span class="fa">تا حد امکان نباید تغییر کند؛ تغییر کلید یعنی جابه‌جایی داده و حفظ یکپارچگی حین انتقال.</span><span class="en">It should rarely change; changing it can mean moving an entity and coordinating consistency during the move.</span></p>
+        </article>
+      </div>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3><span class="icon-box blue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h7M4 18h16" /></svg></span><span class="fa">الگوی چندمستاجری (Multi-tenant)</span><span class="en">Multi-tenant pattern</span></h3>
+          <p><span class="fa">اگر تقریباً هر درخواستی <code>TenantId</code> دارد، شارد کردن بر اساس Tenant می‌تواند بیشتر کوئری‌ها را تک‌شاردی نگه دارد. اما یک Tenant خیلی بزرگ ممکن است Hot Shard ایجاد کند و کلید مرکب (Compound Key) ضروری شود.</span><span class="en">If almost every request has a <code>TenantId</code>, tenant-based sharding can keep most queries single-shard. But one very large tenant can create a hot shard; large tenants may need a compound key or special treatment.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box red"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8v8H8z" /></svg></span><span class="fa">توزیع خوب به‌تنهایی کافی نیست</span><span class="en">Even distribution is not enough</span></h3>
+          <p><span class="fa">کلیدی که داده‌ها را عالی پخش می‌کند ولی در کوئری‌ها نیست، فقط باعث Fan-out می‌شود. همراه با تنوع مقادیر، باید الگوهای دسترسی و JOINهای آینده را هم در نظر بگیرید.</span><span class="en">A key that distributes evenly but never appears in queries only creates fan-out. Evaluate workload, joins, entity size, and future operations alongside cardinality.</span></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4 ============ -->
+    <section class="section reveal" id="s4">
+      <div class="section-heading"><span class="section-number">04</span>
+        <h2><span class="fa">استراتژی‌های توزیع: Range، Hash و Directory</span><span class="en">Distribution strategies: range, hash, and directory</span></h2>
+      </div>
+      <p class="lead"><span class="fa">این نام‌ها دسته‌بندی‌های رایج‌اند، نه سینتکسی یکسان برای همه دیتابیس‌ها. تفاوت اصلی در نحوه تعیین مقصد هر رکورد، امکان اجرای کوئری بازه‌ای و سادگی جابه‌جایی داده‌هاست.</span><span class="en">These are common families, not a universal syntax. The key differences are how each record's destination is determined, whether range queries can be targeted, and how easy it is to move data.</span></p>
+
+      <div class="demo" id="strategyDemo">
+        <div class="demo-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16" /><path d="M8 2v6M16 9v6M10 16v6" /></svg><span class="fa">نمونه تعاملی: انتخاب استراتژی</span><span class="en">Conceptual strategy demo</span></div>
+        <p class="demo-intro"><span class="fa">در هر تب، یک مجموعه داده را با مدل توزیع متفاوت ببینید. هدف درک trade-offهاست، نه نمایش سینتکس یک محصول خاص.</span><span class="en">Switch tabs to see the same data under different placement models. These diagrams explain trade-offs; they are not product-specific syntax or guarantees.</span></p>
+        <div class="tabs" role="tablist" aria-label="Sharding strategies">
+          <button class="tab" type="button" role="tab" id="tab-range" aria-controls="panel-range" aria-selected="true">Range</button>
+          <button class="tab" type="button" role="tab" id="tab-hash" aria-controls="panel-hash" aria-selected="false">Hash</button>
+          <button class="tab" type="button" role="tab" id="tab-directory" aria-controls="panel-directory" aria-selected="false"><span class="fa">Directory / Lookup</span><span class="en">Directory / lookup</span></button>
+        </div>
+        <div class="strategy-panel active" id="panel-range" role="tabpanel" aria-labelledby="tab-range">
+          <div class="strategy-grid">
+            <div class="strategy-visual"><h4>range map</h4><div class="strategy-buckets"><div class="strategy-bucket">A<span class="sample">1–100</span></div><div class="strategy-bucket">B<span class="sample">101–200</span></div><div class="strategy-bucket">C<span class="sample">201–300</span></div><div class="strategy-bucket">D<span class="sample">301–400</span></div></div></div>
+            <div class="strategy-copy"><h4><span class="fa">Range Sharding (توزیع بازه‌ای)</span><span class="en">Range sharding</span></h4><p><span class="fa">مقادیر نزدیک به هم در یک شارد قرار می‌گیرند. کوئری‌های بازه‌ای می‌توانند هدفمند باشند، ولی اگر بار روی یک بازه خاص متمرکز شود، Hotspot ایجاد می‌شود.</span><span class="en">Nearby values stay together. Range queries can be targeted, but a busy recent range or a popular value can create skew and a hot shard.</span></p><div class="strategy-rule">1–100 → A · 101–200 → B · 201–300 → C</div></div>
+          </div>
+        </div>
+        <div class="strategy-panel" id="panel-hash" role="tabpanel" aria-labelledby="tab-hash" hidden>
+          <div class="strategy-grid">
+            <div class="strategy-visual"><h4>hash buckets</h4><div class="strategy-buckets"><div class="strategy-bucket">A<span class="sample">hash(42)</span></div><div class="strategy-bucket">B<span class="sample">hash(7)</span></div><div class="strategy-bucket">C<span class="sample">hash(113)</span></div><div class="strategy-bucket">D<span class="sample">hash(8841)</span></div></div></div>
+            <div class="strategy-copy"><h4><span class="fa">Hash Sharding (توزیع هش‌شده)</span><span class="en">Hash sharding</span></h4><p><span class="fa">هش معمولاً توزیع یکنواخت‌تری می‌دهد و از Hotspot روی کلیدهای متوالی جلوگیری می‌کند؛ ولی ترتیب از بین می‌رود و کوئری‌های بازه‌ای به Fan-out نیاز پیدا می‌کنند.</span><span class="en">Hashing often distributes monotonically increasing keys more evenly; it sacrifices locality, so range queries on the hashed key are more likely to fan out.</span></p><div class="strategy-rule">hash(key) → bucket · nearby keys need not be neighbours</div></div>
+          </div>
+        </div>
+        <div class="strategy-panel" id="panel-directory" role="tabpanel" aria-labelledby="tab-directory" hidden>
+          <div class="strategy-grid">
+            <div class="strategy-visual"><h4>lookup table</h4><div class="strategy-buckets"><div class="strategy-bucket">tenant 42<span class="sample">→ B</span></div><div class="strategy-bucket">tenant 7<span class="sample">→ A</span></div><div class="strategy-bucket">tenant 113<span class="sample">→ C</span></div><div class="strategy-bucket">tenant 8841<span class="sample">→ D</span></div></div></div>
+            <div class="strategy-copy"><h4><span class="fa">Directory-based Sharding (توزیع مبتنی بر جدول مرجع)</span><span class="en">Directory-based sharding</span></h4><p><span class="fa">یک جدول یا نقشه صریح مشخص می‌کند هر کلید در کدام شارد است. جابه‌جایی داده‌ها انعطاف‌پذیرتر است، ولی خود این نقشه به وابستگی حیاتی تبدیل می‌شود و باید حتی در Failover یکپارچه بماند.</span><span class="en">An explicit map says where each key or range lives. Moves can be flexible, but the directory becomes a critical dependency that must stay consistent through moves and failovers.</span></p><div class="strategy-rule">shardMap[tenantId] → connection / node</div></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="sublead"><span class="fa">فارغ از نوع استراتژی، دو نکته مهم وجود دارد:</span><span class="en">Regardless of the strategy, two important points apply:</span></p>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M12 3v18M5 5l14 14" /></svg></span><span class="fa">کلید مرکب و نگهداری داده‌های مرتبط کنار هم</span><span class="en">Compound keys and keeping related data together</span></h3>
+          <p><span class="fa">اگر چند جدول (مثلاً Orders و OrderItems) همیشه با هم JOIN می‌شوند، بهتر است هر دو را بر اساس <code>TenantId</code> توزیع کنید. اینطوری داده‌های یک Tenant در همه جداول روی همان شارد قرار می‌گیرند و JOIN بدون رفتن به شاردهای دیگر انجام می‌شود. به این کار Co-location (هم‌مکان‌سازی) می‌گویند.</span><span class="en">If multiple tables (e.g. Orders and OrderItems) are always joined together, distribute both by <code>TenantId</code>. This way, one tenant's data across all tables lives on the same shard, and joins complete without crossing shard boundaries. This is called co-location.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18" /><circle cx="12" cy="12" r="8" /></svg></span><span class="fa">Hotspot را جداگانه مدیریت کنید</span><span class="en">Treat hotspots separately</span></h3>
+          <p><span class="fa">حتی اگر تعداد رکوردها بین شاردها مساوی باشد، بار ترافیک ممکن است مساوی نباشد. مثلاً یک Tenant کوچک ممکن است ۸۰٪ کل درخواست‌ها را تولید کند. برای تشخیص Hotspot، به‌جای شمردن سطرها، CPU، I/O و Latency هر شارد را اندازه بگیرید.</span><span class="en">Even if row counts are equal across shards, traffic load may not be. A small tenant might generate 80% of all requests. To detect hotspots, measure each shard's CPU, I/O, and latency instead of just counting rows.</span></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5 ============ -->
+    <section class="section reveal" id="s5">
+      <div class="section-heading"><span class="section-number">05</span>
+        <h2><span class="fa">مسیریابی: چطور درخواست به شارد درست می‌رسد؟</span><span class="en">Routing: how does a request reach the right shard?</span></h2>
+      </div>
+      <div class="source-row"><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding" target="_blank" rel="noopener"><span>↗</span><span class="fa">Microsoft · Sharding pattern</span><span class="en">Microsoft · Sharding pattern</span></a><a href="https://www.mongodb.com/docs/manual/sharding/" target="_blank" rel="noopener"><span>↗</span><span class="fa">MongoDB · Query Targeting</span><span class="en">MongoDB · query targeting</span></a></div>
+
+      <p class="lead"><span class="fa">وقتی کوئری‌ای اجرا می‌شود، روتر باید تصمیم بگیرد آن را به کدام شارد(ها) بفرستد. بسته به اینکه Shard Key در کوئری هست یا نه، یکی از این الگوها اتفاق می‌افتد:</span><span class="en">When a query runs, the router must decide which shard(s) to send it to. Depending on whether the shard key is in the query, one of these patterns occurs:</span></p>
+
+      <div class="grid-2" style="margin-bottom:8px">
+        <article class="card">
+          <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" /></svg></span><span class="fa">Targeted (هدفمند)</span><span class="en">Targeted</span></h3>
+          <p><span class="fa">کوئری شامل Shard Key است. روتر دقیقاً می‌داند به کدام شارد(ها) برود. سریع‌ترین و ارزان‌ترین حالت.</span><span class="en">The query includes the shard key. The router knows exactly which shard(s) to hit. The fastest and cheapest pattern.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M5 5l14 14M19 5 5 19" /></svg></span><span class="fa">Scatter/Gather (پخش و جمع‌آوری)</span><span class="en">Scatter/Gather</span></h3>
+          <p><span class="fa">کوئری شامل Shard Key نیست. روتر مجبور است آن را به <b>همه</b> شاردها بفرستد، جواب‌ها را جمع‌آوری (Gather) و ادغام (Merge) کند. زمان پاسخ وابسته به کندترین شارد است.</span><span class="en">The query does not include the shard key. The router must send it to <b>all</b> shards, gather and merge the results. Response time depends on the slowest shard.</span></p>
+        </article>
+      </div>
+
+      <p class="sublead"><span class="fa">در دموی زیر، سه سناریو را امتحان کنید و ببینید هر کوئری چند شارد را درگیر می‌کند. اعداد Latency صرفاً آموزشی‌اند.</span><span class="en">In the demo below, try three scenarios and see how many shards each query touches. Latency numbers are educational only.</span></p>
+
+      <div class="demo" id="routerDemo">
+        <div class="demo-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5" /></svg><span class="fa">یک کوئری را به روتر بسپارید</span><span class="en">Send a query through the router</span></div>
+        <div class="query-controls" role="group" aria-label="Query routing scenarios">
+          <button class="query-button" type="button" data-route="tenant" aria-pressed="true"><span class="fa">TenantId = 42</span><span class="en">TenantId = 42</span></button>
+          <button class="query-button" type="button" data-route="range" aria-pressed="false"><span class="fa">TenantId بین ۱۵۰ تا ۲۶۰</span><span class="en">TenantId between 150 and 260</span></button>
+          <button class="query-button" type="button" data-route="broadcast" aria-pressed="false"><span class="fa">Status = Paid</span><span class="en">Status = Paid</span></button>
+        </div>
+        <div class="router-demo">
+          <div class="route-query" id="routeQuery">SELECT * FROM Orders WHERE TenantId = 42;</div>
+          <div class="route-board" id="routeBoard">
+            <div class="route-client">API<br>client</div>
+            <div class="route-network">
+              <div class="route-router">router / shard map</div>
+              <div class="route-shards">
+                <div class="route-shard selected" data-shard="0"><strong>Shard A</strong><span class="shard-range">1–100</span><span class="shard-role">primary + replica</span></div>
+                <div class="route-shard dimmed" data-shard="1"><strong>Shard B</strong><span class="shard-range">101–200</span><span class="shard-role">primary + replica</span></div>
+                <div class="route-shard dimmed" data-shard="2"><strong>Shard C</strong><span class="shard-range">201–300</span><span class="shard-role">primary + replica</span></div>
+                <div class="route-shard dimmed" data-shard="3"><strong>Shard D</strong><span class="shard-range">301–400</span><span class="shard-role">primary + replica</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="route-stats">
+            <div class="route-stat"><span class="fa">شاردهای درگیر</span><span class="en">shards touched</span><b id="routeTouched">1 / 4</b></div>
+            <div class="route-stat"><span class="fa">الگوی اجرا</span><span class="en">execution pattern</span><b id="routeShape">targeted</b></div>
+            <div class="route-stat"><span class="fa">latency مفهومی</span><span class="en">conceptual latency</span><b id="routeLatency">1×</b></div>
+          </div>
+          <div class="route-status" id="routeStatus" aria-live="polite"><span class="fa">روتر فقط Shard A را صدا می‌زند؛ بقیه شاردها درگیر نمی‌شوند.</span><span class="en">The router calls only Shard A; other shards are not involved.</span></div>
+        </div>
+      </div>
+
+
+      <div class="callout warning"><strong class="label fa">هزینه Scatter/Gather</strong><strong class="label en">Scatter/Gather Cost</strong>
+        <p><span class="fa">در Fan-out، زمان پاسخ وابسته به کندترین شارد به‌علاوه هزینه شبکه و Merge است. حتی اگر درخواست‌ها به‌صورت موازی ارسال شوند، یک شارد کند می‌تواند Latency کل درخواست را بالا ببرد. موازی‌سازی این هزینه را حذف نمی‌کند، فقط کمترش می‌کند.</span><span class="en">For fan-out, response time is bounded by the slowest shard plus network and merge cost. Even with parallel requests, one slow shard can raise the entire request's latency. Parallelism reduces but does not eliminate this cost.</span></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 6 ============ -->
+    <section class="section reveal" id="s6">
+      <div class="section-heading"><span class="section-number">06</span>
+        <h2><span class="fa">JOIN، تراکنش و یکپارچگی در مرز شاردها</span><span class="en">Joins, transactions, and consistency across shards</span></h2>
+      </div>
+
+      <p class="lead"><span class="fa">در یک دیتابیس معمولی، JOIN بین جداول و تراکنش‌های اتمیک کاملاً طبیعی‌اند. ولی وقتی داده‌ها بین چند شارد پخش شده‌اند، دو مشکل جدید پیش می‌آید:</span><span class="en">In a regular database, joins and atomic transactions are natural. But when data is spread across shards, two new problems arise:</span></p>
+
+      <div class="grid-2" style="margin-bottom:8px">
+        <article class="card">
+          <h3><span class="icon-box blue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h7M4 18h16" /></svg></span><span class="fa">عملیات درون‌شاردی (Single-shard)</span><span class="en">Single-shard operations</span></h3>
+          <p><span class="fa">وقتی تمام داده‌های مورد نیاز یک کوئری یا تراکنش روی یک شارد هستند، همه چیز مثل یک دیتابیس عادی کار می‌کند: JOIN، تراکنش اتمیک و Constraintها همه در دسترس‌اند. این بهترین حالت است.</span><span class="en">When all data needed by a query or transaction is on one shard, everything works like a normal database: joins, atomic transactions, and constraints are all available. This is the best case.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box red"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18" /><circle cx="12" cy="12" r="8" /></svg></span><span class="fa">عملیات بین‌شاردی (Cross-shard)</span><span class="en">Cross-shard operations</span></h3>
+          <p><span class="fa">وقتی داده‌ها روی چند شارد مختلف پخش‌اند، JOIN مستقیم ممکن نیست. تراکنش اتمیک هم پیچیده می‌شود چون باید چند دیتابیس مستقل هم‌زمان Commit کنند. خرابی شبکه بین شاردها ممکن است یکی Commit کند و دیگری نکند.</span><span class="en">When data is on different shards, direct joins are not possible. Atomic transactions become complex because multiple independent databases must commit together. A network failure between shards may cause one to commit while another does not.</span></p>
+        </article>
+      </div>
+
+      <p class="sublead"><span class="fa">هدف طراحی این است که تا حد ممکن از عملیات بین‌شاردی اجتناب کنید:</span><span class="en">The design goal is to avoid cross-shard operations as much as possible:</span></p>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" /></svg></span><span class="fa">چطور عملیات را درون‌شاردی نگه داریم؟</span><span class="en">How to keep operations single-shard</span></h3>
+          <ul>
+            <li><span class="fa">درخواست‌ها را همیشه با Shard Key شروع کنید تا تراکنش داخل یک شارد بسته شود.</span><span class="en">Always start requests with the shard key so the transaction stays on one shard.</span></li>
+            <li><span class="fa">جدول‌هایی که همیشه JOIN می‌شوند (مثل Orders و OrderItems) را با کلید مشترک توزیع کنید تا کنار هم بمانند (Co-location).</span><span class="en">Distribute tables that always join (e.g. Orders and OrderItems) with the same key so they stay together (co-location).</span></li>
+            <li><span class="fa">داده‌های مرجع کوچک و کم‌تغییر (مثل لیست کشورها) را در صورت پشتیبانی دیتابیس، در همه شاردها کپی کنید.</span><span class="en">Replicate small, rarely-changing reference data (e.g. country list) to all shards if the database supports it.</span></li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 4l-4 3 4 3M16 14l4 3-4 3" /></svg></span><span class="fa">وقتی عملیات بین‌شاردی اجتناب‌ناپذیر است</span><span class="en">When cross-shard is unavoidable</span></h3>
+          <ul>
+            <li><span class="fa">Fan-out و Merge را در یک لایه مشخص پیاده کنید و هزینه‌اش را حساب کنید.</span><span class="en">Make fan-out and merge explicit in one layer and account for its cost.</span></li>
+            <li><span class="fa">برای فرآیندهای چندمرحله‌ای، از الگوی Saga استفاده کنید: هر مرحله یک عملیات مستقل است و در صورت خطا، مراحل قبلی جبران (Compensate) می‌شوند.</span><span class="en">For multi-step processes, use the Saga pattern: each step is independent, and earlier steps are compensated on failure.</span></li>
+            <li><span class="fa">اگر اتمیک بودن حیاتی است، Two-Phase Commit (2PC) ممکن است لازم باشد، ولی Latency و پیچیدگی مدیریت خطا زیاد می‌شود.</span><span class="en">If atomicity is critical, Two-Phase Commit (2PC) may be needed, but it adds significant latency and error-handling complexity.</span></li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="compare-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th><span class="fa">نوع عملیات</span><span class="en">Operation type</span></th>
+              <th><span class="fa">مثال</span><span class="en">Example</span></th>
+              <th><span class="fa">هزینه</span><span class="en">Cost</span></th>
+              <th><span class="fa">راه‌حل طراحی</span><span class="en">Design solution</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="fa">خواندن/نوشتن درون‌شاردی</span><span class="en">Single-shard read/write</span></td>
+              <td><span class="fa">خواندن سفارش‌های TenantId = 42</span><span class="en">Read orders for TenantId = 42</span></td>
+              <td class="good"><span class="fa">کم؛ مثل دیتابیس عادی</span><span class="en">Low; like a normal database</span></td>
+              <td><span class="fa">Shard Key را در API الزامی کنید</span><span class="en">Require the shard key in the API</span></td>
+            </tr>
+            <tr>
+              <td><span class="fa">JOIN درون‌شاردی</span><span class="en">Co-located join</span></td>
+              <td><span class="fa">JOIN بین Orders و OrderItems برای یک Tenant</span><span class="en">Join Orders with OrderItems for one tenant</span></td>
+              <td class="good"><span class="fa">کم؛ اگر هر دو جدول با کلید مشترک توزیع شده باشند</span><span class="en">Low; if both tables share the distribution key</span></td>
+              <td><span class="fa">جداول مرتبط را با کلید مشترک توزیع کنید</span><span class="en">Distribute related tables with the same key</span></td>
+            </tr>
+            <tr>
+              <td><span class="fa">Scatter/Gather</span><span class="en">Scatter/gather</span></td>
+              <td><span class="fa">جمع کل فروش همه Tenantها</span><span class="en">Total sales across all tenants</span></td>
+              <td class="caution"><span class="fa">متوسط تا زیاد؛ همه شاردها درگیرند</span><span class="en">Medium to high; all shards involved</span></td>
+              <td><span class="fa">Timeout بگذارید و نتایج را موازی جمع کنید</span><span class="en">Set timeouts and gather results in parallel</span></td>
+            </tr>
+            <tr>
+              <td><span class="fa">تراکنش بین‌شاردی</span><span class="en">Cross-shard transaction</span></td>
+              <td><span class="fa">انتقال موجودی بین دو Tenant روی شاردهای مختلف</span><span class="en">Transfer balance between two tenants on different shards</span></td>
+              <td class="bad"><span class="fa">زیاد؛ هماهنگی و Rollback دشوار</span><span class="en">High; coordination and rollback are hard</span></td>
+              <td><span class="fa">بازطراحی با Saga یا 2PC</span><span class="en">Redesign with Saga or 2PC</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="net-note"><span class="badge">.NET</span>
+        <p><span class="fa">در EF Core، هر <code>DbContext</code> معمولاً به یک کانکشن و در نتیجه یک شارد متصل است. اگر بخواهید از یک Context برای چند شارد استفاده کنید، ممکن است ندانید داده از کجا می‌آید. روش درست این است: ابتدا شارد مقصد را پیدا کنید، سپس با کانکشن همان شارد یک Context بسازید. مثال زیر این الگو را نشان می‌دهد:</span><span class="en">In EF Core, each <code>DbContext</code> is normally connected to one connection and therefore one shard. If you try to use one context for multiple shards, you may lose track of where data comes from. The correct approach: first find the target shard, then create a context with that shard's connection. The example below shows this pattern:</span></p>
+      </div>
+
+      <div class="codebox">
+        <div class="code-title">c# — data-dependent routing with EF Core</div>
+        <pre><code><span class="cm">// 1. Find which shard owns this tenant</span>
+<span class="kw">var</span> shard = <span class="kw">await</span> shardResolver.ResolveAsync(tenantId, cancellationToken);
+
+<span class="cm">// 2. Create a DbContext connected to that specific shard</span>
+<span class="kw">await using</span> <span class="kw">var</span> db = <span class="kw">await</span> contextFactory.CreateAsync(
+    shard.ConnectionString,
+    cancellationToken);
+
+<span class="cm">// 3. Query — this only touches the target shard</span>
+<span class="kw">var</span> orders = <span class="kw">await</span> db.Orders
+    .Where(x =&gt; x.TenantId == tenantId)
+    .ToListAsync(cancellationToken);
+
+<span class="cm">// 4. Write — transaction stays on one shard</span>
+db.Orders.Add(<span class="kw">new</span> <span class="fn">Order</span> { TenantId = tenantId, Total = <span class="str">1200</span> });
+<span class="kw">await</span> db.SaveChangesAsync(cancellationToken);</code></pre>
+      </div>
+
+      <div class="callout"><strong class="label fa">نکته عملی</strong><strong class="label en">Practical Tip</strong>
+        <p><span class="fa">کد بالا مفهومی است. در محیط عملیاتی، <code>ShardResolver</code> باید کانکشن‌استرینگ‌ها را از Secret Manager بگیرد، Timeout و Retry داشته باشد، و حین Rebalancing از نقشه‌های قدیمی جلوگیری کند. هرگز کانکشن را بر اساس ورودی کاربر بدون اعتبارسنجی باز نکنید.</span><span class="en">The code above is conceptual. In production, the <code>ShardResolver</code> should get connection strings from a secret manager, have timeouts and retries, and prevent stale maps during rebalancing. Never open connections based on unvalidated user input.</span></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 7 ============ -->
+    <section class="section reveal" id="s7">
+      <div class="section-heading"><span class="section-number">07</span>
+        <h2><span class="fa">عملیات واقعی: Rebalancing، جابه‌جایی و .NET</span><span class="en">Operations: rebalancing, movement, and .NET</span></h2>
+      </div>
+      <p class="lead"><span class="fa">اضافه کردن شارد جدید فقط ساخت یک دیتابیس نیست. باید اسکیما را Deploy کنید، نقشه مسیریابی را آپدیت کنید، بخشی از داده‌ها را منتقل کنید، درخواست‌های هم‌زمان حین جابه‌جایی را مدیریت کنید و صحت مسیرها را تأیید کنید.</span><span class="en">Adding a shard is more than creating a database. You must deploy the schema, update the map, move data, handle concurrent requests during the move, and verify counts and routes afterward.</span></p>
+
+      <div class="demo" id="rebalanceDemo">
+        <div class="demo-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 4l-4 3 4 3M16 14l4 3-4 3" /></svg><span class="fa">افزودن شارد و انتقال یک بازه</span><span class="en">Add a shard and move one range</span></div>
+        <p class="demo-intro"><span class="fa">این دمو فقط مفهوم Rebalancing را نشان می‌دهد: یک بازه از Shard A به Shard D منتقل می‌شود و نقشه باید هم‌زمان با داده‌ها به‌روز شود. در واقعیت، Locking، کپی داده، Cut-over و مدیریت خطا جزئیات حیاتی‌اند.</span><span class="en">This only illustrates rebalancing: one range moves from Shard A to Shard D, and the map must change consistently with the data. A real product must handle locking, copying, cut-over, and failures.</span></p>
+        <div class="rebalance-stage" id="rebalanceStage">
+          <div class="rebalance-shard"><strong>Shard A</strong><small><span class="fa">قبل: دو بازه</span><span class="en">Before: two ranges</span></small><span class="range-chip" id="movingRange">101–150</span><span class="range-chip">1–100</span></div>
+          <div class="rebalance-shard"><strong>Shard B</strong><small>151–250</small></div>
+          <div class="rebalance-shard"><strong>Shard C</strong><small>251–350</small></div>
+        </div>
+        <div class="hero-actions" style="margin-top:15px"><button class="btn primary" id="rebalanceButton" type="button"><span class="fa">شبیه‌سازی انتقال</span><span class="en">Simulate the move</span></button><button class="btn" id="rebalanceReset" type="button"><span class="fa">بازنشانی</span><span class="en">Reset</span></button></div>
+        <div class="rebalance-caption" id="rebalanceStatus" aria-live="polite"><span class="fa">هنوز جابه‌جایی انجام نشده.</span><span class="en">No movement has happened yet.</span></div>
+      </div>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3><span class="icon-box blue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5" /></svg></span><span class="fa">نقشه شاردها (Shard Map)</span><span class="en">Shard map</span></h3>
+          <p><span class="fa">نقشه باید منبع قابل اعتمادی برای ارتباط کلید و مقصد باشد. کش کردن آن مفید است، ولی Invalidation، نسخه‌بندی و رفتار حین جابه‌جایی را از قبل تعریف کنید.</span><span class="en">The map must be a trusted source for the key-to-destination relationship. Caching helps, but define invalidation, versions, and behavior during moves.</span></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" /></svg></span><span class="fa">اسکیما و Migration</span><span class="en">Schema and migrations</span></h3>
+          <p><span class="fa">مهاجرت دیتابیس باید روی تمام شاردها به نسخه یکسان برسد. استقرار مرحله‌ای و سازگاری رو به عقب (Backward Compatibility) امن‌تر از Deploy یک‌باره‌اند.</span><span class="en">Migrations must converge on the same version across shards. Staged rollout and backward compatibility are safer than a blind one-shot deploy.</span></p>
+        </article>
+      </div>
+
+      <div class="net-note"><span class="badge">.NET</span>
+        <p><span class="fa">مایگریشن‌های EF Core را برای هر شارد جداگانه و کنترل‌شده اجرا کنید. یک اسکریپت یا Pipeline بسازید که روی همه شاردها به‌ترتیب یا موازی Migration اجرا کند و نتیجه هرکدام را گزارش دهد. قبل از هر Deploy، سازگاری رو به عقب اسکیما را بررسی کنید.</span><span class="en">Run EF Core migrations for each shard separately through a controlled pipeline. Build a script that runs migrations on all shards and reports results. Always verify schema backward compatibility before deploying.</span></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 8 ============ -->
+    <section class="section reveal" id="s8">
+      <div class="section-heading"><span class="section-number">✓</span>
+        <h2><span class="fa">خودآزمایی — قبل از شارد کردن پاسخ دهید</span><span class="en">Self-check — answer before you shard</span></h2>
+      </div>
+      <p class="lead"><span class="fa">اگر پاسخ سوالی را نمی‌دانید، به همان بخش برگردید. هدف حفظ کردن نام ابزارها نیست؛ باید بتوانید هزینه و مسیر یک درخواست را توضیح دهید.</span><span class="en">If you cannot answer one, return to that section. The goal is not memorizing product names; it is explaining the cost and path of a request.</span></p>
+      <button class="btn sm" id="toggleAllQuestions" type="button" style="margin-bottom:15px"><span class="fa">باز/بسته‌کردن همه</span><span class="en">Toggle all</span></button>
+
+      <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span class="qa-number">Q1</span><span class="fa">چرا Replica با Shard فرق دارد؟</span><span class="en">Why is a replica not another shard?</span></button>
+        <div class="qa-answer"><div><span class="fa">شارد مالک بخش متفاوتی از داده‌هاست؛ Replica کپی همان بخش است. سه شارد می‌توانند داده‌ها را تقسیم کنند و هرکدام دو Replica برای دسترس‌پذیری بالاتر داشته باشند.</span><span class="en">A shard owns a different subset of data; a replica copies that same subset. Three shards can divide the data while each has two replicas.</span></div></div>
+      </div>
+      <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span class="qa-number">Q2</span><span class="fa">اگر کوئری Shard Key نداشته باشد چه می‌شود؟</span><span class="en">What can happen when a query has no shard key?</span></button>
+        <div class="qa-answer"><div><span class="fa">روتر مجبور به Scatter/Gather می‌شود: کوئری به همه شاردها فرستاده می‌شود، پاسخ‌ها Merge می‌شوند و زمان پاسخ وابسته به کندترین شارد است.</span><span class="en">The router must scatter/gather: the query goes to every shard, results are merged, and response time depends on the slowest shard.</span></div></div>
+      </div>
+      <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span class="qa-number">Q3</span><span class="fa">Shard Key خوب چه ویژگی‌هایی دارد؟</span><span class="en">What makes a good shard key?</span></button>
+        <div class="qa-answer"><div><span class="fa">سه ویژگی: ۱) توزیع بار مناسب (Cardinality کافی) ۲) حضور در کوئری‌های پرتکرار (قابل مسیریابی) ۳) پایداری (تغییر نکند). یکنواختی تعداد سطرها به‌تنهایی کافی نیست؛ الگوهای دسترسی و Hotspot هم مهمند.</span><span class="en">Three properties: 1) good distribution (enough cardinality), 2) present in frequent queries (routable), 3) stable (rarely changes). Even row counts alone are not enough; access patterns and hotspots matter too.</span></div></div>
+      </div>
+      <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span class="qa-number">Q4</span><span class="fa">تفاوت عملیات درون‌شاردی و بین‌شاردی چیست؟</span><span class="en">What is the difference between single-shard and cross-shard operations?</span></button>
+        <div class="qa-answer"><div><span class="fa">درون‌شاردی: همه داده‌ها روی یک شاردند، JOIN و تراکنش مثل دیتابیس عادی کار می‌کنند. بین‌شاردی: داده‌ها روی چند شاردند، JOIN مستقیم ممکن نیست و تراکنش اتمیک نیاز به هماهنگی پیچیده (مثل 2PC یا Saga) دارد.</span><span class="en">Single-shard: all data on one shard, joins and transactions work normally. Cross-shard: data on multiple shards, direct joins are impossible, and atomic transactions need complex coordination (2PC or Saga).</span></div></div>
+      </div>
+      <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span class="qa-number">Q5</span><span class="fa">در .NET، DbContext را کجا بسازیم؟</span><span class="en">Where should a .NET DbContext be created?</span></button>
+        <div class="qa-answer"><div><span class="fa">بعد از پیدا کردن شارد مقصد و با کانکشن مخصوص همان شارد. هر Context به یک شارد متصل است. هرگز کانکشن را بر اساس ورودی غیرقابل اعتماد باز نکنید.</span><span class="en">After resolving the destination shard, using that shard's connection. Each context connects to one shard. Never open connections from unvalidated input.</span></div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="margin-top:64px;padding:42px 0;border-top:1px dashed var(--line-strong)">
+    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap">
+      <div><strong><span class="fa">Backend Deep Dives</span><span class="en">Backend Deep Dives</span></strong>
+        <p style="margin-top:4px;color:var(--muted);font-size:12px"><span class="fa">برای توسعه‌دهندگانی که می‌خواهند «چرا» را بفهمند.</span><span class="en">For developers who want to understand why.</span></p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm" href="./index.html"><span class="fa">موضوعات</span><span class="en">Topics</span></a><a class="btn sm" href="./DataPartitioning.html"><span class="fa">پارتیشن‌بندی</span><span class="en">Partitioning</span></a><a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank" rel="noopener"><span class="fa">ریپازیتوری گیت‌هاب</span><span class="en">Repository</span></a></div>
+    </div>
+  </footer>
+
+  <script>
+    (() => {
+      'use strict';
+      const $ = (s, r = document) => r.querySelector(s);
+      const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      function setBilingual(el, fa, en) {
+        if (!el) return;
+        const f = $('.fa', el), e = $('.en', el);
+        if (f) f.textContent = fa;
+        if (e) e.textContent = en;
+      }
+      function setDocumentLanguage(lang) {
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+        localStorage.setItem('bd-lang', lang);
+      }
+      function setTheme(theme) {
+        document.documentElement.dataset.theme = theme;
+        localStorage.setItem('bd-theme', theme);
+      }
+
+      const savedLang = localStorage.getItem('bd-lang');
+      if (savedLang === 'fa' || savedLang === 'en') setDocumentLanguage(savedLang);
+      const savedTheme = localStorage.getItem('bd-theme');
+      if (savedTheme === 'dark' || savedTheme === 'light') setTheme(savedTheme);
+      else if (window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+
+      $('#themeButton').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+      $('#languageButton').addEventListener('click', () => setDocumentLanguage(document.documentElement.lang === 'fa' ? 'en' : 'fa'));
+
+      const progress = $('#progress');
+      function updateProgress() {
+        const r = document.documentElement;
+        const a = Math.max(1, r.scrollHeight - r.clientHeight);
+        progress.style.width = `${Math.min(100, (r.scrollTop / a) * 100)}%`;
+      }
+      window.addEventListener('scroll', updateProgress, { passive: true });
+      updateProgress();
+
+      function highlightSQL(text) {
+        const kw = ['SELECT','FROM','WHERE','INSERT','INTO','VALUES','AND','OR','BETWEEN'];
+        const fn = ['count','sum','avg','min','max'];
+        return text
+          .replace(/'([^']*)'/g, '<span class="sql-str">\'$1\'</span>')
+          .replace(/\b(\d+)\b/g, '<span class="sql-num">$1</span>')
+          .replace(new RegExp(`\\b(${kw.join('|')})\\b`, 'g'), '<span class="sql-kw">$1</span>')
+          .replace(new RegExp(`\\b(${fn.join('|')})\\b`, 'gi'), '<span class="sql-fn">$1</span>');
+      }
+
+      /* ====== Hero animation ====== */
+      const heroSteps = [
+        { query: 'SELECT * FROM Orders WHERE TenantId = 42;', targets: ['A'], scatter: false,
+          fa: 'TenantId = 42 در بازه Shard A است؛ روتر مستقیم همان‌جا را می‌زند.',
+          en: 'TenantId = 42 lives on Shard A; the router hits it directly.' },
+        { query: 'SELECT * FROM Orders WHERE TenantId = 178;', targets: ['B'], scatter: false,
+          fa: 'TenantId = 178 در بازه Shard B است؛ بقیه شاردها بی‌کار می‌مانند.',
+          en: 'TenantId = 178 lives on Shard B; other shards stay idle.' },
+        { query: 'INSERT INTO Orders (TenantId, Total) VALUES (265, 1200);', targets: ['C'], scatter: false,
+          fa: 'نوشتن هم همین مسیر را دارد؛ TenantId = 265 مقصدش Shard C است.',
+          en: 'Writes follow the same path; TenantId = 265 goes to Shard C.' },
+        { query: "SELECT count(*) FROM Orders WHERE Status = 'Paid';", targets: ['A','B','C'], scatter: true,
+          fa: 'Status کلید شارد نیست؛ روتر مجبور است از همه شاردها بپرسد.',
+          en: 'Status is not the shard key; the router must ask every shard.' }
+      ];
+
+      const heroQuery = $('#heroQuery'), heroCaption = $('#heroCaption');
+      const heroRouter = $('#heroRouter'), heroClient = $('#heroClient');
+      const heroShards = $$('#heroFlow .shard'), heroPackets = $$('#heroFlow .packet');
+
+      function setHeroTargets(t, s) {
+        heroShards.forEach(sh => { const hit = t.includes(sh.dataset.shard); sh.classList.remove('selected','scatter'); sh.classList.toggle(s ? 'scatter' : 'selected', hit); });
+      }
+      function clearHeroTargets() { heroShards.forEach(sh => sh.classList.remove('selected','scatter')); }
+
+      async function typeHeroQuery(text) {
+        let cur = '';
+        for (const ch of text) { cur += ch; heroQuery.innerHTML = highlightSQL(cur); await sleep(16); }
+      }
+
+      async function heroLoop() {
+        let i = 0;
+        while (true) {
+          if (document.hidden) { await sleep(900); continue; }
+          const step = heroSteps[i % heroSteps.length];
+          clearHeroTargets();
+          setBilingual(heroCaption, 'در حال مسیریابی…', 'Routing…');
+          await typeHeroQuery(step.query);
+          heroClient.classList.add('ping'); heroRouter.classList.add('thinking');
+          await sleep(620);
+          heroRouter.classList.remove('thinking'); heroPackets[0].classList.add('go');
+          await sleep(620);
+          heroPackets[0].classList.remove('go'); heroPackets[1].classList.add('go');
+          await sleep(620);
+          heroPackets[1].classList.remove('go'); heroClient.classList.remove('ping');
+          setHeroTargets(step.targets, step.scatter);
+          setBilingual(heroCaption, step.fa, step.en);
+          await sleep(2900); i++;
+        }
+      }
+
+      if (heroQuery && heroRouter) {
+        if (prefersReducedMotion.matches) {
+          heroQuery.innerHTML = highlightSQL(heroSteps[0].query);
+          setHeroTargets(heroSteps[0].targets, false);
+          setBilingual(heroCaption, heroSteps[0].fa, heroSteps[0].en);
+        } else { heroLoop(); }
+      }
+
+      /* ====== Reveal ====== */
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+      }, { threshold: .08 });
+      $$('.reveal').forEach(el => obs.observe(el));
+
+      /* ====== Strategy tabs ====== */
+      $$('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const pid = tab.getAttribute('aria-controls');
+          $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t === tab)));
+          $$('.strategy-panel').forEach(p => { const a = p.id === pid; p.hidden = !a; p.classList.toggle('active', a); });
+        });
+      });
+
+      /* ====== Router demo ====== */
+      const routes = {
+        tenant: { query: 'SELECT * FROM Orders WHERE TenantId = 42;', active: [0], touched: '1 / 4', shape: 'targeted', latency: '1×',
+          fa: 'روتر فقط Shard A را صدا می‌زند؛ بقیه شاردها درگیر نمی‌شوند.',
+          en: 'The router calls only Shard A; other shards are not involved.' },
+        range: { query: "SELECT * FROM Orders WHERE TenantId >= 150 AND TenantId < 260;", active: [1,2], touched: '2 / 4', shape: 'targeted range', latency: '≈2×',
+          fa: 'بازه ۱۵۰–۲۵۹ با Shard B و C هم‌پوشانی دارد؛ هر دو باید پاسخ دهند.',
+          en: 'The 150–259 range overlaps Shards B and C; both must respond.' },
+        broadcast: { query: "SELECT * FROM Orders WHERE Status = 'Paid';", active: [0,1,2,3], touched: '4 / 4', shape: 'scatter / gather', latency: '≈4×',
+          fa: 'Status کلید شارد نیست؛ روتر مجبور است کوئری را به همه بفرستد.',
+          en: 'Status is not the shard key; the router must broadcast to all shards.' }
+      };
+      const routeShards = $$('.route-shard');
+      function renderRoute(name) {
+        const r = routes[name];
+        $('#routeQuery').textContent = r.query;
+        $('#routeTouched').textContent = r.touched;
+        $('#routeShape').textContent = r.shape;
+        $('#routeLatency').textContent = r.latency;
+        routeShards.forEach((sh, i) => {
+          const a = r.active.includes(i);
+          sh.classList.toggle('selected', a); sh.classList.toggle('dimmed', !a);
+          if (a) { sh.style.animation = 'none'; void sh.offsetWidth; sh.style.animation = ''; }
+        });
+        setBilingual($('#routeStatus'), r.fa, r.en);
+      }
+      $$('.query-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          $$('.query-button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+          renderRoute(btn.dataset.route);
+        });
+      });
+
+      /* ====== Rebalancing ====== */
+      const rebalanceStage = $('#rebalanceStage');
+      const movingRange = $('#movingRange');
+      const movingSource = movingRange.parentElement;
+      let rebalanced = false;
+
+      function resetRebalance() {
+        rebalanced = false;
+        rebalanceStage.classList.remove('has-new');
+        movingSource.prepend(movingRange);
+        movingRange.style.opacity = '1'; movingRange.style.transform = 'none';
+        const ns = $('.rebalance-shard.new', rebalanceStage);
+        if (ns) ns.remove();
+        setBilingual($('#rebalanceStatus'), 'هنوز جابه‌جایی انجام نشده.', 'No movement has happened yet.');
+      }
+
+      function runRebalance() {
+        if (rebalanced) { resetRebalance(); return; }
+        rebalanced = true;
+        movingRange.style.transition = 'opacity 0.3s, transform 0.3s';
+        movingRange.style.opacity = '0'; movingRange.style.transform = 'scale(0.8)';
+        setTimeout(() => {
+          const ns = document.createElement('div');
+          ns.className = 'rebalance-shard new';
+          ns.innerHTML = '<strong>Shard D</strong><small>new owner</small>';
+          rebalanceStage.appendChild(ns);
+          movingRange.style.opacity = '0'; movingRange.style.transform = 'scale(0.8)';
+          ns.appendChild(movingRange);
+          rebalanceStage.classList.add('has-new');
+          setTimeout(() => { movingRange.style.opacity = '1'; movingRange.style.transform = 'none'; }, 50);
+          setBilingual($('#rebalanceStatus'), 'بازه ۱۰۱–۱۵۰ به Shard D منتقل شد؛ نقشه و مسیرها باید هم‌زمان به‌روز شوند.', 'Range 101–150 moved to Shard D; the map and routes must be updated at cut-over.');
+        }, 300);
+      }
+
+      $('#rebalanceButton').addEventListener('click', runRebalance);
+      $('#rebalanceReset').addEventListener('click', resetRebalance);
+
+      /* ====== Q&A ====== */
+      $$('.qa-question').forEach(q => {
+        q.addEventListener('click', () => { const item = q.closest('.qa'); const open = item.classList.toggle('open'); q.setAttribute('aria-expanded', String(open)); });
+      });
+      $('#toggleAllQuestions').addEventListener('click', () => {
+        const qs = $$('.qa-question');
+        const openAll = qs.some(q => q.getAttribute('aria-expanded') !== 'true');
+        qs.forEach(q => { q.closest('.qa').classList.toggle('open', openAll); q.setAttribute('aria-expanded', String(openAll)); });
+      });
+    })();
+  </script>
+</body>
+</html>
