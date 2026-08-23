@@ -1195,8 +1195,8 @@ TOPIC CARDS — RESUME STYLE (feat-card)
       opacity: 0
     }
 
-    /* .mini-banner {
-      display: none;
+    .mini-banner {
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 9px;
@@ -1207,55 +1207,27 @@ TOPIC CARDS — RESUME STYLE (feat-card)
       font-size: 12.5px;
       font-weight: 700;
       color: #F6F2E9;
-      animation: bannerPop .4s ease-out;
-      text-align: center
+      text-align: center;
+      min-height: 52px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .4s ease, visibility .4s ease;
     }
 
     html[data-theme="dark"] .mini-banner {
-      color: #10141A
+      color: #10141A;
     }
 
     .mini-banner.show {
-      display: flex
+      opacity: 1;
+      visibility: visible;
     }
 
     .mini-banner svg {
       width: 16px;
       height: 16px;
-      flex-shrink: 0
-    } */
-
-    .mini-banner {
-  display: flex;                    /* همیشه flex باشد */
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  margin: 14px 14px 18px;
-  padding: 11px 16px;
-  background: var(--acc);
-  border-radius: 9px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #F6F2E9;
-  text-align: center;
-  min-height: 52px;                 /* ارتفاع ثابت */
-  opacity: 0;                       /* مخفی */
-  visibility: hidden;               /* مخفی */
-  transition: opacity .4s ease, visibility .4s ease;
-}
-html[data-theme="dark"] .mini-banner {
-  color: #10141A;
-}
-.mini-banner.show {
-  opacity: 1;
-  visibility: visible;
-}
-.mini-banner svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
+      flex-shrink: 0;
+    }
 
     /* ══════════════════════════════════════════
 SCAN vs SEEK ANIMATION (DatabaseIndexes)
@@ -1512,6 +1484,114 @@ SPLIT ANIMATION (DataPartitioning)
 
     .sp-stage.labeled .sp-slice:nth-child(4) .sp-label {
       color: #E5745A
+    }
+
+    /* ══════════════════════════════════════════
+SHARDING ROUTING ANIMATION (DataSharding)
+══════════════════════════════════════════ */
+    .sh-stage {
+      direction: ltr;
+      padding: 6px 16px 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .sh-query {
+      color: var(--term-mut);
+      margin-bottom: 14px;
+      min-height: 20px;
+      text-align: left;
+    }
+
+    .sh-query .kw { color: #7FC79F; }
+    .sh-query .num { color: #E5B45A; }
+    .sh-query .st { color: #E5B45A; }
+
+    .sh-board {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .sh-gate {
+      background: var(--term-bar);
+      border: 1px solid var(--term-line);
+      border-radius: 8px;
+      padding: 10px 4px;
+      text-align: center;
+      color: #CFE0CF;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .sh-network {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+
+    .sh-router-node {
+      align-self: center;
+      background: #2E372F;
+      border: 1px solid #455236;
+      border-radius: 6px;
+      padding: 4px 12px;
+      color: #5CC08F;
+      font-weight: 600;
+      transition: background 0.3s;
+      z-index: 2;
+    }
+
+    .sh-router-node.routing {
+      background: #4A5A3B;
+      box-shadow: 0 0 10px var(--acc-soft);
+    }
+
+    .sh-routes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      z-index: 2;
+    }
+
+    .sh-shard-box {
+      background: var(--term-bar);
+      border: 1px solid var(--term-line);
+      border-radius: 8px;
+      padding: 10px 4px;
+      text-align: center;
+      color: var(--term-mut);
+      transition: all 0.3s;
+    }
+
+    .sh-shard-box.hit {
+      border-color: #5CC08F;
+      background: rgba(31, 122, 82, 0.25);
+      color: #fff;
+      transform: scale(1.04);
+    }
+
+    .sh-shard-box.scatter {
+      border-color: #E3A63C;
+      background: rgba(227, 166, 60, 0.15);
+      color: #E3A63C;
+    }
+
+    .sh-shard-box small {
+      display: block;
+      font-size: 8.5px;
+      color: #77897A;
+      margin-top: 3px;
+    }
+
+    .sh-shard-box.hit small {
+      color: #8EE1B2;
+    }
+
+    .sh-shard-box.scatter small {
+      color: #ffd98a;
     }
 
     /* ══════════════════════════════════════════
@@ -1891,6 +1971,147 @@ RESPONSIVE
         transition-duration: .01ms !important
       }
     }
+
+    /* ══════════════════════════════════════════
+SHARDING ROUTING ANIMATION (DataSharding)
+══════════════════════════════════════════ */
+.sh-stage {
+  direction: ltr;
+  padding: 6px 16px 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.sh-query {
+  color: var(--term-mut);
+  margin-bottom: 12px;
+  min-height: 20px;
+  text-align: left;
+  font-size: 11.5px;
+}
+.sh-query .kw { color: #7FC79F; font-weight: 600; }
+.sh-query .num { color: #E5B45A; }
+.sh-query .st { color: #E5B45A; }
+
+.sh-flow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sh-node {
+  padding: 8px 10px;
+  border: 1px solid #4d705b;
+  border-radius: 7px;
+  background: rgba(31,122,82,.15);
+  color: #b9d1bd;
+  font: 10px/1.4 var(--mono);
+  text-align: center;
+  flex-shrink: 0;
+  transition: border-color .3s, color .3s;
+}
+.sh-node.router {
+  border-color: #d09a4e;
+  background: rgba(194,120,3,.16);
+  color: #f2d39b;
+}
+.sh-node.router.thinking {
+  border-color: #e5b45a;
+  color: #ffe3ae;
+  box-shadow: 0 0 14px 2px rgba(229,180,90,.3);
+}
+.sh-node.ping {
+  animation: pulseRing 0.55s ease-out;
+}
+.sh-connector {
+  flex: 1;
+  height: 2px;
+  background: #35483b;
+  position: relative;
+  min-width: 28px;
+  border-radius: 2px;
+}
+.sh-packet {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: #5cc08f;
+  box-shadow: 0 0 8px rgba(92,192,143,.8);
+  opacity: 0;
+}
+.sh-packet.go {
+  animation: shPacketMove .55s ease-in forwards;
+}
+@keyframes shPacketMove {
+  0% { left: 0; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { left: calc(100% - 7px); opacity: 0; }
+}
+.sh-shards {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+  width: 110px;
+}
+.sh-shard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  border: 1px solid #35483b;
+  border-radius: 6px;
+  background: #202a23;
+  color: #8ca08e;
+  font: 10px var(--mono);
+  transition: all 0.3s ease;
+}
+.sh-shard strong { font-size: 10px; }
+.sh-shard .sh-range { font-size: 8px; }
+.sh-shard .sh-dots {
+  display: flex;
+  gap: 2px;
+  margin-inline-start: auto;
+}
+.sh-shard .sh-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #5b7463;
+  transition: background .3s;
+}
+.sh-shard.selected {
+  border-color: #5cc08f;
+  background: rgba(31,122,82,.34);
+  color: #d5e0d2;
+  transform: scale(1.04);
+}
+.sh-shard.selected strong { color: #8ee1b2; }
+.sh-shard.selected .sh-dots i { background: #5cc08f; }
+.sh-shard.scatter {
+  border-color: #e5b45a;
+  background: rgba(229,180,90,.15);
+  color: #f2d39b;
+  transform: scale(1.03);
+}
+.sh-shard.scatter strong { color: #ffd98a; }
+.sh-shard.scatter .sh-dots i { background: #e5b45a; }
+
+@media(max-width:600px) {
+  .sh-flow { flex-direction: column; gap: 6px; }
+  .sh-connector { width: 2px; height: 18px; min-width: 0; flex: none; }
+  .sh-shards { width: 100%; flex-direction: row; justify-content: space-between; }
+  .sh-packet { top: 0; left: 50%; margin: 0 0 0 -3.5px; }
+  @keyframes shPacketMove {
+    0% { top: 0; opacity: 0; }
+    12% { opacity: 1; }
+    88% { opacity: 1; }
+    100% { top: calc(100% - 7px); opacity: 0; }
+  }
+}
   </style>
 </head>
 
@@ -2094,7 +2315,7 @@ RESPONSIVE
     </div>
   </header>
   <main class="wrap">
-    <!-- ═══════════ TOPICS — RESUME STYLE ═══════════ -->
+    <!-- ═══════════ TOPICS ═══════════ -->
     <section id="topics" class="topics">
       <div class="section-head rv"><span class="section-num">02</span>
         <h2><span class="fa">موضوعات — هرکدام با دموِ زندهٔ ایدهٔ مرکزی‌اش</span><span class="en">Topics — each with a
@@ -2106,108 +2327,156 @@ RESPONSIVE
         <span class="en">Each card is a deep learning station. Next to each topic, a small <b>animation</b> shows what
           it actually does — pause for a moment and watch.</span>
       </p>
-    <div class="proj-list">
-  <!-- ★ TOPIC 01 — Database Indexes -->
-  <div class="feat-card rv" style="--tc:var(--grn)">
-    <div class="feat-top">
-      <div class="feat-info">
-        <div class="feat-head">
-          <span class="pnum">TOPIC-01</span>
-          <h3>Database Indexes</h3>
-          <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
-        </div>
-        <p class="feat-desc">
-          <span class="fa">چطور دیتابیس بین یک میلیون سطر، <b>یک سطر</b> را پیدا می‌کند؟ از ایندکس هش و درخت B تا LSM، از ایندکس خوشه‌ای تا غیرخوشه‌ای، و ایندکس‌های ترکیبی — همراه با مثال‌های SQL Server و دموهای تعاملی.</span>
-          <span class="en">How does a database find <b>one row</b> in a million? From Hash Index and B-Tree to LSM, Clustered to Non-Clustered, and composite indexes — with SQL Server examples and interactive demos.</span>
-        </p>
-        <div class="ftags"><span>B-Tree</span><span>LSM-Tree</span><span>Hash Index</span><span>SQL Server</span><span>Clustered</span></div>
-        <div class="feat-links">
-          <a class="btn primary sm" href="./DatabaseIndexes.html">
-            <span class="fa">خواندن</span><span class="en">Read</span>
-            <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
-          </a>
-        </div>
-      </div>
-      <div class="feat-stage" aria-hidden="true">
-        <div class="qwin-bar"><i></i><i></i><i></i><span>scan vs seek — the race</span></div>
-        <div class="st-cap" id="ssCap"><span class="fa"></span><span class="en"></span></div>
-        <div class="ss-stage" id="ssStage">
-          <div class="ss-query"><span class="kw">SELECT</span> * <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> CustomerId = <span class="st">1042</span></div>
-          <div class="ss-lanes">
-            <div class="ss-lane">
-              <div class="ss-lane-head">
-                <span class="ss-lane-label">FULL SCAN</span>
-                <span class="ss-cnt"><span id="ssScanCnt">0</span> <small>rows</small></span>
+      <div class="proj-list">
+        <!-- ★ TOPIC 01 — Database Indexes -->
+        <div class="feat-card rv" style="--tc:var(--grn)">
+          <div class="feat-top">
+            <div class="feat-info">
+              <div class="feat-head">
+                <span class="pnum">TOPIC-01</span>
+                <h3>Database Indexes</h3>
+                <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
               </div>
-              <div class="ss-cells" id="ssScanCells"></div>
-              <div class="ss-result" id="ssScanRes"></div>
+              <p class="feat-desc">
+                <span class="fa">چطور دیتابیس بین یک میلیون سطر، <b>یک سطر</b> را پیدا می‌کند؟ از ایندکس هش و درخت B تا LSM، از ایندکس خوشه‌ای تا غیرخوشه‌ای، و ایندکس‌های ترکیبی — همراه با مثال‌های SQL Server و دموهای تعاملی.</span>
+                <span class="en">How does a database find <b>one row</b> in a million? From Hash Index and B-Tree to LSM, Clustered to Non-Clustered, and composite indexes — with SQL Server examples and interactive demos.</span>
+              </p>
+              <div class="ftags"><span>B-Tree</span><span>LSM-Tree</span><span>Hash Index</span><span>SQL Server</span><span>Clustered</span></div>
+              <div class="feat-links">
+                <a class="btn primary sm" href="./DatabaseIndexes.html">
+                  <span class="fa">خواندن</span><span class="en">Read</span>
+                  <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+                </a>
+              </div>
             </div>
-            <div class="ss-lane">
-              <div class="ss-lane-head">
-                <span class="ss-lane-label">INDEX SEEK</span>
-                <span class="ss-cnt"><span id="ssSeekCnt">0</span> <small>pages</small></span>
+            <div class="feat-stage" aria-hidden="true">
+              <div class="qwin-bar"><i></i><i></i><i></i><span>scan vs seek — the race</span></div>
+              <div class="st-cap" id="ssCap"><span class="fa"></span><span class="en"></span></div>
+              <div class="ss-stage" id="ssStage">
+                <div class="ss-query"><span class="kw">SELECT</span> * <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> CustomerId = <span class="st">1042</span></div>
+                <div class="ss-lanes">
+                  <div class="ss-lane">
+                    <div class="ss-lane-head">
+                      <span class="ss-lane-label">FULL SCAN</span>
+                      <span class="ss-cnt"><span id="ssScanCnt">0</span> <small>rows</small></span>
+                    </div>
+                    <div class="ss-cells" id="ssScanCells"></div>
+                    <div class="ss-result" id="ssScanRes"></div>
+                  </div>
+                  <div class="ss-lane">
+                    <div class="ss-lane-head">
+                      <span class="ss-lane-label">INDEX SEEK</span>
+                      <span class="ss-cnt"><span id="ssSeekCnt">0</span> <small>pages</small></span>
+                    </div>
+                    <div class="ss-path" id="ssSeekPath">
+                      <span class="ss-node">root</span><span class="ss-arrow">→</span>
+                      <span class="ss-node">branch</span><span class="ss-arrow">→</span>
+                      <span class="ss-node">leaf</span><span class="ss-arrow">→</span>
+                      <span class="ss-node">row ✓</span>
+                    </div>
+                    <div class="ss-result highlight" id="ssSeekRes"></div>
+                  </div>
+                </div>
               </div>
-              <div class="ss-path" id="ssSeekPath">
-                <span class="ss-node">root</span><span class="ss-arrow">→</span>
-                <span class="ss-node">branch</span><span class="ss-arrow">→</span>
-                <span class="ss-node">leaf</span><span class="ss-arrow">→</span>
-                <span class="ss-node">row ✓</span>
+              <div class="mini-banner" id="ssBanner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                <span class="fa"><b>۴ صفحه</b> به‌جای <b>۱٬۰۰۰٬۰۰۰ سطر</b> — قدرت ایندکس</span>
+                <span class="en"><b>4 pages</b> instead of <b>1,000,000 rows</b> — the power of an index</span>
               </div>
-              <div class="ss-result highlight" id="ssSeekRes"></div>
             </div>
           </div>
         </div>
-        <div class="mini-banner" id="ssBanner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-          <span class="fa"><b>۴ صفحه</b> به‌جای <b>۱٬۰۰۰٬۰۰۰ سطر</b> — قدرت ایندکس</span>
-          <span class="en"><b>4 pages</b> instead of <b>1,000,000 rows</b> — the power of an index</span>
+
+        <!-- ★ TOPIC 02 — Data Partitioning -->
+        <div class="feat-card rv" style="--tc:var(--vio)">
+          <div class="feat-top">
+            <div class="feat-info">
+              <div class="feat-head">
+                <span class="pnum">TOPIC-02</span>
+                <h3>Data Partitioning</h3>
+                <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+              </div>
+              <p class="feat-desc">
+                <span class="fa">میلیاردها سطر در یک جدول — چطور فقط <b>همان یک سطر</b> را پیدا می‌کنید؟ از RANGE و LIST تا HASH و KEY، از Sliding Window تا Tiered Storage، و تفاوت Partitioning با Sharding — همراه با مثال‌های SQL Server و MySQL.</span>
+                <span class="en">Billions of rows in one table — how do you find <b>just the one row</b> you need? From RANGE and LIST to HASH and KEY, Sliding Window to Tiered Storage, and Partitioning vs Sharding — with SQL Server &amp; MySQL examples.</span>
+              </p>
+              <div class="ftags"><span>RANGE</span><span>LIST</span><span>HASH</span><span>KEY</span><span>SQL Server</span><span>MySQL</span></div>
+              <div class="feat-links">
+                <a class="btn primary sm" href="./DataPartitioning.html">
+                  <span class="fa">خواندن</span><span class="en">Read</span>
+                  <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+                </a>
+              </div>
+            </div>
+            <div class="feat-stage" aria-hidden="true">
+              <div class="qwin-bar"><i></i><i></i><i></i><span>the split — one table, four partitions</span></div>
+              <div class="st-cap" id="spCap"><span class="fa"></span><span class="en"></span></div>
+              <div class="sp-stage" id="spStage">
+                <div class="sp-query"><span class="kw">SELECT</span> COUNT(*) <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> OrderDate >= <span class="st">'2025-03-01'</span></div>
+                <div class="sp-area">
+                  <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P1</div></div>
+                  <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P2</div></div>
+                  <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P3</div></div>
+                  <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P4</div></div>
+                </div>
+              </div>
+              <div class="mini-banner" id="spBanner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                <span class="fa">یک جدول ← <b>۴ پارتیشن</b> — کوئری‌ها فقط تکهٔ لازم را می‌خوانند</span>
+                <span class="en">one table → <b>4 partitions</b> — queries read only the piece they need</span>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- ★ TOPIC 03 — Data Sharding -->
+<div class="feat-card rv" style="--tc:var(--blue)">
+  <div class="feat-top">
+    <div class="feat-info">
+      <div class="feat-head">
+        <span class="pnum">TOPIC-03</span>
+        <h3>Data Sharding</h3>
+        <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+      </div>
+      <p class="feat-desc">
+        <span class="fa">وقتی یک دیتابیس دیگر جوابگوی حجم داده‌ها یا نرخ نوشتن نیست، داده‌ها را بین <b>چند دیتابیس مستقل</b> توزیع می‌کنیم. Shard Key، مسیریابی Targeted و Scatter/Gather، تراکنش‌های Cross-shard و پیاده‌سازی عملی در .NET.</span>
+        <span class="en">When one database can't handle the data volume or write rate, we distribute data across <b>independent databases</b>. Shard Key selection, Targeted vs Scatter/Gather routing, Cross-shard transactions, and hands-on .NET implementation.</span>
+      </p>
+      <div class="ftags"><span>Shard Key</span><span>Routing</span><span>Scatter/Gather</span><span>Rebalancing</span><span>EF Core</span><span>Saga</span></div>
+      <div class="feat-links">
+        <a class="btn primary sm" href="./DataSharding.html">
+          <span class="fa">خواندن</span><span class="en">Read</span>
+          <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+        </a>
       </div>
     </div>
-  </div>
-
-  <!-- ★ TOPIC 02 — Data Partitioning -->
-  <div class="feat-card rv" style="--tc:var(--vio)">
-    <div class="feat-top">
-      <div class="feat-info">
-        <div class="feat-head">
-          <span class="pnum">TOPIC-02</span>
-          <h3>Data Partitioning</h3>
-          <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
-        </div>
-        <p class="feat-desc">
-          <span class="fa">میلیاردها سطر در یک جدول — چطور فقط <b>همان یک سطر</b> را پیدا می‌کنید؟ از RANGE و LIST تا HASH و KEY، از Sliding Window تا Tiered Storage، و تفاوت Partitioning با Sharding — همراه با مثال‌های SQL Server و MySQL.</span>
-          <span class="en">Billions of rows in one table — how do you find <b>just the one row</b> you need? From RANGE and LIST to HASH and KEY, Sliding Window to Tiered Storage, and Partitioning vs Sharding — with SQL Server &amp; MySQL examples.</span>
-        </p>
-        <div class="ftags"><span>RANGE</span><span>LIST</span><span>HASH</span><span>KEY</span><span>SQL Server</span><span>MySQL</span></div>
-        <div class="feat-links">
-          <a class="btn primary sm" href="./DataPartitioning.html">
-            <span class="fa">خواندن</span><span class="en">Read</span>
-            <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
-          </a>
-        </div>
-      </div>
-      <div class="feat-stage" aria-hidden="true">
-        <div class="qwin-bar"><i></i><i></i><i></i><span>the split — one table, four partitions</span></div>
-        <div class="st-cap" id="spCap"><span class="fa"></span><span class="en"></span></div>
-        <div class="sp-stage" id="spStage">
-          <div class="sp-query"><span class="kw">SELECT</span> COUNT(*) <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> OrderDate >= <span class="st">'2025-03-01'</span></div>
-          <div class="sp-area">
-            <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P1</div></div>
-            <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P2</div></div>
-            <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P3</div></div>
-            <div class="sp-slice"><div class="sp-cells"></div><div class="sp-label">P4</div></div>
+    <div class="feat-stage" aria-hidden="true">
+      <div class="qwin-bar"><i></i><i></i><i></i><span>shard-router.live</span></div>
+      <div class="st-cap" id="shCap"><span class="fa"></span><span class="en"></span></div>
+      <div class="sh-stage" id="shStage">
+        <div class="sh-query" id="shQuery"><span class="kw">SELECT</span> * <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> TenantId = <span class="num">42</span>;</div>
+        <div class="sh-flow">
+          <div class="sh-node" id="shClient">API<br>Request</div>
+          <div class="sh-connector"><i class="sh-packet" id="shPkt1"></i></div>
+          <div class="sh-node router" id="shRouter">Router<br>(Shard Map)</div>
+          <div class="sh-connector"><i class="sh-packet" id="shPkt2"></i></div>
+          <div class="sh-shards">
+            <div class="sh-shard" data-sh="A"><strong>Shard A</strong><span class="sh-range">1–100</span><span class="sh-dots"><i></i><i></i></span></div>
+            <div class="sh-shard" data-sh="B"><strong>Shard B</strong><span class="sh-range">101–200</span><span class="sh-dots"><i></i><i></i></span></div>
+            <div class="sh-shard" data-sh="C"><strong>Shard C</strong><span class="sh-range">201–300</span><span class="sh-dots"><i></i><i></i></span></div>
           </div>
         </div>
-        <div class="mini-banner" id="spBanner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-          <span class="fa">یک جدول ← <b>۴ پارتیشن</b> — کوئری‌ها فقط تکهٔ لازم را می‌خوانند</span>
-          <span class="en">one table → <b>4 partitions</b> — queries read only the piece they need</span>
-        </div>
+      </div>
+      <div class="mini-banner" id="shBanner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+        <span class="fa">با <b>Shard Key</b> فقط <b>یک شارد</b> درگیر می‌شود — بدون آن، همه!</span>
+        <span class="en">With a <b>Shard Key</b>, only <b>one shard</b> is touched — without it, all of them!</span>
       </div>
     </div>
   </div>
 </div>
+
+      </div>
     </section>
   </main>
   <!-- ═══════════ FOOTER ═══════════ -->
@@ -2267,7 +2536,7 @@ RESPONSIVE
     const script = [
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'ls topics/\n', c: '', type: true },
-      { t: 'DatabaseIndexes.html  DataPartitioning.html\n', c: 'hl', type: true, delay: 60 },
+      { t: 'DatabaseIndexes.html  DataPartitioning.html  DataSharding.html\n', c: 'hl', type: true, delay: 60 },
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'cat README.md\n', c: '', type: true },
       { t: '> Deep dives into backend fundamentals for .NET devs.\n', c: 'cm', type: true },
@@ -2394,6 +2663,111 @@ RESPONSIVE
       }
       cycle();
     })();
+  
+    /* ═══════════ ANIMATION 3: SHARD ROUTING (DataSharding) ═══════════ */
+(function () {
+  const stage = document.getElementById('shStage');
+  if (!stage) return;
+  const cap = document.getElementById('shCap');
+  const banner = document.getElementById('shBanner');
+  const queryEl = document.getElementById('shQuery');
+  const client = document.getElementById('shClient');
+  const router = document.getElementById('shRouter');
+  const pkt1 = document.getElementById('shPkt1');
+  const pkt2 = document.getElementById('shPkt2');
+  const shards = [...stage.querySelectorAll('.sh-shard')];
+
+  const steps = [
+    {
+      query: '<span class="kw">SELECT</span> * <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> TenantId = <span class="num">42</span>;',
+      targets: ['A'], scatter: false,
+      fa: 'TenantId = 42 در بازه Shard A است؛ روتر مستقیم همان‌جا را می‌زند.',
+      en: 'TenantId = 42 lives on Shard A; the router hits it directly.'
+    },
+    {
+      query: '<span class="kw">SELECT</span> * <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> TenantId = <span class="num">178</span>;',
+      targets: ['B'], scatter: false,
+      fa: 'TenantId = 178 در بازه Shard B است؛ بقیه شاردها بی‌کار می‌مانند.',
+      en: 'TenantId = 178 lives on Shard B; other shards stay idle.'
+    },
+    {
+      query: '<span class="kw">INSERT INTO</span> Orders (TenantId, Total) <span class="kw">VALUES</span> (<span class="num">265</span>, <span class="num">1200</span>);',
+      targets: ['C'], scatter: false,
+      fa: 'نوشتن هم همین مسیر را دارد؛ TenantId = 265 مقصدش Shard C است.',
+      en: 'Writes follow the same path; TenantId = 265 goes to Shard C.'
+    },
+    {
+      query: '<span class="kw">SELECT</span> <span class="st">count</span>(*) <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> Status = <span class="st">\'Paid\'</span>;',
+      targets: ['A', 'B', 'C'], scatter: true,
+      fa: 'Status کلید شارد نیست؛ روتر مجبور است از همه شاردها بپرسد.',
+      en: 'Status is not the shard key; the router must ask every shard.'
+    }
+  ];
+
+  function clearShards() {
+    shards.forEach(s => s.classList.remove('selected', 'scatter'));
+  }
+  function setTargets(targets, scatter) {
+    shards.forEach(s => {
+      const hit = targets.includes(s.dataset.sh);
+      s.classList.toggle(scatter ? 'scatter' : 'selected', hit);
+    });
+  }
+
+  async function cycle() {
+    let idx = 0;
+    while (true) {
+      if (document.hidden) { await wait(900); continue; }
+      const step = steps[idx % steps.length];
+
+      // Reset
+      clearShards();
+      banner.classList.remove('show');
+      client.classList.remove('ping');
+      router.classList.remove('thinking');
+      pkt1.classList.remove('go');
+      pkt2.classList.remove('go');
+
+      // Show query
+      queryEl.innerHTML = step.query;
+      setCap(cap, 'در حال مسیریابی…', 'Routing…');
+      await wait(1200);
+
+      // Client ping
+      client.classList.add('ping');
+      await wait(300);
+
+      // Router thinking
+      router.classList.add('thinking');
+      await wait(500);
+
+      // Packet 1: client → router
+      pkt1.classList.add('go');
+      await wait(550);
+      pkt1.classList.remove('go');
+
+      // Router done thinking
+      router.classList.remove('thinking');
+
+      // Packet 2: router → shards
+      pkt2.classList.add('go');
+      await wait(550);
+      pkt2.classList.remove('go');
+
+      // Highlight target shards
+      client.classList.remove('ping');
+      setTargets(step.targets, step.scatter);
+      setCap(cap, step.fa, step.en);
+
+      // Show banner
+      banner.classList.add('show');
+
+      await wait(3200);
+      idx++;
+    }
+  }
+  cycle();
+})();
     /* ═══════════ REVEAL ON SCROLL (staggered) ═══════════ */
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
