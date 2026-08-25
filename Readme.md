@@ -11,6 +11,7 @@
 | 01 | [Database Indexes](https://alireza-haeri.github.io/BackendDeepDives/DatabaseIndexes.html) | from Hash to B‑Tree and LSM, Clustered vs Non‑Clustered, composite indexes with SQL Server examples. |
 | 02 | [Data Partitioning](https://alireza-haeri.github.io/BackendDeepDives/DataPartitioning.html) | RANGE, LIST, HASH, KEY, Sliding Window, Partitioning vs Sharding, with SQL Server & MySQL examples. |
 | 03 | [Data Sharding](https://alireza-haeri.github.io/BackendDeepDives/DataSharding.html) | Shard key selection, routing (targeted vs scatter/gather), cross-shard transactions, rebalancing, and .NET implementation. |
+| 04 | [Batch Processing](https://alireza-haeri.github.io/BackendDeepDives/BatchProcessing.html) | Bulk offline jobs vs online request/response, column storage for analytics, Unix pipelines to MapReduce, warehouses/lakes, and ETL vs ELT. |
 
 ## Author
 

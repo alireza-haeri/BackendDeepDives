@@ -2112,6 +2112,81 @@ SHARDING ROUTING ANIMATION (DataSharding)
     100% { top: calc(100% - 7px); opacity: 0; }
   }
 }
+
+    /* ══════════════════════════════════════════
+BATCH PIPELINE ANIMATION (BatchProcessing)
+══════════════════════════════════════════ */
+.bp-stage {
+  direction: ltr;
+  padding: 6px 16px 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.bp-query {
+  color: var(--term-mut);
+  margin-bottom: 12px;
+  min-height: 20px;
+  text-align: left;
+  font-size: 11.5px;
+}
+.bp-query .kw { color: #7FC79F; font-weight: 600; }
+.bp-query .st { color: #E5B45A; }
+.bp-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.bp-col {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 6px;
+  border: 1px solid #35483b;
+  border-radius: 8px;
+  background: #202a23;
+  text-align: center;
+  color: #8ca08e;
+  transition: border-color .3s, box-shadow .3s, transform .3s;
+}
+.bp-col strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10px;
+  color: #cfe0cf;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.bp-col.hot {
+  border-color: #e5b45a;
+  box-shadow: 0 0 12px 2px rgba(229,180,90,.28);
+  transform: translateY(-2px);
+}
+.bp-dots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  justify-items: center;
+}
+.bp-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #455447;
+  transition: background .25s, opacity .25s, transform .25s;
+}
+.bp-dots i.on { background: #5cc08f; }
+.bp-dots i.gone { opacity: .2; transform: scale(.7); }
+.bp-arrow {
+  display: flex;
+  align-items: center;
+  color: #5C6B5E;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+@media(max-width:600px) {
+  .bp-flow { flex-wrap: wrap; }
+  .bp-arrow { display: none; }
+  .bp-col { flex: 1 1 40%; }
+}
   </style>
 </head>
 
@@ -2476,6 +2551,52 @@ SHARDING ROUTING ANIMATION (DataSharding)
   </div>
 </div>
 
+
+        <!-- ★ TOPIC 04 — Batch Processing -->
+        <div class="feat-card rv" style="--tc:var(--amb)">
+          <div class="feat-top">
+            <div class="feat-info">
+              <div class="feat-head">
+                <span class="pnum">TOPIC-04</span>
+                <h3>Batch Processing</h3>
+                <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+              </div>
+              <p class="feat-desc">
+                <span class="fa">داده را <b>یک‌جا، به‌صورت یک شغل</b> پردازش کنید — نه رکورد به رکورد. آنلاین در برابر آفلاین، ذخیرهٔ ستون‌محور، خط لولهٔ یونیکس تا MapReduce، انبار و دریاچه، و ETL در برابر ELT.</span>
+                <span class="en">Process data <b>in bulk as one job</b> — not record by record. Online vs offline, column storage for analytics, Unix pipelines to MapReduce, warehouses and lakes, and ETL vs ELT.</span>
+              </p>
+              <div class="ftags"><span>ETL</span><span>MapReduce</span><span>Column Store</span><span>Data Lake</span><span>ELT</span></div>
+              <div class="feat-links">
+                <a class="btn primary sm" href="./BatchProcessing.html">
+                  <span class="fa">خواندن</span><span class="en">Read</span>
+                  <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+                </a>
+              </div>
+            </div>
+            <div class="feat-stage" aria-hidden="true">
+              <div class="qwin-bar"><i></i><i></i><i></i><span>batch-job.nightly</span></div>
+              <div class="st-cap" id="bpCap"><span class="fa"></span><span class="en"></span></div>
+              <div class="bp-stage" id="bpStage">
+                <div class="bp-query" id="bpQuery"><span class="kw">JOB</span> nightly_sales  <span class="st">--chunk 4</span></div>
+                <div class="bp-flow">
+                  <div class="bp-col" id="bpSrc"><strong>Source</strong><div class="bp-dots" id="bpSrcDots"></div></div>
+                  <div class="bp-arrow">→</div>
+                  <div class="bp-col" id="bpE"><strong>Extract</strong><div class="bp-dots" id="bpEDots"></div></div>
+                  <div class="bp-arrow">→</div>
+                  <div class="bp-col" id="bpT"><strong>Transform</strong><div class="bp-dots" id="bpTDots"></div></div>
+                  <div class="bp-arrow">→</div>
+                  <div class="bp-col" id="bpL"><strong>Load</strong><div class="bp-dots" id="bpLDots"></div></div>
+                </div>
+              </div>
+              <div class="mini-banner" id="bpBanner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                <span class="fa">دسته در برابر جریان: <b>۳ تکهٔ ۴تایی</b> به‌جای <b>۱۲ سفر تک‌رکوردی</b></span>
+                <span class="en">batch vs stream: <b>3 chunks of 4</b> instead of <b>12 single-row trips</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   </main>
@@ -2536,7 +2657,7 @@ SHARDING ROUTING ANIMATION (DataSharding)
     const script = [
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'ls topics/\n', c: '', type: true },
-      { t: 'DatabaseIndexes.html  DataPartitioning.html  DataSharding.html\n', c: 'hl', type: true, delay: 60 },
+      { t: 'DatabaseIndexes.html  DataPartitioning.html  DataSharding.html  BatchProcessing.html\n', c: 'hl', type: true, delay: 60 },
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'cat README.md\n', c: '', type: true },
       { t: '> Deep dives into backend fundamentals for .NET devs.\n', c: 'cm', type: true },
@@ -2768,6 +2889,69 @@ SHARDING ROUTING ANIMATION (DataSharding)
   }
   cycle();
 })();
+
+    /* ═══════════ ANIMATION 4: BATCH PIPELINE (BatchProcessing) ═══════════ */
+(function () {
+  const stage = document.getElementById('bpStage');
+  if (!stage) return;
+  const cap = document.getElementById('bpCap');
+  const banner = document.getElementById('bpBanner');
+  const query = document.getElementById('bpQuery');
+  const srcBox = document.getElementById('bpSrcDots');
+  const eBox = document.getElementById('bpEDots');
+  const tBox = document.getElementById('bpTDots');
+  const lBox = document.getElementById('bpLDots');
+  const cols = [document.getElementById('bpE'), document.getElementById('bpT'), document.getElementById('bpL')];
+  function fill(box, n) {
+    box.innerHTML = '';
+    for (let i = 0; i < n; i++) box.appendChild(document.createElement('i'));
+  }
+  fill(srcBox, 12); fill(eBox, 4); fill(tBox, 4); fill(lBox, 4);
+  const srcDots = [...srcBox.querySelectorAll('i')];
+  function clearMid() {
+    [eBox, tBox, lBox].forEach(b => [...b.querySelectorAll('i')].forEach(i => i.classList.remove('on')));
+    cols.forEach(c => c.classList.remove('hot'));
+  }
+  async function cycle() {
+    while (true) {
+      if (document.hidden) { await wait(900); continue; }
+      srcDots.forEach(d => d.classList.remove('gone'));
+      clearMid();
+      banner.classList.remove('show');
+      query.innerHTML = '<span class="kw">JOB</span> nightly_sales  <span class="st">--chunk 4</span>';
+      setCap(cap, 'شغل شبانه شروع شد — ۱۲ سفارش در مبدأ.', 'Nightly job started — 12 orders at the source.');
+      await wait(1400);
+      for (let b = 0; b < 3; b++) {
+        clearMid();
+        cols[0].classList.add('hot');
+        [...eBox.querySelectorAll('i')].forEach(i => i.classList.add('on'));
+        for (let i = b * 4; i < b * 4 + 4; i++) srcDots[i].classList.add('gone');
+        query.innerHTML = '<span class="kw">EXTRACT</span> batch ' + (b + 1) + '/3';
+        setCap(cap, 'استخراج دستهٔ ' + (b + 1) + ' — چهار رکورد با هم.', 'Extract chunk ' + (b + 1) + ' — four records together.');
+        await wait(650);
+        cols[0].classList.remove('hot'); cols[1].classList.add('hot');
+        [...eBox.querySelectorAll('i')].forEach(i => i.classList.remove('on'));
+        [...tBox.querySelectorAll('i')].forEach(i => i.classList.add('on'));
+        query.innerHTML = '<span class="kw">TRANSFORM</span> batch ' + (b + 1) + '/3';
+        setCap(cap, 'تبدیل همان دسته — نه رکورد به رکورد.', 'Transform the same chunk — not one record at a time.');
+        await wait(650);
+        cols[1].classList.remove('hot'); cols[2].classList.add('hot');
+        [...tBox.querySelectorAll('i')].forEach(i => i.classList.remove('on'));
+        [...lBox.querySelectorAll('i')].forEach(i => i.classList.add('on'));
+        query.innerHTML = '<span class="kw">LOAD</span> batch ' + (b + 1) + '/3';
+        setCap(cap, 'بارگذاری دسته در انبار.', 'Load the chunk into the warehouse.');
+        await wait(650);
+      }
+      clearMid();
+      query.innerHTML = '<span class="kw">DONE</span>  12 rows  ·  3 batches';
+      setCap(cap, 'سه دسته تمام شد — یک شغل، یک خروجی.', 'Three chunks done — one job, one output.');
+      banner.classList.add('show');
+      await wait(3200);
+    }
+  }
+  cycle();
+})();
+
     /* ═══════════ REVEAL ON SCROLL (staggered) ═══════════ */
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
