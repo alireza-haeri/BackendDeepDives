@@ -2114,11 +2114,11 @@ SHARDING ROUTING ANIMATION (DataSharding)
 }
 
     /* ══════════════════════════════════════════
-BATCH PIPELINE ANIMATION (BatchProcessing)
+BATCH FLOW ANIMATION (BatchProcessing) — live packets
 ══════════════════════════════════════════ */
 .bp-stage {
   direction: ltr;
-  padding: 6px 16px 18px;
+  padding: 6px 16px 8px;
   font-family: var(--mono);
   font-size: 11px;
 }
@@ -2131,61 +2131,160 @@ BATCH PIPELINE ANIMATION (BatchProcessing)
 }
 .bp-query .kw { color: #7FC79F; font-weight: 600; }
 .bp-query .st { color: #E5B45A; }
+.bp-query .cm { color: #6E7F70; }
+.bp-query.swap { animation: bpQuerySwap .45s ease; }
+@keyframes bpQuerySwap { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 .bp-flow {
+  position: relative;
+  --bpY: 58px;
+  padding: 24px 14px 4px;
+}
+.bp-flow-line {
+  position: absolute;
+  z-index: 1;
+  left: 12%;
+  right: 12%;
+  top: calc(var(--bpY) - 1px);
+  height: 2px;
+  border-radius: 2px;
+  background: #26332b;
+  overflow: hidden;
+}
+.bp-flow-line i {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, #4d705b 0 9px, transparent 9px 18px);
+  animation: bpDash 1.15s linear infinite;
+  opacity: .8;
+}
+@keyframes bpDash { to { transform: translateX(18px); } }
+.bp-stations {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+.bp-station {
   display: flex;
-  align-items: stretch;
-  gap: 8px;
-}
-.bp-col {
-  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
   min-width: 0;
-  padding: 8px 6px;
-  border: 1px solid #35483b;
-  border-radius: 8px;
-  background: #202a23;
-  text-align: center;
-  color: #8ca08e;
-  transition: border-color .3s, box-shadow .3s, transform .3s;
 }
-.bp-col strong {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 10px;
+.bp-bubble {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid #35483b;
+  border-radius: 12px;
+  background: #202a23;
+  color: #8ca08e;
+  transition: border-color .25s, box-shadow .25s, color .25s, transform .25s;
+}
+.bp-bubble svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bp-station.active .bp-bubble {
+  border-color: #e5b45a;
+  color: #ffe3ae;
+  box-shadow: 0 0 18px 3px rgba(229,180,90,.3);
+  transform: translateY(-3px);
+}
+.bp-station.glow .bp-bubble {
+  border-color: #5cc08f;
+  color: #b9f0d2;
+  box-shadow: 0 0 16px 2px rgba(92,192,143,.35);
+}
+.bp-name {
   color: #cfe0cf;
-  letter-spacing: .04em;
+  font: 700 9px var(--mono);
+  letter-spacing: .06em;
   text-transform: uppercase;
 }
-.bp-col.hot {
-  border-color: #e5b45a;
-  box-shadow: 0 0 12px 2px rgba(229,180,90,.28);
-  transform: translateY(-2px);
+.bp-sub {
+  margin-top: -4px;
+  color: #6e7f70;
+  font: 8.5px var(--mono);
 }
-.bp-dots {
+.bp-gauge {
+  width: 40px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #26332b;
+}
+.bp-gauge i {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 3px;
+  background: #5cc08f;
+  transition: width .35s ease;
+}
+.bp-packets {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.bp-packet {
+  position: absolute;
+  top: var(--bpY);
+  left: 12%;
+  width: 28px;
+  height: 20px;
+  margin: -10px 0 0 -14px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  justify-items: center;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid rgba(229,180,90,.55);
+  background: rgba(229,180,90,.16);
+  color: #ffe3ae;
+  font: 700 9px var(--mono);
+  box-shadow: 0 0 12px rgba(229,180,90,.28);
+  will-change: left, transform;
 }
-.bp-dots i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #455447;
-  transition: background .25s, opacity .25s, transform .25s;
+.bp-packet.clean {
+  border-color: rgba(92,192,143,.6);
+  background: rgba(92,192,143,.16);
+  color: #c9f2dc;
+  box-shadow: 0 0 12px rgba(92,192,143,.3);
 }
-.bp-dots i.on { background: #5cc08f; }
-.bp-dots i.gone { opacity: .2; transform: scale(.7); }
-.bp-arrow {
-  display: flex;
-  align-items: center;
-  color: #5C6B5E;
-  font-size: 14px;
-  flex-shrink: 0;
+.bp-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 12px 12px 2px;
 }
+.bp-stat {
+  padding: 6px 7px;
+  border: 1px solid #2f3d33;
+  border-radius: 7px;
+  background: #1a231d;
+  color: #748c79;
+  font: 600 8px var(--mono);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.bp-stat b {
+  display: block;
+  margin-top: 2px;
+  color: #d5e0d2;
+  font-size: 12px;
+  letter-spacing: .02em;
+}
+.bp-stat b.ok { color: #5cc08f; }
 @media(max-width:600px) {
-  .bp-flow { flex-wrap: wrap; }
-  .bp-arrow { display: none; }
-  .bp-col { flex: 1 1 40%; }
+  .bp-bubble { width: 38px; height: 38px; }
+  .bp-sub { display: none; }
 }
   </style>
 </head>
@@ -2577,15 +2676,42 @@ BATCH PIPELINE ANIMATION (BatchProcessing)
               <div class="qwin-bar"><i></i><i></i><i></i><span>batch-job.nightly</span></div>
               <div class="st-cap" id="bpCap"><span class="fa"></span><span class="en"></span></div>
               <div class="bp-stage" id="bpStage">
-                <div class="bp-query" id="bpQuery"><span class="kw">JOB</span> nightly_sales  <span class="st">--chunk 4</span></div>
-                <div class="bp-flow">
-                  <div class="bp-col" id="bpSrc"><strong>Source</strong><div class="bp-dots" id="bpSrcDots"></div></div>
-                  <div class="bp-arrow">→</div>
-                  <div class="bp-col" id="bpE"><strong>Extract</strong><div class="bp-dots" id="bpEDots"></div></div>
-                  <div class="bp-arrow">→</div>
-                  <div class="bp-col" id="bpT"><strong>Transform</strong><div class="bp-dots" id="bpTDots"></div></div>
-                  <div class="bp-arrow">→</div>
-                  <div class="bp-col" id="bpL"><strong>Load</strong><div class="bp-dots" id="bpLDots"></div></div>
+                <div class="bp-query" id="bpQuery"><span class="cm"># one job, many records</span></div>
+                <div class="bp-flow" aria-hidden="true">
+                  <div class="bp-flow-line"><i></i></div>
+                  <div class="bp-stations">
+                    <div class="bp-station" id="bpSrc">
+                      <div class="bp-bubble"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3" /><path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" /><path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" /></svg></div>
+                      <div class="bp-name">OLTP</div>
+                      <div class="bp-sub">orders · 12</div>
+                    </div>
+                    <div class="bp-station" id="bpE">
+                      <div class="bp-bubble"><svg viewBox="0 0 24 24"><path d="M4 7h11M4 12h8M4 17h11" /><path d="m18 5 3 2-3 2M18 15l3 2-3 2" /></svg></div>
+                      <div class="bp-name">Extract</div>
+                      <div class="bp-sub">read chunks</div>
+                    </div>
+                    <div class="bp-station" id="bpT">
+                      <div class="bp-bubble"><svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M5.6 18.4l1.5-1.5M16.9 7.1l1.5-1.5" /><circle cx="12" cy="12" r="3.5" /></svg></div>
+                      <div class="bp-name">Transform</div>
+                      <div class="bp-sub">clean · filter</div>
+                    </div>
+                    <div class="bp-station" id="bpL">
+                      <div class="bp-bubble"><svg viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4" /><path d="M5 19h14" /></svg></div>
+                      <div class="bp-name">Load</div>
+                      <div class="bp-sub">bulk write</div>
+                    </div>
+                    <div class="bp-station" id="bpDst">
+                      <div class="bp-bubble"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" /></svg></div>
+                      <div class="bp-name">Warehouse</div>
+                      <div class="bp-gauge"><i id="bpGauge"></i></div>
+                    </div>
+                  </div>
+                  <div class="bp-packets" id="bpPackets"></div>
+                </div>
+                <div class="bp-stats" aria-hidden="true">
+                  <div class="bp-stat"><span>rows</span><b id="bpRows">00 / 12</b></div>
+                  <div class="bp-stat"><span>batch</span><b id="bpBatch">1 / 3</b></div>
+                  <div class="bp-stat"><span>status</span><b id="bpStatus">IDLE</b></div>
                 </div>
               </div>
               <div class="mini-banner" id="bpBanner">
@@ -2890,66 +3016,123 @@ BATCH PIPELINE ANIMATION (BatchProcessing)
   cycle();
 })();
 
-    /* ═══════════ ANIMATION 4: BATCH PIPELINE (BatchProcessing) ═══════════ */
+    /* ═══════════ ANIMATION 4: BATCH FLOW (BatchProcessing) — live packets ═══════════ */
 (function () {
   const stage = document.getElementById('bpStage');
   if (!stage) return;
   const cap = document.getElementById('bpCap');
   const banner = document.getElementById('bpBanner');
   const query = document.getElementById('bpQuery');
-  const srcBox = document.getElementById('bpSrcDots');
-  const eBox = document.getElementById('bpEDots');
-  const tBox = document.getElementById('bpTDots');
-  const lBox = document.getElementById('bpLDots');
-  const cols = [document.getElementById('bpE'), document.getElementById('bpT'), document.getElementById('bpL')];
-  function fill(box, n) {
-    box.innerHTML = '';
-    for (let i = 0; i < n; i++) box.appendChild(document.createElement('i'));
+  const packetLayer = document.getElementById('bpPackets');
+  const stations = {
+    e: document.getElementById('bpE'),
+    t: document.getElementById('bpT'),
+    l: document.getElementById('bpL'),
+    dst: document.getElementById('bpDst')
+  };
+  const gauge = document.getElementById('bpGauge');
+  const rowsEl = document.getElementById('bpRows');
+  const batchEl = document.getElementById('bpBatch');
+  const statusEl = document.getElementById('bpStatus');
+  const DUR = 4600;
+  const OFF = { e: .24, t: .50, l: .76, dst: .96 };
+  const pad = n => String(n).padStart(2, '0');
+  let rowsDone = 0;
+
+  function setQuery(html) {
+    query.innerHTML = html;
+    query.classList.remove('swap');
+    void query.offsetWidth;
+    query.classList.add('swap');
   }
-  fill(srcBox, 12); fill(eBox, 4); fill(tBox, 4); fill(lBox, 4);
-  const srcDots = [...srcBox.querySelectorAll('i')];
-  function clearMid() {
-    [eBox, tBox, lBox].forEach(b => [...b.querySelectorAll('i')].forEach(i => i.classList.remove('on')));
-    cols.forEach(c => c.classList.remove('hot'));
+  function flash(el) {
+    if (!el) return;
+    el.classList.add('active');
+    setTimeout(() => el.classList.remove('active'), 420);
+  }
+  function flashDst() {
+    const d = stations.dst;
+    if (!d) return;
+    d.classList.add('glow');
+    setTimeout(() => d.classList.remove('glow'), 420);
+  }
+  const EASE = 'cubic-bezier(.45,.05,.35,1)';
+  const KEYFRAMES = [
+    { left: '12%', transform: 'translateY(0)', offset: 0 },
+    { left: '12%', transform: 'translateY(0)', offset: .07 },
+    { left: '20%', transform: 'translateY(-10px)', offset: .155, easing: EASE },
+    { left: '28%', transform: 'translateY(0)', offset: .24, easing: EASE },
+    { left: '28%', transform: 'translateY(0)', offset: .33 },
+    { left: '38%', transform: 'translateY(-10px)', offset: .415, easing: EASE },
+    { left: '46%', transform: 'translateY(0)', offset: .50, easing: EASE },
+    { left: '46%', transform: 'translateY(0)', offset: .59 },
+    { left: '56%', transform: 'translateY(-10px)', offset: .675, easing: EASE },
+    { left: '64%', transform: 'translateY(0)', offset: .76, easing: EASE },
+    { left: '64%', transform: 'translateY(0)', offset: .83 },
+    { left: '74%', transform: 'translateY(-10px)', offset: .895, easing: EASE },
+    { left: '88%', transform: 'translateY(0) scale(1)', offset: .96, easing: EASE },
+    { left: '88%', transform: 'translateY(0) scale(.3)', opacity: 0, offset: 1 }
+  ];
+  function spawnPacket(idx, delay) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const p = document.createElement('div');
+        p.className = 'bp-packet';
+        p.textContent = pad(idx + 1);
+        packetLayer.appendChild(p);
+        const anim = p.animate(KEYFRAMES, { duration: DUR, fill: 'forwards' });
+        setTimeout(() => p.classList.add('clean'), DUR * OFF.t);
+        setTimeout(() => flash(stations.e), DUR * OFF.e);
+        setTimeout(() => flash(stations.t), DUR * OFF.t);
+        setTimeout(() => flash(stations.l), DUR * OFF.l);
+        anim.onfinish = () => {
+          flashDst();
+          rowsDone++;
+          rowsEl.textContent = pad(rowsDone) + ' / 12';
+          gauge.style.width = (rowsDone / 12 * 100) + '%';
+          p.remove();
+          resolve();
+        };
+      }, delay);
+    });
   }
   async function cycle() {
     while (true) {
-      if (document.hidden) { await wait(900); continue; }
-      srcDots.forEach(d => d.classList.remove('gone'));
-      clearMid();
-      banner.classList.remove('show');
-      query.innerHTML = '<span class="kw">JOB</span> nightly_sales  <span class="st">--chunk 4</span>';
-      setCap(cap, 'شغل شبانه شروع شد — ۱۲ سفارش در مبدأ.', 'Nightly job started — 12 orders at the source.');
-      await wait(1400);
+      if (document.hidden) { await wait(800); continue; }
+      rowsDone = 0;
+      rowsEl.textContent = '00 / 12';
+      gauge.style.width = '0%';
+      packetLayer.innerHTML = '';
+      statusEl.textContent = 'RUNNING';
+      statusEl.classList.remove('ok');
+      setQuery('<span class="cm"># nightly job starts — 3 chunks of 4</span>');
+      setCap(cap, 'شغل شروع شد. دستهٔ اول در حال خواندن از دیتابیس عملیاتی است.', 'The job started. The first chunk is being read from the operational database.');
+      await wait(700);
+      const promises = [];
       for (let b = 0; b < 3; b++) {
-        clearMid();
-        cols[0].classList.add('hot');
-        [...eBox.querySelectorAll('i')].forEach(i => i.classList.add('on'));
-        for (let i = b * 4; i < b * 4 + 4; i++) srcDots[i].classList.add('gone');
-        query.innerHTML = '<span class="kw">EXTRACT</span> batch ' + (b + 1) + '/3';
-        setCap(cap, 'استخراج دستهٔ ' + (b + 1) + ' — چهار رکورد با هم.', 'Extract chunk ' + (b + 1) + ' — four records together.');
-        await wait(650);
-        cols[0].classList.remove('hot'); cols[1].classList.add('hot');
-        [...eBox.querySelectorAll('i')].forEach(i => i.classList.remove('on'));
-        [...tBox.querySelectorAll('i')].forEach(i => i.classList.add('on'));
-        query.innerHTML = '<span class="kw">TRANSFORM</span> batch ' + (b + 1) + '/3';
-        setCap(cap, 'تبدیل همان دسته — نه رکورد به رکورد.', 'Transform the same chunk — not one record at a time.');
-        await wait(650);
-        cols[1].classList.remove('hot'); cols[2].classList.add('hot');
-        [...tBox.querySelectorAll('i')].forEach(i => i.classList.remove('on'));
-        [...lBox.querySelectorAll('i')].forEach(i => i.classList.add('on'));
-        query.innerHTML = '<span class="kw">LOAD</span> batch ' + (b + 1) + '/3';
-        setCap(cap, 'بارگذاری دسته در انبار.', 'Load the chunk into the warehouse.');
-        await wait(650);
+        batchEl.textContent = (b + 1) + ' / 3';
+        setQuery('<span class="kw">EXTRACT</span> batch ' + (b + 1) + '/3  —  4 rows');
+        setCap(cap, 'دستهٔ ' + (b + 1) + ' از ۳: استخراج، تبدیل و بارگذاری — بدون توقف برای کاربر.', 'Chunk ' + (b + 1) + ' of 3: extract, transform, load — no user is waiting.');
+        for (let i = 0; i < 4; i++) promises.push(spawnPacket(b * 4 + i, i * 140));
+        if (b < 2) await wait(1600);
       }
-      clearMid();
-      query.innerHTML = '<span class="kw">DONE</span>  12 rows  ·  3 batches';
-      setCap(cap, 'سه دسته تمام شد — یک شغل، یک خروجی.', 'Three chunks done — one job, one output.');
+      await Promise.all(promises);
+      statusEl.textContent = 'COMPLETE ✓';
+      statusEl.classList.add('ok');
+      setQuery('<span class="kw">JOB COMPLETE</span>  —  12 rows loaded');
+      setCap(cap, 'سه دسته تمام شد — ۱۲ رکورد، یک شغل، یک خروجی. همین ریتمِ هر شب است.', 'Three chunks done — 12 records, one job, one output. That is the nightly rhythm.');
       banner.classList.add('show');
-      await wait(3200);
+      await wait(3000);
+      banner.classList.remove('show');
     }
   }
-  cycle();
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    rowsEl.textContent = '12 / 12';
+    gauge.style.width = '100%';
+    statusEl.textContent = 'COMPLETE ✓';
+    statusEl.classList.add('ok');
+    setQuery('<span class="kw">JOB COMPLETE</span>  —  12 rows loaded');
+  } else cycle();
 })();
 
     /* ═══════════ REVEAL ON SCROLL (staggered) ═══════════ */
