@@ -1860,7 +1860,7 @@
                     <span class="en">Batch <span class="underword">Processing</span></span>
                 </h1>
                <p class="hero-lead">
-    <span class="fa">داده را یک‌جا پردازش کنید — نه رکورد به رکورد و آنلاین. API شما همیشه پاسخ‌گوست، اما گزارش شبانه در پس‌زمینه می‌چرخد. این دو دنیای کاملاً جدا هستند.</span>
+    <span class="fa">داده را یک‌جا و در قالب یک کار پردازش کنید — نه رکورد به رکورد و آنلاین. API شما همیشه پاسخ‌گوست، اما گزارش شبانه در پس‌زمینه می‌چرخد. این دو دنیای کاملاً جدا هستند.</span>
     <span class="en">Process data in bulk as one job — not record by record in real time. Your API is online. The nightly report is offline. These are two different worlds.</span>
 </p>
 <div class="hero-note">
@@ -1943,7 +1943,7 @@
                     <div class="fstat"><span>status</span><b id="statStatus">IDLE</b></div>
                 </div>
                 <div class="architecture-caption" id="heroCaption">
-                    <span class="fa">شغل شبانه ۱۲ سفارش را در ۳ دستهٔ ۴تایی می‌خواند، تمیز می‌کند و در انبار
+                    <span class="fa">کار شبانه ۱۲ سفارش را در ۳ دستهٔ ۴تایی می‌خواند، پاک‌سازی می‌کند و در انبار
                         می‌نویسد.</span>
                     <span class="en">A nightly job reads 12 orders in 3 chunks of 4, cleans them, and writes them to the
                         warehouse.</span>
@@ -1966,11 +1966,11 @@
                         class="en">FDE · Ch. 3 — Data Architecture</span></a>
             </div>
         <p class="lead">
-    <span class="fa"><b>پردازش دسته‌ای</b> یعنی داده را به‌صورت انبوه و یکجا پردازش کنید؛ نه رکورد به رکورد و به‌صورت لحظه‌ای. کتاب <em>Designing Data-Intensive Applications</em> این رویکرد را در مقابل سیستم‌های <b>آنلاین</b> قرار می‌دهد: در سیستم آنلاین، درخواست می‌رسد و پاسخ داده می‌شود. در پردازش آفلاین، یک کار تمام ورودی را می‌خواند و خروجی را می‌نویسد.</span>
+    <span class="fa"><b>پردازش دسته‌ای</b> یعنی داده را به‌صورت انبوه و یک‌جا پردازش کنید؛ نه رکورد به رکورد و لحظه‌ای. کتاب <em>Designing Data-Intensive Applications</em> این رویکرد را در برابر سیستم‌های <b>آنلاین</b> قرار می‌دهد: در سیستم آنلاین، درخواستی می‌رسد و بلافاصله پاسخ می‌گیرد؛ در پردازش آفلاین (دسته‌ای)، یک کار، تمام ورودی را می‌خواند و در پایان خروجی را می‌نویسد.</span>
     <span class="en"><b>Batch processing</b> means you process data in bulk as one job. You do not handle each record in real time. <em>Designing Data-Intensive Applications</em> contrasts this with <b>online</b> systems: online is request and response. Offline is a job that reads all input and writes an output.</span>
 </p>
 <p class="sublead">
-    <span class="fa">در معماری داده، این کار یکی از قطعات یک پازل بزرگ‌تر است. معماری خوب، اجزای پرکاربرد را هوشمندانه برمی‌گزیند، برای شکست برنامه‌ریزی می‌کند و سیستم‌ها را مستقل از هم نگه می‌دارد. کار دسته‌ای معمولاً همان بخشی است که داده‌های عملیاتی را به داده‌های تحلیلی تبدیل می‌کند، بدون اینکه API فروش را زیر بار ببرد.</span>
+    <span class="fa">در معماری داده، این کار یکی از قطعه‌های یک پازل بزرگ‌تر است: معماریِ خوب اجزای پرکاربرد را هوشمندانه برمی‌گزیند، برای خرابی برنامه‌ریزی می‌کند و سیستم‌ها را از هم مستقل نگه می‌دارد. کار دسته‌ای معمولاً همان قطعه‌ای است که دادهٔ عملیاتی را به دادهٔ تحلیلی تبدیل می‌کند؛ بی‌آنکه بار اضافه‌ای روی API فروش بگذارد.</span>
     <span class="en">In a data architecture, this job is one piece of a larger picture. Good architecture picks common parts wisely, plans for failure, and keeps systems loosely coupled. A batch job is often the piece that turns operational data into analytical data — without loading down the sales API.</span>
 </p>
           <div class="concept-diagram" aria-label="Online versus offline">
@@ -1981,7 +1981,7 @@
     <div class="concept-arrow" aria-hidden="true">≠</div>
     <div class="concept-side"><span class="concept-tag">OFFLINE / BATCH</span>
         <h3><span class="fa">یک کار، یک خروجی</span><span class="en">One job, one output</span></h3>
-        <p><span class="fa">ساعت ۲ شب، همهٔ سفارش‌های دیروز خوانده می‌شوند و یک گزارش روزانه ساخته می‌شود.</span><span class="en">At 2 a.m., all of yesterday's orders are read. One daily report is built.</span></p>
+        <p><span class="fa">ساعت ۲ بامداد، همهٔ سفارش‌های دیروز خوانده می‌شوند و یک گزارش روزانه ساخته می‌شود.</span><span class="en">At 2 a.m., all of yesterday's orders are read. One daily report is built.</span></p>
     </div>
 </div>
 <div class="grid-3">
@@ -2002,7 +2002,7 @@
     <p><span class="fa">فروشگاه شما روزی ۴۰۰٬۰۰۰ سفارش ثبت می‌کند. API هر سفارش را در ۱۰ میلی‌ثانیه می‌نویسد — این همان پردازش آنلاین است. گزارش شبانه، همان ۴۰۰٬۰۰۰ سطر را یک‌جا جمع می‌زند و در ۸ دقیقه تمام می‌شود. اگر همان جمع را داخل هر درخواست API محاسبه کنید، تسویهٔ سبد خرید با کندی مواجه می‌شود.</span><span class="en">Your shop takes 400,000 orders a day. The API writes each order in 10 ms — that is online. The nightly report sums those 400,000 rows in one job and finishes in 8 minutes. If you compute that sum inside every API call, checkout gets slow.</span></p>
 </div>
 <div class="net-note"><span class="badge">.NET</span>
-    <p><span class="fa">برای یک توسعه‌دهندهٔ بک‌اند دات‌نت این یعنی: <code>BackgroundService</code>، Hangfire، یا یک Azure Function زمان‌بندی‌شده. کنترلر MVC برای این کار مناسب نیست. درخواست HTTP باید کوتاه بماند. کار دسته‌ای را جداگانه اجرا کنید و نتیجه را در جدول گزارش یا فایل بنویسید.</span><span class="en">For a .NET backend dev this means: a <code>BackgroundService</code>, Hangfire, or a scheduled Azure Function. An MVC controller is the wrong place. Keep the HTTP request short. Run the batch job aside and write the result to a report table or a file.</span></p>
+    <p><span class="fa">برای یک توسعه‌دهندهٔ بک‌اند دات‌نت این یعنی: <code>BackgroundService</code>، Hangfire، یا یک Azure Function زمان‌بندی‌شده. کنترلر MVC برای این کار مناسب نیست. درخواست HTTP باید کوتاه بماند. کار دسته‌ای را جداگانه اجرا کنید و نتیجه را در جدول گزارش یا فایل بنویسید.</span><span class="en">For a .NET backend dev this means: a <code>BackgroundService</code>, Hangfire, or a scheduled Azure Function. An MVC controller is the wrong place. Keep the HTTP request short. Run the batch job separately and write the result to a report table or a file.</span></p>
 </div>
         </section>
        <section class="section reveal" id="s2">
@@ -2014,17 +2014,17 @@
         <a href="./DatabaseIndexes.html"><span>↗</span><span class="fa">همین مجموعه · ایندکس‌ها</span><span class="en">This series · Indexes</span></a>
     </div>
 <p class="lead">
-    <span class="fa">نیمهٔ دوم فصل ۴ کتاب DDIA به یک نکتهٔ مهم اشاره می‌کند: کارهای تحلیلی به شکل دیگری از ذخیره‌سازی روی دیسک نیاز دارند. سیستم‌های آنلاین (OLTP) هر سطر را کامل می‌خوانند؛ مثلاً یک سفارش با همهٔ ستون‌هایش. اما کار تحلیلی معمولاً فقط چند ستون خاص را از میان میلیون‌ها سطر جمع می‌کند. برای چنین کاری، ذخیره‌سازی <b>ستون‌محور</b> به‌مراتب به‌صرفه‌تر است.</span>
+    <span class="fa">نیمهٔ دوم فصل ۴ کتاب DDIA به یک نکتهٔ مهم اشاره می‌کند: کارهای تحلیلی به چیدمان دیگری برای داده‌ها روی دیسک نیاز دارند. سیستم‌های آنلاین (OLTP) هر سطر را کامل می‌خوانند؛ مثلاً یک سفارش با همهٔ ستون‌هایش. اما کار تحلیلی معمولاً فقط چند ستون خاص را از میان میلیون‌ها سطر جمع می‌کند. برای چنین کاری، ذخیره‌سازی <b>ستون‌محور</b> به‌مراتب به‌صرفه‌تر است.</span>
     <span class="en">The second half of DDIA Chapter 4 says analytical work needs a different layout on disk. An online system (OLTP) wants a whole row: one order, every column. An analytical job usually sums a few columns across millions of rows. For that, <b>column-oriented</b> storage is better.</span>
 </p>
 <p class="sublead">
-    <span class="fa">پیشتر در صفحهٔ <a href="./DatabaseIndexes.html">ایندکس‌ها</a> با درخت B-tree و LSM-tree و ایندکس هش آشنا شدید. اینجا دوباره به آن‌ها نمی‌پردازیم. نکته‌ای که اینجا تازه است، این است: موتوری که برای پیدا کردن سریع یک سفارش عالی کار می‌کند (همان سطر‌محور)، برای محاسبهٔ «جمع فروش کل سال» بسیار گران‌تمام می‌شود.</span>
+    <span class="fa">پیش‌تر، در صفحهٔ <a href="./DatabaseIndexes.html">ایندکس‌ها</a> با B-tree و LSM-tree و ایندکس هش آشنا شده‌اید؛ اینجا دوباره به آن‌ها نمی‌پردازیم. نکتهٔ تازه این است: موتوری که برای یافتن سریع یک سفارش عالی است — همان ذخیره‌سازی سطرمحور — برای محاسبهٔ «جمع فروش کل سال» بسیار پرهزینه می‌شود.</span>
     <span class="en">You already met B-trees, LSM-trees, and hash indexes on the <a href="./DatabaseIndexes.html">Indexes</a> page. We will not teach them again. The new point: the same row store that finds one order fast is expensive for "sum of sales this year."</span>
 </p>
     <div class="grid-2">
         <article class="card">
-            <h3><span class="icon-box blue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" /><path d="M4 10h16M4 14h16" /></svg></span><span class="fa">سطر‌محور — OLTP</span><span class="en">Row-oriented — OLTP</span></h3>
-            <p><span class="fa">هر سطر کنار هم روی دیسک ذخیره می‌شود. خواندن یک سفارش ارزان است. اما خواندن یک ستون از ۱۰ میلیون سطر یعنی باید بیشتر جدول را بخوانید.</span><span class="en">Each row sits together on disk. Reading one order is cheap. Reading one column from 10 million rows means you touch most of the table.</span></p>
+            <h3><span class="icon-box blue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" /><path d="M4 10h16M4 14h16" /></svg></span><span class="fa">سطرمحور — OLTP</span><span class="en">Row-oriented — OLTP</span></h3>
+            <p><span class="fa">سطرهای جدول کنار هم روی دیسک می‌نشینند؛ خواندن یک سفارش کامل ارزان است، اما خواندن یک ستون از ۱۰ میلیون سطر عملاً یعنی عبور از بیشترِ جدول.</span><span class="en">Each row sits together on disk. Reading one order is cheap. Reading one column from 10 million rows means you touch most of the table.</span></p>
         </article>
         <article class="card">
             <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4v16M12 4v16M18 4v16M4 6h16" /></svg></span><span class="fa">ستون‌محور — تحلیل</span><span class="en">Column-oriented — analytics</span></h3>
@@ -2033,7 +2033,7 @@
     </div>
     <div class="demo" id="colDemo">
         <div class="demo-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5" /></svg><span class="fa">کدام خانه‌ها خوانده می‌شوند؟</span><span class="en">Which cells get read?</span></div>
-        <p class="demo-intro"><span class="fa">جدول کوچک زیر ۴ ستون و ۶ سطر دارد. کوئری فقط جمع <code>Amount</code> را می‌خواهد. سطر‌محور تقریباً همهٔ سلول‌ها را می‌خواند، ولی ستون‌محور فقط یک ستون را. یک حالت را انتخاب کنید تا اسکن اجرا شود.</span><span class="en">The tiny table below has 4 columns and 6 rows. The query only wants <code>SUM(Amount)</code>. A row store reads almost everything. A column store reads one column. Pick a layout to run the scan.</span></p>
+        <p class="demo-intro"><span class="fa">جدول کوچکِ پایین ۴ ستون و ۶ سطر دارد و کوئری فقط جمع <code>Amount</code> را می‌خواهد. سطرمحور تقریباً همهٔ سلول‌ها را می‌خواند، اما ستون‌محور فقط یک ستون را. یکی از دو حالت را انتخاب کنید تا اسکن اجرا شود.</span><span class="en">The tiny table below has 4 columns and 6 rows. The query only wants <code>SUM(Amount)</code>. A row store reads almost everything. A column store reads one column. Pick a layout to run the scan.</span></p>
         <div class="scan">
             <div class="scan-bar">
                 <code class="scan-query">SELECT SUM(Amount) FROM orders</code>
@@ -2060,10 +2060,10 @@
         </div>
     </div>
     <div class="callout warning"><strong class="label fa">چرا برای پردازش دسته‌ای مهم است</strong><strong class="label en">Why this matters for batch</strong>
-        <p><span class="fa">کار تحلیلی معمولاً روی انبار داده یا موتور ستونی اجرا می‌شود، نه روی SQL Server عملیاتی شما. فصل ۴ همچنین به کامپایل کوئری، برداری‌سازی، نمای مادی‌شده و مکعب داده اشاره می‌کند. ایده یکی است: هزینهٔ اسکن بزرگ را کاهش دهید، نه هزینهٔ پیدا کردن یک سطر.</span><span class="en">Analytical jobs often run on a warehouse or a columnar engine, not on your operational SQL Server. Chapter 4 also covers query compilation, vectorization, materialized views, and data cubes. The idea is the same: make a large scan cheap, not a single-row lookup.</span></p>
+        <p><span class="fa">کار تحلیلی معمولاً روی انبار داده یا موتور ستونی اجرا می‌شود، نه روی SQL Server عملیاتی شما. فصل ۴ همچنین به کامپایل کوئری، پردازش برداری (Vectorization)، نمای مادی (Materialized View) و مکعب داده (Data Cube) اشاره می‌کند. ایده یکی است: هزینهٔ یک اسکن بزرگ را پایین بیاورید، نه هزینهٔ یافتن یک سطر.</span><span class="en">Analytical jobs often run on a warehouse or a columnar engine, not on your operational SQL Server. Chapter 4 also covers query compilation, vectorization, materialized views, and data cubes. The idea is the same: make a large scan cheap, not a single-row lookup.</span></p>
     </div>
     <div class="net-note"><span class="badge">.NET</span>
-        <p><span class="fa">اگر گزارش سنگین را مستقیم روی دیتابیس سفارش اجرا کنید، قفل و I/O با API تداخل پیدا می‌کند. الگوی رایج این است: شب، داده را به یک انبار (مثل Synapse، BigQuery، یا حتی یک دیتابیس فقط‌خواندنی ستونی) کپی کنید و برنامهٔ دات‌نت گزارش را از آنجا بخواند.</span><span class="en">If you run a heavy report on the order database, locks and IO mix with the API. A common pattern: copy data at night into a warehouse (Synapse, BigQuery, or even a read-only columnar store). The .NET app reads reports from there.</span></p>
+        <p><span class="fa">اگر گزارش سنگین را مستقیم روی دیتابیس سفارش‌ها اجرا کنید، قفل‌ها و I/O با API تداخل پیدا می‌کنند. الگوی رایج این است: شب، داده را به یک انبار (مثل Synapse، BigQuery، یا حتی یک دیتابیس فقط‌خواندنی ستونی) کپی کنید و برنامهٔ دات‌نت گزارش را از آنجا بخواند.</span><span class="en">If you run a heavy report on the order database, locks and IO mix with the API. A common pattern: copy data at night into a warehouse (Synapse, BigQuery, or even a read-only columnar store). The .NET app reads reports from there.</span></p>
     </div>
 </section>
       <section class="section reveal" id="s3">
@@ -2075,8 +2075,8 @@
         <a href="https://www.oreilly.com/library/view/fundamentals-of-data/9781098108298/ch06.html" target="_blank" rel="noopener"><span>↗</span><span class="fa">FDE · فصل ۶ — Storage</span><span class="en">FDE · Ch. 6 — Storage</span></a>
     </div>
     <p class="lead">
-        <span class="fa">فصل ۱۱ با ابزارهای خط‌فرمان یونیکس شروع می‌شود. یک لاگ را با <code>grep</code>، <code>awk</code>، <code>sort</code> و <code>uniq</code> به هم وصل می‌کنید. هر برنامه یک کار کوچک انجام می‌دهد. خروجی هر کدام، ورودی مرحله‌ی بعد می‌شود. این همان مدل ذهنی پردازش دسته‌ای است.</span>
-        <span class="en">Chapter 11 starts with Unix tools. You chain a log through <code>grep</code>, <code>awk</code>, <code>sort</code>, and <code>uniq</code>. Each program does one small job. One output becomes the next input. That is the mental model of a batch job.</span>
+        <span class="fa">بعد از تعریف کار دسته‌ای و محل ذخیرهٔ دادهٔ تحلیلی، حالا نوبت خودِ پردازش است؛ و ساده‌ترین شکل آن، خط‌لولهٔ یونیکس است. فصل ۱۱ کتاب DDIA با ابزارهای خط فرمان شروع می‌شود: لاگ را با <code>grep</code>، <code>awk</code>، <code>sort</code> و <code>uniq</code> به هم زنجیر می‌کنید؛ هر برنامه یک کار کوچک انجام می‌دهد و خروجی هر کدام، ورودی مرحلهٔ بعد می‌شود. این همان مدل ذهنی پردازش دسته‌ای است.</span>
+        <span class="en">Now that we have defined the batch job and where analytical data lives, it is time for the processing itself — and its simplest form is the Unix pipeline. Chapter 11 starts with Unix tools. You chain a log through <code>grep</code>, <code>awk</code>, <code>sort</code>, and <code>uniq</code>. Each program does one small job, and one output becomes the next input. That is the mental model of a batch job.</span>
     </p>
     <div class="codebox">
         <div class="code-title">bash — simple log analysis</div>
@@ -2090,11 +2090,11 @@ cat orders.log \
     <div class="grid-2">
         <article class="card">
             <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h16" /></svg></span><span class="fa">زنجیره‌ای از ابزارها، بهتر از یک برنامهٔ بزرگ</span><span class="en">A chain beats one giant program</span></h3>
-            <p><span class="fa">هر مرحله را جداگانه تست می‌کنید. اگر <code>sort</code> کند است، فقط همان مرحله را عوض می‌کنید. کتاب این رویکرد را در مقابل یک برنامهٔ بزرگ و یکپارچه قرار می‌دهد.</span><span class="en">You test each step alone. If <code>sort</code> is slow, you replace only that step. The book sets this against one custom program.</span></p>
+            <p><span class="fa">هر مرحله را می‌توانید جداگانه تست و جایگزین کنید؛ اگر <code>sort</code> کند بود، فقط همان مرحله را عوض می‌کنید. کتاب، این رویکرد را به برنامهٔ بزرگ و یکپارچه‌ای که همه‌چیز را یک‌جا انجام می‌دهد ترجیح می‌دهد.</span><span class="en">You test each step alone. If <code>sort</code> is slow, you replace only that step. The book sets this against one custom program.</span></p>
         </article>
         <article class="card">
             <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 16V4m0 12-4-4m4 4 4-4M17 8v12m0-12 4 4m-4-4-4 4" /></svg></span><span class="fa">مرتب‌سازی در برابر جمع‌آوری در حافظه</span><span class="en">Sorting vs in-memory aggregation</span></h3>
-            <p><span class="fa">اگر همهٔ کلیدها در RAM جا شوند، یک دیکشنری کافی است. اگر جا نشوند، <code>sort</code> داده را روی دیسک می‌ریزد و سپس گروه‌ها را تشکیل می‌دهد. کارهای بزرگ همین کار را می‌کنند.</span><span class="en">If every key fits in RAM, a dictionary is enough. If not, <code>sort</code> spills to disk and then builds groups. Large jobs do the same thing.</span></p>
+            <p><span class="fa">اگر همهٔ کلیدها در RAM جا شوند، یک دیکشنری کافی است. اگر جا نشوند، <code>sort</code> داده را روی دیسک می‌ریزد و سپس گروه‌ها را می‌سازد. سیستم‌های بزرگ هم دقیقاً همین کار را می‌کنند.</span><span class="en">If every key fits in RAM, a dictionary is enough. If not, <code>sort</code> spills to disk and then builds groups. Large jobs do the same thing.</span></p>
         </article>
     </div>
 <p class="sublead">
@@ -2119,7 +2119,7 @@ cat orders.log \
             <tr>
                 <td><span class="fa">سیستم فایل توزیع‌شده (HDFS)</span><span class="en">Distributed filesystem (HDFS)</span></td>
                 <td><span class="fa">فایل بین چند سرور تقسیم و کپی می‌شود</span><span class="en">Files are split and replicated across servers</span></td>
-                <td><span class="fa"><b class="good">مزیت:</b> اگر یک سرور خراب شود، داده از جای دیگر قابل بازیابی است<br><b class="good">مزیت:</b> پردازش روی همان سروری انجام می‌شود که داده آنجاست (کاهش ترافیک شبکه)</span><span class="en"><b class="good">Advantage:</b> If one server fails, data can be recovered from another<br><b class="good">Advantage:</b> Processing happens on the same server where data lives (less network traffic)</span></td>
+                <td><span class="fa"><b class="good">مزیت:</b> اگر یک سرور خراب شود، داده از جای دیگر قابل بازیابی است<br><b class="good">مزیت:</b> پردازش روی همان سروری انجام می‌شود که داده آن‌جاست (کاهش ترافیک شبکه)</span><span class="en"><b class="good">Advantage:</b> If one server fails, data can be recovered from another<br><b class="good">Advantage:</b> Processing happens on the same server where data lives (less network traffic)</span></td>
             </tr>
             <tr>
                 <td><span class="fa">ذخیره‌سازی اشیاء (S3)</span><span class="en">Object storage (S3)</span></td>
@@ -2130,11 +2130,11 @@ cat orders.log \
     </table>
 </div>
    <div class="callout"><strong class="label fa">مثال عملی</strong><strong class="label en">Practical example</strong>
-    <p><span class="fa">فرض کنید یک روز لاگ، ۸۰ گیگابایت حجم دارد. اگر بخواهید این فایل را با دستور <code>sort</code> روی لپ‌تاپ خودتان مرتب کنید، ساعت‌ها زمان می‌برد. اما اگر یک <b>خوشه</b> (چندین ماشین که با هم کار می‌کنند) در اختیار داشته باشید، فایل را به قطعه‌های کوچک‌تر (مثلاً ۱۲۸ مگابایتی) تقسیم می‌کنید و هر قطعه را روی یک ماشین جداگانه با <code>grep</code> پردازش می‌کنید. در نهایت، نتایج همهٔ ماشین‌ها را با هم جمع می‌کنید. این دقیقاً همان ایدهٔ خط‌لولهٔ یونیکس است، فقط در مقیاس بسیار بزرگ‌تر.</span>
+    <p><span class="fa">فرض کنید یک روز لاگ، ۸۰ گیگابایت حجم دارد. اگر بخواهید این فایل را با دستور <code>sort</code> روی لپ‌تاپ خودتان مرتب کنید، ساعت‌ها زمان می‌برد. اما اگر یک <b>خوشه</b> (چندین ماشین که با هم کار می‌کنند) در اختیار داشته باشید، فایل را به قطعه‌های کوچک‌تر (مثلاً ۱۲۸ مگابایتی — همان اندازهٔ پیش‌فرض بلوک در HDFS) تقسیم می‌کنید و هر قطعه را روی یک ماشین جداگانه با <code>grep</code> پردازش می‌کنید. در نهایت، نتایج همهٔ ماشین‌ها را با هم جمع می‌کنید. این دقیقاً همان ایدهٔ خط‌لولهٔ یونیکس است، فقط در مقیاس بسیار بزرگ‌تر.</span>
     <span class="en">Imagine one day of logs is 80 GB. If you try to run <code>sort</code> on your laptop, it takes hours. But if you have a <b>cluster</b> (several machines working together), you split the file into smaller pieces (e.g. 128 MB each), process each piece on a separate machine with <code>grep</code>, and finally merge all the results. This is exactly the same Unix pipeline idea, just at a much larger scale.</span></p>
 </div>
 <div class="net-note"><span class="badge">.NET</span>
-    <p><span class="fa">خبر خوب این است که برای استفاده از این مدل، مجبور نیستید خودتان Hadoop یا سیستم‌های مشابه را پیاده‌سازی کنید. در دنیای دات‌نت، همان الگو را با فایل‌های روزانه در <code>Blob Storage</code> و یک <code>BackgroundService</code> یا Azure Function زمان‌بندی‌شده دارید. برنامه شما فایل را تکه‌تکه می‌خواند (با <code>PipeReader</code> یا <code>IAsyncEnumerable</code>)، هر تکه را پردازش می‌کند و با <code>SqlBulkCopy</code> در مقصد می‌نویسد. فقط یادتان باشد: هرگز کل یک فایل بزرگ را یک‌جا در RAM بارگذاری نکنید.</span>
+    <p><span class="fa">خبر خوب این است که برای استفاده از این مدل، مجبور نیستید خودتان Hadoop یا سیستم‌های مشابه را پیاده‌سازی کنید. در دنیای دات‌نت هم همین الگو را دارید: فایل‌های روزانه در <code>Blob Storage</code> و یک <code>BackgroundService</code> یا Azure Function زمان‌بندی‌شده. برنامه شما فایل را تکه‌تکه می‌خواند (با <code>PipeReader</code> یا <code>IAsyncEnumerable</code>)، هر تکه را پردازش می‌کند و با <code>SqlBulkCopy</code> در مقصد می‌نویسد. فقط یادتان باشد: هرگز کل یک فایل بزرگ را یک‌جا در RAM بارگذاری نکنید.</span>
     <span class="en">The good news is that you don't need to implement Hadoop or similar systems yourself to use this model. In the .NET world, you already have the same pattern with daily files in <code>Blob Storage</code> and a scheduled <code>BackgroundService</code> or Azure Function. Your app reads the file in chunks (using <code>PipeReader</code> or <code>IAsyncEnumerable</code>), processes each chunk, and writes with <code>SqlBulkCopy</code>. Just remember: never load a large file entirely into RAM at once.</span></p>
 </div>
 </section>
@@ -2162,14 +2162,14 @@ cat orders.log \
 
     <p class="lead">
         <span class="fa">
-            <b>MapReduce</b> یک مدل برنامه‌نویسی برای پردازش داده‌های حجیم روی خوشه‌ای از ماشین‌هاست.
+            در بخش قبل دیدیم که وقتی داده از ظرفیت یک ماشین فراتر می‌رود، باید آن را میان چند ماشین پخش کنیم؛ اما روی چنین خوشه‌ای چطور برنامه بنویسیم؟ پاسخ کلاسیک، <b>MapReduce</b> است: مدلی برنامه‌نویسی برای پردازش داده‌های حجیم روی خوشه‌ای از ماشین‌ها.
             فرض کنید میلیون‌ها سفارش فروش دارید و می‌خواهید بدانید هر کشور چقدر فروش داشته است.
-            در مدل MapReduce، این کار را در سه مرحله انجام می‌دهید:
+            در این مدل، کار را در سه مرحله انجام می‌دهید:
         </span>
         <span class="en">
-            <b>MapReduce</b> is a programming model for processing massive data on a cluster of machines.
+            In the previous section we saw that when data outgrows one machine, you spread it across many. But how do you program such a cluster? The classic answer is <b>MapReduce</b>: a programming model for processing massive data on a cluster of machines.
             Imagine you have millions of sales orders and want to know each country's total sales.
-            In the MapReduce model, you do this in three steps:
+            In this model, you do the work in three steps:
         </span>
     </p>
 
@@ -2178,12 +2178,12 @@ cat orders.log \
             <h3><span class="icon-box green">1</span>Map</h3>
             <p>
                 <span class="fa">
-                    <b>تبدیل:</b> هر سفارش را به یک جفت <code>(کلید, مقدار)</code> تبدیل می‌کنید.
+                    <b>نگاشت (Transform):</b> هر سفارش را به یک جفت <code>(کلید, مقدار)</code> تبدیل می‌کنید.
                     مثلاً سفارشی از ایران با مبلغ ۱۲۰ تومان می‌شود <code>(IR, 120)</code>.
                     این مرحله کاملاً موازی است و هر ماشین بدون نیاز به هماهنگی با دیگران، بخشی از داده را پردازش می‌کند.
                 </span>
                 <span class="en">
-                    <b>Transform:</b> Turn each order into a <code>(key, value)</code> pair.
+                    <b>Map:</b> Turn each order into a <code>(key, value)</code> pair.
                     For example, an order from Iran with amount 120 becomes <code>(IR, 120)</code>.
                     This step is fully parallel — each machine processes its portion independently.
                 </span>
@@ -2194,7 +2194,7 @@ cat orders.log \
             <p>
                 <span class="fa">
                     <b>مرتب‌سازی و جابه‌جایی:</b> حالا باید همهٔ جفت‌هایی که کلید یکسان دارند (مثلاً همهٔ <code>IR</code>ها)
-                    به یک ماشین منتقل شوند تا بتوانیم جمع هر کشور را محاسبه کنیم.
+                    به یک ماشین منتقل شوند تا بتوان جمع هر کشور را محاسبه کرد.
                     این مرحله شامل انتقال داده روی شبکه است و معمولاً گران‌ترین و زمان‌برترین بخش پردازش محسوب می‌شود.
                 </span>
                 <span class="en">
@@ -2232,7 +2232,7 @@ cat orders.log \
             <p>
                 <span class="fa">
                     <b>Extract (استخراج):</b> داده از مبدأ خوانده می‌شود (فایل، دیتابیس، API).<br>
-                    <b>Transform (تبدیل):</b> داده پالایش، پاک‌سازی یا تغییر شکل می‌یابد.<br>
+                    <b>Transform (تبدیل):</b> داده پاک‌سازی، فیلتر یا تغییر شکل داده می‌شود.<br>
                     <b>Load (بارگذاری):</b> داده‌های تبدیل‌شده در مقصد نوشته می‌شوند (انبار داده، جدول تحلیلی).<br>
                     <span class="good">مناسب برای:</span> خط‌لوله‌های سنتی و انتقال داده بین سیستم‌ها.
                 </span>
@@ -2273,7 +2273,7 @@ cat orders.log \
         <strong class="label en">What does the demo show?</strong>
         <p>
             <span class="fa">
-                در دموی زیر، ۱۲ سفارش نمونه را با دو روش مختلف پردازش می‌کنیم.
+                در دموی زیر، ۱۲ سفارش نمونه با دو روش مختلف پردازش می‌شوند.
                 شما می‌توانید <b>حالت پردازش</b> را انتخاب کنید:
                 <br>🔹 <b>دسته‌ای (Batch):</b> رکوردها در گروه‌های ۴تایی با هم حرکت می‌کنند (۳ سفر شبکه‌ای).
                 <br>🔹 <b>جریانی (Stream):</b> هر رکورد به تنهایی سفر می‌کند (۱۲ سفر شبکه‌ای).
@@ -2285,7 +2285,7 @@ cat orders.log \
                 <b>اعداد پایین صفحه</b>، تعداد انتقال‌های شبکه، تعداد رکوردهای پردازش‌شده، بار هر سفر و زمان مفهومی را نشان می‌دهند تا بتوانید هزینهٔ هر روش را مقایسه کنید.
             </span>
             <span class="en">
-                In the demo below, we process 12 sample orders in two different ways.
+                In the demo below, 12 sample orders are processed in two different ways.
                 You can choose the <b>processing mode</b>:
                 <br>🔹 <b>Batch:</b> Records travel in groups of 4 (3 network trips).
                 <br>🔹 <b>Stream:</b> Each record travels alone (12 network trips).
@@ -2422,10 +2422,9 @@ cat orders.log \
 
     <p class="sublead">
         <span class="fa">
-            موتورهای جریان داده (Dataflow) مثل Spark و Flink، داده را بین مرحله‌ها بیشتر در حافظه نگه می‌دارند
-            و نیازی به نوشتن فایل‌های بزرگ روی دیسک بعد از هر Map ندارند.
-            عملیات‌هایی مثل Join و GroupBy همچنان از Shuffle استفاده می‌کنند،
-            اما با API تمیزتری در اختیار برنامه‌نویس قرار می‌گیرند؛ مثلاً به صورت DataFrame یا یک زبان کوئری.
+            موتورهای جریان داده (Dataflow) مانند Spark و Flink داده را میان مرحله‌ها بیشتر در حافظه نگه می‌دارند و لازم نیست بعد از هر Map فایل‌های بزرگی روی دیسک بنویسند.
+            عملیات‌هایی مثل Join و GroupBy همچنان به Shuffle نیاز دارند،
+            اما API تمیزتری در اختیار برنامه‌نویس می‌گذارند؛ مثلاً به‌صورت DataFrame یا زبان کوئری.
         </span>
         <span class="en">
             Dataflow engines like Spark and Flink keep data in memory between stages more often,
@@ -2451,7 +2450,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
         <span class="badge">.NET</span>
         <p>
             <span class="fa">
-                معادل ساده‌ی این مدل در C#، کوئری LINQ زیر است:
+                معادل سادهٔ این مدل در C#، کوئری LINQ زیر است:
                 <br>
                 <code>orders.GroupBy(o =&gt; o.Country).Select(g =&gt; new { g.Key, Total = g.Sum(x =&gt; x.Amount) })</code>
                 <br>
@@ -2478,8 +2477,8 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
     </div>
 
     <p class="lead">
-        <span class="fa">تا اینجا یاد گرفتیم که پردازش دسته‌ای یعنی چه، چرا به ذخیره‌سازی ستونی نیاز دارد، و چطور MapReduce روی یک خوشه اجرا می‌شود. حالا نوبت به یک سؤال مهم می‌رسد: <b>این داده‌ها دقیقاً کجا ذخیره می‌شوند؟</b> کار دسته‌ای از یک جا می‌خواند و نتیجه را در یک جای دیگر می‌نویسد. فصل ۶ کتاب Fundamentals of Data Engineering سه مقصد اصلی را معرفی می‌کند. انتخاب هر کدام، تأثیر مستقیم بر هزینه، سرعت و نحوهٔ استفادهٔ بعدی از داده دارد.</span>
-        <span class="en">So far, we've learned what batch processing is, why it needs columnar storage, and how MapReduce runs on a cluster. Now it's time for an important question: <b>where exactly is this data stored?</b> A batch job reads from one place and writes results to another. Chapter 6 of Fundamentals of Data Engineering introduces three main destinations. Each choice directly impacts cost, speed, and how the data will be used later.</span>
+        <span class="fa">تا اینجا دیدیم پردازش دسته‌ای چیست، چرا کار تحلیلی به ذخیره‌سازی ستون‌محور نیاز دارد و MapReduce چطور روی یک خوشه اجرا می‌شود. حالا نوبت به یک سؤال مهم می‌رسد: <b>این داده‌ها دقیقاً کجا ذخیره می‌شوند؟</b> کار دسته‌ای از یک جا می‌خواند و نتیجه را در یک جای دیگر می‌نویسد. فصل ۶ کتاب Fundamentals of Data Engineering سه مقصد اصلی را معرفی می‌کند. انتخاب هر کدام، تأثیر مستقیم بر هزینه، سرعت و نحوهٔ استفادهٔ بعدی از داده دارد.</span>
+        <span class="en">So far, we've seen what batch processing is, why analytical workloads need columnar storage, and how MapReduce runs on a cluster. Now it's time for an important question: <b>where exactly is this data stored?</b> A batch job reads from one place and writes results to another. Chapter 6 of Fundamentals of Data Engineering introduces three main destinations. Each choice directly impacts cost, speed, and how the data will be used later.</span>
     </p>
 
     <div class="callout" style="margin-bottom:24px; border-inline-start-color: var(--blue); background: var(--blue-soft);">
@@ -2492,7 +2491,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
     <div class="grid-3">
         <article class="card">
             <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg></span><span class="fa">انبار داده (Data Warehouse)</span><span class="en">Data Warehouse</span></h3>
-            <p><span class="fa"><b>داده‌ای تمیز و منظم با ساختار مشخص.</b> جدول‌ها از قبل طراحی شده‌اند، هر ستون نوع مشخصی دارد و همه‌چیز برای کوئری‌های تحلیلی بهینه شده است. گزارش‌های مالی، داشبوردهای مدیریتی و تحلیل‌های کسب‌وکار معمولاً از اینجا تغذیه می‌شوند. انبار داده معمولاً به صورت <b>ستون‌محور</b> ذخیره می‌شود تا کوئری‌های سنگین جمع‌آوری سریع‌تر اجرا شوند.</span>
+            <p><span class="fa"><b>داده‌ای تمیز و منظم با ساختار مشخص.</b> جدول‌ها از قبل طراحی شده‌اند، هر ستون نوع مشخصی دارد و همه‌چیز برای کوئری‌های تحلیلی بهینه شده است. گزارش‌های مالی، داشبوردهای مدیریتی و تحلیل‌های کسب‌وکار معمولاً از اینجا تغذیه می‌شوند. انبار داده معمولاً به‌صورت <b>ستون‌محور</b> ذخیره می‌شود تا کوئری‌های سنگین جمع‌آوری سریع‌تر اجرا شوند.</span>
             <span class="en"><b>Clean, structured data with a defined schema.</b> Tables are designed in advance, each column has a specific type, and everything is optimized for analytical queries. Financial reports, management dashboards, and business analyses typically come from here. Data warehouses are usually <b>column-oriented</b> to speed up heavy aggregation queries.</span></p>
         </article>
         <article class="card">
@@ -2502,18 +2501,18 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
         </article>
         <article class="card">
             <h3><span class="icon-box violet"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM8 7v10M4 12h16" /></svg></span><span class="fa">Lakehouse</span><span class="en">Lakehouse</span></h3>
-            <p><span class="fa"><b>ترکیبی از ارزانی دریاچه و ساختار انبار.</b> داده همچنان به صورت فایل در ذخیره‌سازی ارزان نگهداری می‌شود، اما روی آن یک لایهٔ جدول، تراکنش و متادیتا اضافه می‌شود. هدف این است که هم هزینهٔ ذخیره‌سازی پایین باشد و هم بتوان مثل یک انبار داده روی آن کوئری زد. این مدل در سال‌های اخیر محبوبیت زیادی پیدا کرده است.</span>
+            <p><span class="fa"><b>ترکیبی از ارزانی دریاچه و ساختار انبار.</b> داده همچنان به‌صورت فایل در ذخیره‌سازی ارزان نگهداری می‌شود، اما روی آن یک لایهٔ جدول، تراکنش و متادیتا اضافه می‌شود. هدف این است که هم هزینهٔ ذخیره‌سازی پایین باشد و هم بتوان مثل یک انبار داده روی آن کوئری زد. این مدل در سال‌های اخیر محبوبیت زیادی پیدا کرده است.</span>
             <span class="en"><b>A combination of lake cheapness and warehouse structure.</b> Data is still stored as files in cheap storage, but a layer of tables, transactions, and metadata is added on top. The goal is to keep storage costs low while still being queryable like a data warehouse. This model has gained a lot of popularity in recent years.</span></p>
         </article>
     </div>
 
     <div class="callout"><strong class="label fa">یک مسیر معمول</strong><strong class="label en">A typical path</strong>
-        <p><span class="fa">فرض کنید هر شب، سفارش‌های روزانه از SQL Server استخراج و به صورت فایل Parquet در S3 (دریاچه) ذخیره می‌شوند. صبح روز بعد، یک کار دوم همان فایل را می‌خواند، پالایش می‌کند و در جدول <code>fact_orders</code> داخل انبار داده بارگذاری می‌کند. داشبوردهای مدیریتی فقط به انبار داده متصل هستند و گزارش‌های خود را از آنجا می‌خوانند. فایل خام در دریاچه هم برای کارهایی مثل آموزش مدل‌های یادگیری ماشین یا بازرسی‌های بعدی نگهداری می‌شود. این ترکیب، هم انبار را تمیز نگه می‌دارد و هم دادهٔ خام را برای مواقع ضروری در دسترس قرار می‌دهد.</span>
+        <p><span class="fa">فرض کنید هر شب، سفارش‌های روزانه از SQL Server استخراج و به‌صورت فایل Parquet در S3 (دریاچه) ذخیره می‌شوند. صبح روز بعد، یک کار دوم همان فایل را می‌خواند، پالایش می‌کند و در جدول <code>fact_orders</code> داخل انبار داده بارگذاری می‌کند. داشبوردهای مدیریتی فقط به انبار داده متصل هستند و گزارش‌های خود را از آنجا می‌خوانند. فایل خام در دریاچه هم برای کارهایی مثل آموزش مدل‌های یادگیری ماشین یا بازرسی‌های بعدی نگهداری می‌شود. این ترکیب، هم انبار را تمیز نگه می‌دارد و هم دادهٔ خام را برای مواقع ضروری در دسترس قرار می‌دهد.</span>
         <span class="en">Imagine that every night, daily orders are extracted from SQL Server and stored as Parquet files in S3 (the lake). The next morning, a second job reads that file, cleans it, and loads it into the <code>fact_orders</code> table in the data warehouse. Management dashboards connect only to the warehouse and read their reports from there. The raw file in the lake is also kept for tasks like training machine learning models or future audits. This combination keeps the warehouse clean while keeping raw data available when needed.</span></p>
     </div>
 
     <div class="net-note"><span class="badge">.NET</span>
-        <p><span class="fa">در بسیاری از پروژه‌ها، شما وظیفهٔ تولید فایل را دارید، نه مدیریت خود انبار داده. یک سرویس‌دهنده (مثل <code>BackgroundService</code>) داده را از منبع می‌خواند، فایل Parquet یا CSV را در یک مسیر مشخص در ذخیره‌سازی اشیاء (مثل Azure Blob یا AWS S3) می‌نویسد و مسیر فایل را در یک جدول کنترل یا صف ثبت می‌کند تا کار بعدی آن را بردارد. یک نکتهٔ مهم: <b>ذخیره‌سازی اشیاء را مثل یک دیسک محلی فرض نکنید.</b> لیست کردن میلیون‌ها فایل کوچک بسیار کند و گران است. بهتر است فایل‌های روزانه‌ای با حجم مناسب تولید کنید، نه تعداد زیادی فایل ریز.</span>
+        <p><span class="fa">در بسیاری از پروژه‌ها، شما وظیفهٔ تولید فایل را دارید، نه مدیریت خود انبار داده. یک سرویس‌دهنده (مثل <code>BackgroundService</code>) داده را از منبع می‌خواند، فایل Parquet یا CSV را در یک مسیر مشخص در ذخیره‌سازی اشیاء (مثل Azure Blob یا AWS S3) می‌نویسد و مسیر فایل را در یک جدول کنترل یا صف ثبت می‌کند تا کار بعدی آن را بردارد. یک نکتهٔ مهم: <b>ذخیره‌سازی اشیاء را مثل یک دیسک محلی فرض نکنید.</b> فهرست‌کردن میلیون‌ها فایل کوچک بسیار کند و گران است. بهتر است فایل‌های روزانه‌ای با حجم مناسب تولید کنید، نه تعداد زیادی فایل ریز.</span>
         <span class="en">In many projects, your job is to produce files, not to manage the data warehouse itself. A service (like a <code>BackgroundService</code>) reads data from the source, writes a Parquet or CSV file to a specific path in object storage (such as Azure Blob or AWS S3), and records the file path in a control table or queue for the next job to pick up. One important note: <b>don't treat object storage like a local disk.</b> Listing millions of tiny files is very slow and expensive. It's better to produce reasonably sized daily files, not a huge number of tiny ones.</span></p>
     </div>
 </section>
@@ -2526,7 +2525,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
     </div>
 
     <p class="lead">
-        <span class="fa">در بخش قبلی، با جاهایی که داده دسته‌ای در آن ذخیره می‌شود آشنا شدیم. اما سؤال مهم دیگر این است: <b>خود داده چطور از سیستم مبدأ به آنجا می‌رسد؟</b> این فرایند را <b>ورود داده</b> یا <b>Ingestion</b> می‌نامند. ورود داده یعنی انتقال داده از جایی که تولید می‌شود (مثلاً دیتابیس عملیاتی) به جایی که کار دسته‌ای می‌تواند آن را بخواند (مثلاً دریاچه یا انبار). این فرایند با یکپارچه‌سازی کامل سیستم‌ها تفاوت دارد؛ در ingestion شما فقط داده را منتقل می‌کنید، نه اینکه دو سیستم را به هم متصل کنید. دو تصمیم کلیدی در اینجا وجود دارد:</span>
+        <span class="fa">در بخش قبلی دیدیم دادهٔ دسته‌ای کجا ذخیره می‌شود؛ اما سؤال بعدی این است: <b>خود داده چطور از سیستم مبدأ به آنجا می‌رسد؟</b> این فرایند را <b>ورود داده</b> یا <b>Ingestion</b> می‌نامند. ورود داده یعنی انتقال داده از جایی که تولید می‌شود (مثلاً دیتابیس عملیاتی) به جایی که کار دسته‌ای می‌تواند آن را بخواند (مثلاً دریاچه یا انبار). این فرایند را نباید با یکپارچه‌سازی کامل سیستم‌ها اشتباه گرفت؛ اینجا فقط داده جابه‌جا می‌شود و دو سیستم مستقل از هم می‌مانند. در این مرحله دو تصمیم کلیدی وجود دارد:</span>
         <span class="en">In the previous section, we learned where batch data is stored. But another important question is: <b>how does the data actually get from the source system to that destination?</b> This process is called <b>ingestion</b>. Ingestion means moving data from where it's produced (e.g., an operational database) to where the batch job can read it (e.g., a lake or warehouse). This is different from full system integration; in ingestion, you're just transferring data, not connecting two systems. There are two key decisions here:</span>
     </p>
 
@@ -2538,7 +2537,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
         </article>
         <article class="card">
             <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h10M14 6l6 6-6 6" /></svg></span><span class="fa">استخراج تفاضلی (Differential)</span><span class="en">Differential extraction</span></h3>
-            <p><span class="fa"><b>فقط سطرهای جدید یا تغییرکرده را می‌برید.</b> معمولاً از یک ستون زمان‌دار مثل <code>UpdatedAt &gt; last_run</code> یا قابلیت Change Tracking دیتابیس استفاده می‌کنید. این روش سبک‌تر است، اما باید خودتان حذف‌ها و مشکلات ناهماهنگی ساعت را مدیریت کنید.</span>
+            <p><span class="fa"><b>فقط سطرهای جدید یا تغییرکرده را می‌برید.</b> معمولاً از یک ستون زمان‌دار مثل <code>UpdatedAt &gt; last_run</code> یا قابلیت Change Tracking دیتابیس استفاده می‌کنید. این روش سبک‌تر است، اما حذف‌ها و ناهماهنگی ساعت (Clock Skew) را باید خودتان مدیریت کنید.</span>
             <span class="en"><b>You only take new or changed rows.</b> Typically, you use a timestamp column like <code>UpdatedAt &gt; last_run</code> or the database's Change Tracking feature. This is lighter, but you must handle deletes and clock skew issues yourself.</span></p>
         </article>
     </div>
@@ -2580,7 +2579,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
     </div>
 
     <p class="sublead">
-        <span class="fa">اندازهٔ دسته‌ها هم یک معامله است. دستهٔ خیلی کوچک یعنی سربار زیاد برای هر بار commit به مقصد. دستهٔ خیلی بزرگ یعنی اگر کار وسط کار بمیرد، باید حجم عظیمی را دوباره پردازش کنید. انتخاب اندازهٔ مناسب به حجم داده و توانایی سیستم شما بستگی دارد. برای روشن شدن تفاوت، فقط به این نکته اشاره می‌کنیم که جریان داده (Stream) بی‌کران است، اما دسته (Batch) همیشه کران‌دار است.</span>
+        <span class="fa">انتخاب اندازهٔ دسته‌ها هم یک بده‌بستان است: دستهٔ خیلی کوچک یعنی سربار (Overhead) زیاد برای هر بار commit به مقصد؛ دستهٔ خیلی بزرگ یعنی اگر کار نیمه‌کاره متوقف شود، باید حجم عظیمی را دوباره پردازش کنید. اندازهٔ مناسب به حجم داده و توان سیستم شما بستگی دارد. و برای تفاوت، همین‌قدر بدانید: جریان (Stream) بی‌پایان و بدون مرز است، اما دسته (Batch) همیشه مرز و حجم مشخصی دارد.</span>
         <span class="en">Batch size is also a trade-off. A tiny batch means high commit overhead to the destination. A huge batch means that if the job dies midway, you'll have to reprocess a massive amount. Choosing the right size depends on your data volume and system capacity. For contrast only: a stream is unbounded, while a batch is always bounded.</span>
     </p>
 
@@ -2600,8 +2599,8 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
     </div>
 
     <div class="net-note"><span class="badge">.NET</span>
-        <p><span class="fa">برای مدیریت این فرایند، یک جدول کنترل با ستون‌های <code>JobName</code>، <code>LastWatermark</code> و <code>Status</code> طراحی کنید. کار شما باید <b>ایدِمپوتنت</b> (Idempotent) باشد، یعنی اجرای دوبارهٔ آن در یک روز، نباید باعث ایجاد سطر تکراری در مقصد شود. <code>SqlBulkCopy</code> با چند هزار سطر در هر دسته، معمولاً نقطهٔ شروع خوبی است. در مورد نحوهٔ انتقال: <b>Push</b> یعنی مبدأ داده را به سمت شما می‌فرستد؛ <b>Pull</b> یعنی کار شما خودش داده را از مبدأ می‌کشد. اکثر کارهای شبانه از روش Pull استفاده می‌کنند.</span>
-        <span class="en">To manage this process, design a control table with <code>JobName</code>, <code>LastWatermark</code>, and <code>Status</code>. Your job should be <b>idempotent</b>, meaning that re-running it on the same day should not create duplicate rows in the destination. <code>SqlBulkCopy</code> with a few thousand rows per batch is usually a good starting point. Regarding the transfer method: <b>Push</b> means the source sends data to you; <b>Pull</b> means your job fetches the data from the source. Most nightly jobs use Pull.</span></p>
+        <p><span class="fa">برای مدیریت این فرایند، یک جدول کنترل با ستون‌های <code>JobName</code>، <code>LastWatermark</code> (نشانگر آخرین اجرای موفق) و <code>Status</code> طراحی کنید. کار شما باید <b>ایدِمپوتنت</b> (Idempotent) باشد، یعنی اجرای دوبارهٔ آن — حتی در همان روز — نباید سطر تکراری در مقصد بسازد. <code>SqlBulkCopy</code> با چند هزار سطر در هر دسته، معمولاً نقطهٔ شروع خوبی است. در مورد نحوهٔ انتقال: <b>Push</b> یعنی مبدأ داده را به سمت شما می‌فرستد؛ <b>Pull</b> یعنی کار شما خودش داده را از مبدأ می‌کشد. اکثر کارهای شبانه از روش Pull استفاده می‌کنند.</span>
+        <span class="en">To manage this process, design a control table with <code>JobName</code>, <code>LastWatermark</code> (a marker of the last successful run), and <code>Status</code>. Your job should be <b>idempotent</b>, meaning that re-running it on the same day should not create duplicate rows in the destination. <code>SqlBulkCopy</code> with a few thousand rows per batch is usually a good starting point. Regarding the transfer method: <b>Push</b> means the source sends data to you; <b>Pull</b> means your job fetches the data from the source. Most nightly jobs use Pull.</span></p>
     </div>
 </section>
       <section class="section reveal" id="s7">
@@ -2613,8 +2612,8 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
     </div>
 
     <p class="lead">
-        <span class="fa">تا اینجا با جزئیات فنی پردازش دسته‌ای آشنا شدیم: از تعریف و ذخیره‌سازی گرفته تا MapReduce و نحوهٔ ورود داده. حالا وقت آن است که ببینیم این مفاهیم در دنیای واقعی چگونه استفاده می‌شوند. فصل ۱۱ کتاب DDIA چهار خانوادهٔ اصلی از کاربردهای پردازش دسته‌ای را معرفی می‌کند. برای یک توسعه‌دهندهٔ بک‌اند، <b>ETL</b> آشناترین مورد است، اما بقیه نیز از همان الگوی کلی پیروی می‌کنند: <b>ورودی بزرگ → خروجی مشتق‌شده</b>.</span>
-        <span class="en">So far, we've learned the technical details of batch processing: from definition and storage to MapReduce and data ingestion. Now it's time to see how these concepts are used in the real world. Chapter 11 of DDIA introduces four main families of batch processing use cases. For a backend developer, <b>ETL</b> is the most familiar, but the others follow the same general pattern: <b>large input → derived output</b>.</span>
+        <span class="fa">تا اینجا با جزئیات فنی پردازش دسته‌ای آشنا شدیم: از تعریف و ذخیره‌سازی گرفته تا MapReduce و نحوهٔ ورود داده. حالا وقت آن است که ببینیم این مفاهیم در دنیای واقعی چگونه استفاده می‌شوند. فصل ۱۱ کتاب DDIA کاربردهای واقعی پردازش دسته‌ای را مرور می‌کند و ما آن‌ها را در چهار خانوادهٔ اصلی می‌بینیم. برای یک توسعه‌دهندهٔ بک‌اند، <b>ETL</b> آشناترین مورد است، اما بقیه نیز از همان الگوی کلی پیروی می‌کنند: <b>ورودی بزرگ → خروجی مشتق‌شده</b>.</span>
+        <span class="en">So far, we've learned the technical details of batch processing: from definition and storage to MapReduce and data ingestion. Now it's time to see how these concepts are used in the real world. Chapter 11 of DDIA reviews real-world batch use cases, which we group into four main families. For a backend developer, <b>ETL</b> is the most familiar, but the others follow the same general pattern: <b>large input → derived output</b>.</span>
     </p>
 
     <div class="callout" style="margin-bottom:24px; border-inline-start-color: var(--blue); background: var(--blue-soft);">
@@ -2627,13 +2626,13 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
     <div class="grid-2">
         <article class="card">
             <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" /></svg></span>ETL</h3>
-            <p><span class="fa"><b>استخراج، تبدیل، بارگذاری:</b> سفارش‌ها از دیتابیس عملیاتی (مثلاً SQL Server) بیرون کشیده می‌شوند، ارزها به یک واحد مشترک تبدیل می‌شوند، و در نهایت در جدول واقعیت (Fact Table) انبار داده بارگذاری می‌شوند. این همان خط‌لولهٔ شبانه‌ای است که دادهٔ عملیاتی را به دادهٔ تحلیلی تبدیل می‌کند و برای گزارش‌گیری آماده می‌سازد.</span>
+            <p><span class="fa"><b>استخراج، تبدیل، بارگذاری:</b> سفارش‌ها از دیتابیس عملیاتی (مثلاً SQL Server) استخراج می‌شوند، ارزها به یک واحد مشترک تبدیل می‌شوند، و در نهایت در جدول واقعیت (Fact Table) انبار داده بارگذاری می‌شوند. این همان خط‌لولهٔ شبانه‌ای است که دادهٔ عملیاتی را به دادهٔ تحلیلی تبدیل می‌کند و برای گزارش‌گیری آماده می‌سازد.</span>
             <span class="en"><b>Extract, Transform, Load:</b> Orders are pulled from the operational database (e.g., SQL Server), currencies are normalized to a common unit, and finally loaded into the fact table of the data warehouse. This is the nightly pipeline that turns operational data into analytical data, ready for reporting.</span></p>
         </article>
         <article class="card">
             <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 16v-4M12 16V8M16 16V6" /></svg></span><span class="fa">تحلیل و گزارش‌گیری</span><span class="en">Analytics & Reporting</span></h3>
-            <p><span class="fa"><b>تبدیل داده به بینش:</b> کوئری‌های سنگین تحلیلی مثل جمع فروش هر کشور، محاسبهٔ نرخ بازگشت مشتریان، یا تحلیل قیف تبدیل (Conversion Funnel) روی انبار داده اجرا می‌شوند، نه روی دیتابیس زنده. به این ترتیب، گزارش‌گیری سنگین، عملکرد سیستم عملیاتی را تحت تأثیر قرار نمی‌دهد.</span>
-            <span class="en"><b>Turning data into insights:</b> Heavy analytical queries such as sales by country, customer return rate calculation, or conversion funnel analysis run on the data warehouse, not on the live database. This way, heavy reporting doesn't impact operational system performance.</span></p>
+            <p><span class="fa"><b>تبدیل داده به بینش:</b> کوئری‌های سنگین تحلیلی مثل جمع فروش هر کشور، محاسبهٔ نرخ بازگشت مشتریان، یا تحلیل قیف تبدیل (Conversion Funnel) روی انبار داده اجرا می‌شوند، نه روی همان دیتابیس عملیاتی. به این ترتیب، گزارش‌گیری سنگین، عملکرد سیستم عملیاتی را تحت تأثیر قرار نمی‌دهد.</span>
+            <span class="en"><b>Turning data into insights:</b> Heavy analytical queries such as sales by country, customer return rate calculation, or conversion funnel analysis run on the data warehouse, not on the operational database. This way, heavy reporting doesn't impact operational system performance.</span></p>
         </article>
         <article class="card">
             <h3><span class="icon-box violet"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /></svg></span><span class="fa">یادگیری ماشین</span><span class="en">Machine Learning</span></h3>
@@ -2643,7 +2642,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
         <article class="card">
             <h3><span class="icon-box blue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M8 20h8" /></svg></span><span class="fa">ارائهٔ دادهٔ مشتق‌شده</span><span class="en">Serving Derived Data</span></h3>
             <p><span class="fa"><b>آماده‌سازی برای مصرف سریع:</b> رتبه‌بندی پرفروش‌ترین محصولات، کش پیشنهاد کالاهای مرتبط، یا هر نوع دادهٔ از پیش محاسبه‌شده‌ای که API باید سریع پاسخ دهد، یک بار در روز با یک کار دسته‌ای ساخته می‌شود. سپس API فقط همان جدول یا کش آماده را می‌خواند و نیازی به محاسبهٔ سنگین در لحظه ندارد.</span>
-            <span class="en"><b>Preparing for fast consumption:</b> Bestseller rankings, recommendation caches, or any type of pre-computed data that the API needs to serve quickly, is built once a day by a batch job. Then the API simply reads that ready table or cache, with no need for heavy real-time computation.</span></p>
+            <span class="en"><b>Preparing for fast consumption:</b> Bestseller rankings, recommendation caches, or any type of pre-computed data that the API needs to serve quickly is built once a day by a batch job. Then the API simply reads that ready table or cache, with no need for heavy real-time computation.</span></p>
         </article>
     </div>
 
@@ -2655,7 +2654,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
     </div>
 
     <div class="net-note"><span class="badge">.NET</span>
-        <p><span class="fa">یک الگوی تمیز و قابل‌اعتماد در دات‌نت این است که <b>API فقط وظیفهٔ ثبت سفارش را دارد</b> و هیچ منطق گزارش‌گیری یا محاسبات سنگینی در آن اجرا نمی‌شود. یک <code>BackgroundService</code> یا <code>IHostedService</code> ساعت ۲ بامداد، جدول <code>DailySales</code> را از روی داده‌های روز قبل محاسبه و بازسازی می‌کند. صفحهٔ مدیریت یا داشبورد، همین جدول آماده را می‌خواند. به این ترتیب، منطق گزارش در کنترلر پخش نمی‌شود، سرعت API حفظ می‌شود و کار دسته‌ای به‌صورت مستقل و قابل اعتماد اجرا می‌گردد.</span>
+        <p><span class="fa">یک الگوی تمیز و قابل‌اعتماد در دات‌نت این است که <b>API فقط وظیفهٔ ثبت سفارش را دارد</b> و هیچ منطق گزارش‌گیری یا محاسبات سنگینی در آن اجرا نمی‌شود. یک <code>BackgroundService</code> یا <code>IHostedService</code> ساعت ۲ بامداد، جدول <code>DailySales</code> را از روی داده‌های روز قبل محاسبه و بازسازی می‌کند. صفحهٔ مدیریت یا داشبورد، همین جدول آماده را می‌خواند. به این ترتیب، منطق گزارش در کنترلر پخش نمی‌شود، سرعت API حفظ می‌شود و کار دسته‌ای مستقل و قابل اعتماد اجرا می‌شود.</span>
         <span class="en">A clean and reliable pattern in .NET is that <b>the API only handles order registration</b> and no reporting or heavy computation logic runs in it. A <code>BackgroundService</code> or <code>IHostedService</code> at 2 a.m. calculates and rebuilds the <code>DailySales</code> table from the previous day's data. The admin page or dashboard simply reads this ready table. This way, reporting logic doesn't leak into the controller, API performance is maintained, and the batch job runs independently and reliably.</span></p>
     </div>
 </section>
@@ -2665,18 +2664,18 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
                 <h2><span class="fa">خودآزمایی — بعد از این صفحه جواب بدهید</span><span class="en">Self-check — answer
                         after this page</span></h2>
             </div>
-            <p class="lead"><span class="fa">اگر پاسخی را نمی‌دانید، به همان بخش برگردید. هدف حفظ نام ابزار نیست؛ باید
-                    بتوانید بگویید چرا یک شغل دسته‌ای به ذخیره و ریتم دیگری نیاز دارد.</span><span class="en">If you
+            <p class="lead"><span class="fa">اگر پاسخی را نمی‌دانید، به همان بخش برگردید. هدف، حفظ‌کردن نام ابزارها نیست؛ باید
+                    بتوانید بگویید چرا یک کار دسته‌ای به ذخیره‌سازی و ریتم دیگری نیاز دارد.</span><span class="en">If you
                     cannot answer one, return to that section. The goal is not tool names. You should be able to say why
                     a batch job needs a different store and a different rhythm.</span></p>
             <button class="btn sm" id="toggleAllQuestions" type="button" style="margin-bottom:15px"><span
                     class="fa">باز/بسته‌کردن همه</span><span class="en">Toggle all</span></button>
             <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span
-                        class="qa-number">Q1</span><span class="fa">تفاوت سیستم آنلاین و شغل دسته‌ای چیست؟</span><span
+                        class="qa-number">Q1</span><span class="fa">تفاوت سیستم آنلاین و کار دسته‌ای چیست؟</span><span
                         class="en">What is the difference between an online system and a batch job?</span></button>
                 <div class="qa-answer">
-                    <div><span class="fa">آنلاین منتظر یک درخواست است و سریع جواب می‌دهد. دسته یک ورودی بزرگ می‌گیرد،
-                            کار را تمام می‌کند و خروجی می‌نویسد. کاربری پشت صفحه منتظر نیست.</span><span
+                    <div><span class="fa">سیستم آنلاین منتظر یک درخواست می‌ماند و سریع پاسخ می‌دهد؛ کار دسته‌ای یک ورودی بزرگ برمی‌دارد،
+                            کار را تمام می‌کند و خروجی می‌نویسد. هیچ کاربری پشت صفحه منتظر نمی‌ماند.</span><span
                             class="en">Online waits for one request and answers fast. Batch takes a large input,
                             finishes the work, and writes an output. No user is waiting on a page.</span></div>
                 </div>
@@ -2696,7 +2695,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
                         class="qa-number">Q3</span><span class="fa">Shuffle در MapReduce چه می‌کند؟</span><span
                         class="en">What does the shuffle do in MapReduce?</span></button>
                 <div class="qa-answer">
-                    <div><span class="fa">بعد از Map، همهٔ مقادیر یک کلید باید پیش یک Reduce بروند. Shuffle داده را روی
+                    <div><span class="fa">بعد از Map، همهٔ مقادیرِ یک کلید باید به یک Reduce برسند. Shuffle همین داده را روی
                             شبکه جابه‌جا و گروه‌بندی می‌کند. Join و GroupBy هم همین جابه‌جایی را دارند.</span><span
                             class="en">After Map, every value for one key must reach the same Reduce. Shuffle moves and
                             groups that data on the network. Joins and grouping do the same move.</span></div>
@@ -2706,8 +2705,8 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
                         class="qa-number">Q4</span><span class="fa">تفاوت انبار، دریاچه و lakehouse در یک
                         جمله؟</span><span class="en">Warehouse vs lake vs lakehouse in one sentence?</span></button>
                 <div class="qa-answer">
-                    <div><span class="fa">انبار جدول تمیز برای SQL است. دریاچه فایل خام روی ذخیرهٔ شیء است. lakehouse
-                            می‌خواهد فایل ارزان دریاچه را با اسکیما و تراکنش انبار جمع کند.</span><span class="en">A
+                    <div><span class="fa">انبار، جدول‌های تمیز برای SQL است؛ دریاچه، فایل خام روی ذخیره‌سازی اشیاء؛ و lakehouse
+                            می‌خواهد فایل‌های ارزان دریاچه را با اسکیما و تراکنش انبار ترکیب کند.</span><span class="en">A
                             warehouse is clean tables for SQL. A lake is raw files on object storage. A lakehouse tries
                             to keep the cheap lake files and add warehouse schema and transactions.</span></div>
                 </div>
@@ -2718,8 +2717,8 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
                         better?</span></button>
                 <div class="qa-answer">
                     <div><span class="fa">جدول کوچک یا وقتی می‌خواهید مبدأ و مقصد را کامل هم‌تراز کنید: Snapshot. جدول
-                            بزرگ با ستون زمان به‌روزرسانی قابل اعتماد: تفاضلی. ETL تبدیل را قبل از بار می‌کند؛ ELT اول
-                            بار می‌کند و تبدیل را به انبار می‌سپارد.</span><span class="en">A small table, or when you
+                            بزرگ با ستون زمان به‌روزرسانی قابل اعتماد: تفاضلی. ETL تبدیل را قبل از بارگذاری انجام می‌دهد؛ ELT اول
+                            بارگذاری می‌کند و تبدیل را به موتور انبار می‌سپارد.</span><span class="en">A small table, or when you
                             want source and target fully aligned: snapshot. A large table with a trustworthy updated-at
                             column: differential. ETL transforms before load; ELT loads first and lets the warehouse
                             transform.</span></div>
@@ -2864,7 +2863,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
                         statStatus.textContent = 'RUNNING';
                         statStatus.classList.remove('ok');
                         setQuery('<span class="comment"># nightly job starts — 3 chunks of 4</span>');
-                        setBilingual($('#heroCaption'), 'شغل شروع شد. دستهٔ اول در حال خواندن از دیتابیس عملیاتی است.', 'The job started. The first chunk is being read from the operational database.');
+                        setBilingual($('#heroCaption'), 'کار شروع شد. دستهٔ اول در حال خواندن از دیتابیس عملیاتی است.', 'The job started. The first chunk is being read from the operational database.');
                         await sleep(700);
                         const promises = [];
                         for (let b = 0; b < 3; b++) {
@@ -2880,7 +2879,7 @@ reduce(country, amounts) -&gt; emit(country, sum(amounts))
                         statStatus.textContent = 'COMPLETE ✓';
                         statStatus.classList.add('ok');
                         setQuery('<span class="kw">JOB COMPLETE</span>  —  12 rows loaded');
-                        setBilingual($('#heroCaption'), 'سه دسته تمام شد — ۱۲ رکورد، یک شغل، یک خروجی. همین ریتمِ هر شب است.', 'Three chunks done — 12 records, one job, one output. That is the nightly rhythm.');
+                        setBilingual($('#heroCaption'), 'سه دسته تمام شد — ۱۲ رکورد، یک کار، یک خروجی. همین ریتمِ هر شب است.', 'Three chunks done — 12 records, one job, one output. That is the nightly rhythm.');
                         await sleep(3000);
                     }
                 }
