@@ -2286,7 +2286,27 @@ BATCH FLOW ANIMATION (BatchProcessing) — live packets
   .bp-bubble { width: 38px; height: 38px; }
   .bp-sub { display: none; }
 }
-  </style>
+  
+    /* ═══════════ STREAM CARD (StreamProcessing) mini animation ═══════════ */
+    .st-stage{ direction:ltr; padding:14px 16px 6px; color:var(--code-ink); }
+    .st-lane{ position:relative; height:30px; margin:4px 2px 2px; }
+    .st-rail{ position:absolute; left:2%; right:2%; top:14px; height:2px; background:var(--term-line); overflow:hidden; }
+    .st-rail i{ position:absolute; inset:0; background:repeating-linear-gradient(90deg,#3d5748 0 8px,transparent 8px 16px); animation:stDash 1s linear infinite; opacity:.7; }
+    @keyframes stDash{ to{ transform:translateX(16px);} }
+    .st-bound{ position:absolute; top:0; bottom:0; width:2px; background:rgba(229,180,90,.5); }
+    .st-bound::before{ content:'window end'; position:absolute; top:-15px; left:50%; transform:translateX(-50%); color:#8ca08e; font:700 6.5px var(--mono); white-space:nowrap; }
+    .st-dot{ position:absolute; top:8px; width:11px; height:11px; margin-left:-5px; border-radius:50%; background:#5CC08F; opacity:0; transform:scale(.3); transition:opacity .25s ease,transform .25s ease,background-color .25s ease; }
+    .st-dot.on{ opacity:1; transform:scale(1); }
+    .st-dot.late{ background:#E5B45A; }
+    .st-dot.drop{ background:#6f7f70; opacity:.5; }
+    .st-wm{ position:absolute; top:2px; bottom:0; width:2px; background:rgba(229,180,90,.95); box-shadow:0 0 8px rgba(229,180,90,.5); transition:left .12s linear; }
+    .st-wm::after{ content:'wm'; position:absolute; bottom:-16px; left:50%; transform:translateX(-50%); color:#E5B45A; font:700 7px var(--mono); }
+    .st-axis{ display:flex; justify-content:space-between; color:#5f7465; font:700 8px var(--mono); padding:0 1px; margin:2px 2px 0; }
+    .st-read{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:10px 2px 12px; }
+    .st-read div{ border:1px solid var(--term-line); border-radius:7px; padding:5px 6px; text-align:center; color:#748c79; font:600 8px var(--mono); letter-spacing:.05em; text-transform:uppercase; }
+    .st-read b{ display:block; margin-top:2px; color:#d5e0d2; font-size:12px; letter-spacing:0; }
+    .st-read b.live{ color:#5CC08F; } .st-read b.done{ color:#E5B45A; }
+</style>
 </head>
 
 <body>
@@ -2724,6 +2744,54 @@ BATCH FLOW ANIMATION (BatchProcessing) — live packets
         </div>
 
       </div>
+
+        <!-- ★ TOPIC 05 — Stream Processing -->
+        <div class="feat-card rv" style="--tc:var(--grn)">
+          <div class="feat-top">
+            <div class="feat-info">
+              <div class="feat-head">
+                <span class="pnum">TOPIC-05</span>
+                <h3>Stream Processing</h3>
+                <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+              </div>
+              <p class="feat-desc">
+                <span class="fa">داده‌ای که بی‌وقفه و بی‌انتها می‌آید را <b>همان لحظه</b> پردازش کنید، نه ساعت ۲ بامداد. از لاگِ کافکا و CDC تا چهار پرسشِ پنجره‌بندی، watermark و دقیقاً-یک‌بار پردازش — همراه با دو دموی تعاملیِ زمان و دیررسیدن.</span>
+                <span class="en">Process data that arrives non-stop as it happens — not at 2 a.m. From Kafka logs and CDC to the four windowing questions, watermarks and exactly-once — with two interactive demos on time and late data.</span>
+              </p>
+              <div class="ftags"><span>CDC</span><span>Event Time</span><span>Windows</span><span>Watermark</span><span>Exactly-once</span></div>
+              <div class="feat-links">
+                <a class="btn primary sm" href="./StreamProcessing.html">
+                  <span class="fa">خواندن</span><span class="en">Read</span>
+                  <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+                </a>
+              </div>
+            </div>
+            <div class="feat-stage" aria-hidden="true">
+              <div class="qwin-bar"><i></i><i></i><i></i><span>window · 1-min · event time</span></div>
+              <div class="st-cap" id="stCap"><span class="fa"></span><span class="en"></span></div>
+              <div class="st-stage" id="stStage">
+                <div class="st-lane">
+                  <div class="st-rail"><i></i></div>
+                  <div class="st-bound" style="left:33.3%"></div>
+                  <div class="st-wm" id="stWM" style="left:0%"></div>
+                  <div id="stDots"></div>
+                </div>
+                <div class="st-axis"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+                <div class="st-read">
+                  <div>window state<b class="live" id="stState">OPEN</b></div>
+                  <div>events<b id="stN">0 / 6</b></div>
+                  <div>total<b id="stTotal">$0</b></div>
+                </div>
+              </div>
+              <div class="mini-banner" id="stBanner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                <span class="fa">جایِ <b>watermark</b> تعیین می‌کند دادهٔ دیررس شمرده شود یا دور بریزد</span>
+                <span class="en">where the <b>watermark</b> sits decides if late data is counted or dropped</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
     </section>
   </main>
   <!-- ═══════════ FOOTER ═══════════ -->
@@ -2783,7 +2851,7 @@ BATCH FLOW ANIMATION (BatchProcessing) — live packets
     const script = [
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'ls topics/\n', c: '', type: true },
-      { t: 'DatabaseIndexes.html  DataPartitioning.html  DataSharding.html  BatchProcessing.html\n', c: 'hl', type: true, delay: 60 },
+      { t: 'DatabaseIndexes.html  DataPartitioning.html  DataSharding.html  BatchProcessing.html  StreamProcessing.html\n', c: 'hl', type: true, delay: 60 },
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'cat README.md\n', c: '', type: true },
       { t: '> Deep dives into backend fundamentals for .NET devs.\n', c: 'cm', type: true },
@@ -3159,7 +3227,71 @@ BATCH FLOW ANIMATION (BatchProcessing) — live packets
       });
     }, { threshold: 0.5 });
     document.querySelectorAll('[data-count]').forEach(el => cio.observe(el));
-  </script>
+  
+/* ═══════════ ANIMATION 5: STREAM WINDOW + WATERMARK (StreamProcessing) ═══════════ */
+(function () {
+  const stage = document.getElementById('stStage');
+  if (!stage) return;
+  const cap = document.getElementById('stCap');
+  const banner = document.getElementById('stBanner');
+  const dotsEl = document.getElementById('stDots');
+  const wm = document.getElementById('stWM');
+  const stateEl = document.getElementById('stState');
+  const nEl = document.getElementById('stN');
+  const totEl = document.getElementById('stTotal');
+  const NORMAL = [{ et: 1.0, amt: 20 }, { et: 1.8, amt: 35 }, { et: 3.4, amt: 50 }, { et: 5.2, amt: 15 }, { et: 5.9, amt: 60 }, { et: 7.0, amt: 25 }];
+  const LATE = { et: 2.6, amt: 90 };
+  const X = et => (et / 9) * 100;
+  function makeDot(et, cls) {
+    const d = document.createElement('div');
+    d.className = 'st-dot ' + (cls || '');
+    d.style.left = X(et) + '%';
+    dotsEl.appendChild(d);
+    return d;
+  }
+  async function cycle() {
+    while (true) {
+      // reset
+      dotsEl.innerHTML = '';
+      wm.style.left = '0%';
+      stateEl.textContent = 'OPEN'; stateEl.className = 'live';
+      nEl.textContent = '0 / 6'; totEl.textContent = '$0';
+      banner.classList.remove('show');
+      setCap(cap, 'رویدادها در حالِ رسیدن‌اند — نابه‌ترتیب و دیر.', 'Orders are arriving — out of order and late.');
+      await wait(1500);
+      let total = 0;
+      for (let i = 0; i < NORMAL.length; i++) {
+        const d = makeDot(NORMAL[i].et);
+        await wait(260);
+        d.classList.add('on');
+        total += NORMAL[i].amt;
+        nEl.textContent = (i + 1) + ' / 6';
+        totEl.textContent = '$' + total;
+      }
+      setCap(cap, 'حالا watermark جلو می‌رود…', 'Now the watermark advances…');
+      for (let step = 0; step <= 10; step++) {
+        wm.style.left = (step / 10 * 70) + '%';
+        if ((step / 10 * 70) > 33.4) { stateEl.textContent = 'CLOSED'; stateEl.className = 'done'; }
+        await wait(130);
+      }
+      setCap(cap, 'پنجره بسته شد؛ حالا سفارشِ دیررس (زمانِ ۲.۶) می‌رسد…', 'Window closed; now the late order (event time 2.6) arrives…');
+      await wait(700);
+      const late = makeDot(LATE.et, 'late');
+      await wait(120);
+      late.classList.add('on');
+      await wait(500);
+      late.classList.add('drop');
+      stateEl.className = 'done';
+      setCap(cap, 'دیررس دور ریخته شد ✗ — جمعِ پنجره برای همیشه ناقص می‌ماند.', 'Late order dropped ✗ — the window sum stays incomplete.');
+      banner.classList.add('show');
+      await wait(3400);
+      banner.classList.remove('show');
+      await wait(600);
+    }
+  }
+  cycle();
+})();
+</script>
 </body>
 
 </html>
