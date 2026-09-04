@@ -1807,7 +1807,7 @@
             }
         }
     </style>
-</<style>
+<style>
 /* ══════════════════════════════════════════
    STREAM PROCESSING — page-specific styles
    (continues the shared design language)
@@ -2550,8 +2550,8 @@ html[lang="fa"] .wm-verdict { direction: rtl; text-align: right; }
             <span class="fa">دموی ۱ — «چه‌وقت اتفاق افتاد» در برابر «چه‌وقت دیدیم»</span><span class="en">Demo 1 — "when it happened" vs "when we saw it"</span>
         </div>
         <p class="demo-intro">
-            <span class="fa">یک دقیقهٔ شلوغِ فروشگاه را تماشا کنید. هر نقطهٔ سبز، یک سفارش در <b>زمانِ واقعیِ وقوع</b> است. خطِ نارنجیِ متحرک، «الانِ سیستم» (زمان پردازش) است. با <b>Run</b>، زمان جلو می‌رود و هر سفارش وقتی «می‌رسد» که سیستم به زمانِ پردازشِ آن برسد.</span>
-            <span class="en">Watch one busy minute at the store. Each green dot is an order at its <b>true event time</b>. The moving amber line is the system's "now" (processing time). Press <b>Run</b> to advance time; an order "arrives" when the system reaches its processing time.</span>
+            <span class="fa">یک دقیقهٔ شلوغِ فروشگاه را تماشا کنید. هر نقطهٔ سبز، یک سفارش در <b>زمانِ واقعیِ وقوع</b> است. با <b>اجرا</b> زمان جلو می‌رود و هر سفارش در لحظه‌یِ «رسیدن» (زمان پردازشِ خودش) فعال می‌شود. فاصلهٔ میان این دو، همان دیربودن است.</span>
+            <span class="en">Watch one busy minute at the store. Each green dot is an order at its <b>true event time</b>. Press <b>Run</b> to advance time; each order lights up when it "arrives" (its processing time). The gap between the two is the lateness.</span>
         </p>
         <div class="vp">
             <div class="window-bar"><i></i><i></i><i></i><span>orders · one busy minute</span></div>
@@ -2576,11 +2576,12 @@ html[lang="fa"] .wm-verdict { direction: rtl; text-align: right; }
                         <button type="button" data-sp="0.8">2×</button>
                     </div>
                 </div>
+            </div>
             <div class="vp-status" id="etStatus"><span class="fa">برای شروع، دکمهٔ اجرا را بزنید.</span><span class="en">Press Run to start.</span></div>
         </div>
     </div>
     <div class="net-note"><span class="badge">.NET</span>
-        <p><span class="fa">برای یک توسعه‌دهندهٔ بک‌اند، معادلش واضح است: اعتماد نکنید به «<code>DateTime.Now</code> هنگام دریافت پیام». اگر رویداد برچسبِ زمانِ وقوع دارد (مثلاً <code>OrderTimeUtc</code> از سمتِ مشتری یا گیتوی)، همان را مبنای پنجره‌بندی و آمار قرار دهید. «زمانِ رسیدن به سرورِ من» برای نمایشِ وضعیتِ سلامت مفید است، نه برای آمارِ تجاری.</span><span class="en">For a backend dev the lesson is clear: do not trust "<code>DateTime.Now</code> when the message arrived". If the event carries a true timestamp (e.g. <code>OrderTimeUtc</code> from the client or gateway), use that for windowing and stats. "Time it hit my server" is fine for health checks, not for business numbers.</span></p>
+        <p><span class="fa">برای شما یعنی: <code>BackgroundService</code> که مدام از یک بروکرِ پیام (مثل Kafka، Azure Event Hubs یا RabbitMQ) می‌خواند و هر رویداد را بی‌درنگ پردازش می‌کند. اگر می‌خواهید عدد را همین الان به مرورگر برسانید، آن را با <code>SignalR</code> پوش می‌دهید. الگوی فکری: API ثبتِ سفارش می‌کند و یک رویداد روی تاپیک می‌گذارد؛ مصرف‌کننده‌ها مستقل از API کارشان را انجام می‌دهند.</span><span class="en">For you this means: a <code>BackgroundService</code> that keeps reading from a message broker (Kafka, Azure Event Hubs, RabbitMQ) and processes each event at once. To push the number to the browser live, wrap it with <code>SignalR</code>. The mental model: the API registers an order and emits an event to a topic; consumers do their own work independently of the API.</span></p>
     </div>
 </section>
 <section class="section reveal" id="s5">
