@@ -2286,7 +2286,52 @@ BATCH FLOW ANIMATION (BatchProcessing) — live packets
   .bp-bubble { width: 38px; height: 38px; }
   .bp-sub { display: none; }
 }
-  </style>
+  
+    /* ═══════════ STREAM CARD (StreamProcessing) mini animation ═══════════ */
+    .st-stage{ direction:ltr; padding:14px 16px 6px; color:var(--code-ink); }
+    .st-lane{ position:relative; height:30px; margin:4px 2px 2px; }
+    .st-rail{ position:absolute; left:2%; right:2%; top:14px; height:2px; background:var(--term-line); overflow:hidden; }
+    .st-rail i{ position:absolute; inset:0; background:repeating-linear-gradient(90deg,#3d5748 0 8px,transparent 8px 16px); animation:stDash 1s linear infinite; opacity:.7; }
+    @keyframes stDash{ to{ transform:translateX(16px);} }
+    .st-bound{ position:absolute; top:0; bottom:0; width:2px; background:rgba(229,180,90,.5); }
+    .st-bound::before{ content:'window end'; position:absolute; top:-15px; left:50%; transform:translateX(-50%); color:#8ca08e; font:700 6.5px var(--mono); white-space:nowrap; }
+    .st-dot{ position:absolute; top:8px; width:11px; height:11px; margin-left:-5px; border-radius:50%; background:#5CC08F; opacity:0; transform:scale(.3); transition:opacity .25s ease,transform .25s ease,background-color .25s ease; }
+    .st-dot.on{ opacity:1; transform:scale(1); }
+    .st-dot.late{ background:#E5B45A; }
+    .st-dot.drop{ background:#6f7f70; opacity:.5; }
+    .st-wm{ position:absolute; top:2px; bottom:0; width:2px; background:rgba(229,180,90,.95); box-shadow:0 0 8px rgba(229,180,90,.5); transition:left .12s linear; }
+    .st-wm::after{ content:'wm'; position:absolute; bottom:-16px; left:50%; transform:translateX(-50%); color:#E5B45A; font:700 7px var(--mono); }
+    .st-axis{ display:flex; justify-content:space-between; color:#5f7465; font:700 8px var(--mono); padding:0 1px; margin:2px 2px 0; }
+    .st-read{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:10px 2px 12px; }
+    .st-read div{ border:1px solid var(--term-line); border-radius:7px; padding:5px 6px; text-align:center; color:#748c79; font:600 8px var(--mono); letter-spacing:.05em; text-transform:uppercase; }
+    .st-read b{ display:block; margin-top:2px; color:#d5e0d2; font-size:12px; letter-spacing:0; }
+    .st-read b.live{ color:#5CC08F; } .st-read b.done{ color:#E5B45A; }
+
+    /* ═══════════ TRANSACTIONS CARD (TransactionsConcurrency) mini animation ═══════════ */
+    .tc-stage{ direction:ltr; padding:16px 14px 4px; color:var(--code-ink); }
+    .tc-line{ display:flex; align-items:center; justify-content:space-between; gap:9px; }
+    .tc-sess{ width:92px; padding:9px 7px; border:1px solid #35483b; border-radius:9px; background:#202a23; color:#8ca08e; font:700 9px var(--mono); text-align:center; letter-spacing:.05em; transition:border-color .3s ease, color .3s ease; }
+    .tc-sess span{ display:block; margin-top:4px; padding:2px 6px; border-radius:99px; background:#171d18; color:#6e7f70; font:700 8px var(--mono); text-transform:uppercase; letter-spacing:.03em; transition:color .3s ease; }
+    .tc-sess.writing{ border-color:#d09a4e; color:#f2d39b; }
+    .tc-sess.writing span{ color:#ffe3ae; }
+    .tc-sess.waiting{ border-color:#c9563f; }
+    .tc-sess.waiting span{ color:#ffb4a0; animation:tcBlink 1s ease-in-out infinite; }
+    .tc-sess.reading span{ color:#8ee1b2; }
+    @keyframes tcBlink{ 50%{ opacity:.35; } }
+    .tc-row{ position:relative; flex:1; max-width:150px; padding:9px 12px 11px; border:1px solid #4d705b; border-radius:10px; background:rgba(31,122,82,.15); text-align:center; transition:border-color .3s ease, background-color .3s ease; }
+    .tc-row-name{ color:#6e7f70; font:700 7.5px var(--mono); letter-spacing:.06em; text-transform:uppercase; }
+    .tc-row-val{ margin-top:1px; color:#d5e0d2; font:700 19px var(--mono); transition:color .3s ease; }
+    .tc-row.dirty{ border-color:#d09a4e; background:rgba(229,180,90,.1); }
+    .tc-row.dirty .tc-row-val{ color:#ffe3ae; }
+    .tc-lock{ position:absolute; top:-9px; right:-7px; padding:2px 7px; border-radius:99px; background:#c9563f; color:#ffe9e2; font:700 7.5px var(--mono); letter-spacing:.05em; opacity:0; transform:scale(.6); transition:opacity .25s ease, transform .25s ease; }
+    .tc-lock.on{ opacity:1; transform:scale(1); }
+    .tc-ver{ position:absolute; bottom:-10px; left:50%; transform:translateX(-50%) scale(.6); padding:2px 8px; border-radius:99px; border:1px solid rgba(107,168,212,.55); background:rgba(107,168,212,.16); color:#cfe6f5; font:700 8px var(--mono); opacity:0; transition:opacity .25s ease, transform .25s ease; white-space:nowrap; }
+    .tc-ver.on{ opacity:1; transform:translateX(-50%) scale(1); }
+    .tc-reads{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:14px 2px 10px; }
+    .tc-reads div{ border:1px solid var(--term-line); border-radius:7px; padding:5px 6px; text-align:center; color:#748c79; font:600 8px var(--mono); letter-spacing:.05em; text-transform:uppercase; }
+    .tc-reads b{ display:block; margin-top:2px; color:#d5e0d2; font-size:12px; letter-spacing:0; }
+    .tc-reads b.live{ color:#5CC08F; } .tc-reads b.warn{ color:#E5B45A; } .tc-reads b.err{ color:#E5745A; }
+</style>
 </head>
 
 <body>
@@ -2724,6 +2769,104 @@ BATCH FLOW ANIMATION (BatchProcessing) — live packets
         </div>
 
       </div>
+
+        <!-- ★ TOPIC 05 — Stream Processing -->
+        <div class="feat-card rv" style="--tc:var(--grn)">
+          <div class="feat-top">
+            <div class="feat-info">
+              <div class="feat-head">
+                <span class="pnum">TOPIC-05</span>
+                <h3>Stream Processing</h3>
+                <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+              </div>
+              <p class="feat-desc">
+                <span class="fa">داده‌ای که بی‌وقفه و بی‌انتها می‌آید را <b>همان لحظه</b> پردازش کنید، نه ساعت ۲ بامداد. از لاگِ کافکا و CDC تا چهار پرسشِ پنجره‌بندی، watermark و دقیقاً-یک‌بار پردازش — همراه با دو دموی تعاملیِ زمان و دیررسیدن.</span>
+                <span class="en">Process data that arrives non-stop as it happens — not at 2 a.m. From Kafka logs and CDC to the four windowing questions, watermarks and exactly-once — with two interactive demos on time and late data.</span>
+              </p>
+              <div class="ftags"><span>CDC</span><span>Event Time</span><span>Windows</span><span>Watermark</span><span>Exactly-once</span></div>
+              <div class="feat-links">
+                <a class="btn primary sm" href="./StreamProcessing.html">
+                  <span class="fa">خواندن</span><span class="en">Read</span>
+                  <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+                </a>
+              </div>
+            </div>
+            <div class="feat-stage" aria-hidden="true">
+              <div class="qwin-bar"><i></i><i></i><i></i><span>window · 1-min · event time</span></div>
+              <div class="st-cap" id="stCap"><span class="fa"></span><span class="en"></span></div>
+              <div class="st-stage" id="stStage">
+                <div class="st-lane">
+                  <div class="st-rail"><i></i></div>
+                  <div class="st-bound" style="left:33.3%"></div>
+                  <div class="st-wm" id="stWM" style="left:0%"></div>
+                  <div id="stDots"></div>
+                </div>
+                <div class="st-axis"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+                <div class="st-read">
+                  <div>window state<b class="live" id="stState">OPEN</b></div>
+                  <div>events<b id="stN">0 / 6</b></div>
+                  <div>total<b id="stTotal">$0</b></div>
+                </div>
+              </div>
+              <div class="mini-banner" id="stBanner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                <span class="fa">جایِ <b>watermark</b> تعیین می‌کند دادهٔ دیررس شمرده شود یا دور بریزد</span>
+                <span class="en">where the <b>watermark</b> sits decides if late data is counted or dropped</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ★ TOPIC 06 — Transactions & Concurrency Control -->
+        <div class="feat-card rv" style="--tc:var(--vio)">
+          <div class="feat-top">
+            <div class="feat-info">
+              <div class="feat-head">
+                <span class="pnum">TOPIC-06</span>
+                <h3>Transactions &amp; Concurrency Control</h3>
+                <span class="pstatus live"><span class="pdot"></span><span class="fa">منتشرشده</span><span class="en">Published</span></span>
+              </div>
+              <p class="feat-desc">
+                <span class="fa">وقتی چند کاربر هم‌زمان به <b>یک داده</b> می‌رسند، چه اتفاقی می‌افتد؟ از ضمانت‌های ACID و سطح‌های ایزوله‌سازی تا قفل‌ها، بن‌بست، تشدید قفل و نسخه‌بندی سطرها (MVCC) در SQL Server — همراه با دموی تعاملیِ مسابقهٔ نوشتن.</span>
+                <span class="en">What happens when several users reach <b>the same data</b> at once? From ACID guarantees and isolation levels to locks, deadlocks, lock escalation and row versioning (MVCC) in SQL Server — with an interactive write-race demo.</span>
+              </p>
+              <div class="ftags"><span>ACID</span><span>Isolation Levels</span><span>Locks</span><span>Deadlocks</span><span>MVCC</span></div>
+              <div class="feat-links">
+                <a class="btn primary sm" href="./TransactionsConcurrency.html">
+                  <span class="fa">خواندن</span><span class="en">Read</span>
+                  <svg viewBox="0 0 24 24" class="ic sm"><use href="#i-arrow" /></svg>
+                </a>
+              </div>
+            </div>
+            <div class="feat-stage" aria-hidden="true">
+              <div class="qwin-bar"><i></i><i></i><i></i><span>one row · two sessions</span></div>
+              <div class="st-cap" id="tcCap"><span class="fa"></span><span class="en"></span></div>
+              <div class="tc-stage" id="tcStage">
+                <div class="tc-line">
+                  <div class="tc-sess" id="tcS1">SESSION A<span id="tcS1s">idle</span></div>
+                  <div class="tc-row" id="tcRow">
+                    <div class="tc-row-name">Accounts · Id = 1</div>
+                    <div class="tc-row-val" id="tcVal">500</div>
+                    <div class="tc-lock" id="tcLock">X LOCK</div>
+                    <div class="tc-ver" id="tcVer">v: 500</div>
+                  </div>
+                  <div class="tc-sess" id="tcS2">SESSION B<span id="tcS2s">idle</span></div>
+                </div>
+                <div class="tc-reads">
+                  <div>mode<b class="warn" id="tcMode">LOCKS</b></div>
+                  <div>B waits<b id="tcWait">—</b></div>
+                  <div>B reads<b id="tcRead">—</b></div>
+                </div>
+              </div>
+              <div class="mini-banner" id="tcBanner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                <span class="fa">قفل‌ها خواننده را <b>نگه می‌دارند</b>؛ نسخه‌ها او را <b>عبور می‌دهند</b></span>
+                <span class="en"><b>locks</b> hold readers back; <b>row versions</b> let them through</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
     </section>
   </main>
   <!-- ═══════════ FOOTER ═══════════ -->
@@ -2784,6 +2927,7 @@ BATCH FLOW ANIMATION (BatchProcessing) — live packets
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'ls topics/\n', c: '', type: true },
       { t: 'DatabaseIndexes.html  DataPartitioning.html  DataSharding.html  BatchProcessing.html\n', c: 'hl', type: true, delay: 60 },
+      { t: 'StreamProcessing.html  TransactionsConcurrency.html\n', c: 'hl', type: true, delay: 60 },
       { t: '~/BackendDeepDives $ ', c: 'pr', type: true },
       { t: 'cat README.md\n', c: '', type: true },
       { t: '> Deep dives into backend fundamentals for .NET devs.\n', c: 'cm', type: true },
@@ -3159,7 +3303,134 @@ BATCH FLOW ANIMATION (BatchProcessing) — live packets
       });
     }, { threshold: 0.5 });
     document.querySelectorAll('[data-count]').forEach(el => cio.observe(el));
-  </script>
+  
+/* ═══════════ ANIMATION 5: STREAM WINDOW + WATERMARK (StreamProcessing) ═══════════ */
+(function () {
+  const stage = document.getElementById('stStage');
+  if (!stage) return;
+  const cap = document.getElementById('stCap');
+  const banner = document.getElementById('stBanner');
+  const dotsEl = document.getElementById('stDots');
+  const wm = document.getElementById('stWM');
+  const stateEl = document.getElementById('stState');
+  const nEl = document.getElementById('stN');
+  const totEl = document.getElementById('stTotal');
+  const NORMAL = [{ et: 1.0, amt: 20 }, { et: 1.8, amt: 35 }, { et: 3.4, amt: 50 }, { et: 5.2, amt: 15 }, { et: 5.9, amt: 60 }, { et: 7.0, amt: 25 }];
+  const LATE = { et: 2.6, amt: 90 };
+  const X = et => (et / 9) * 100;
+  function makeDot(et, cls) {
+    const d = document.createElement('div');
+    d.className = 'st-dot ' + (cls || '');
+    d.style.left = X(et) + '%';
+    dotsEl.appendChild(d);
+    return d;
+  }
+  async function cycle() {
+    while (true) {
+      // reset
+      dotsEl.innerHTML = '';
+      wm.style.left = '0%';
+      stateEl.textContent = 'OPEN'; stateEl.className = 'live';
+      nEl.textContent = '0 / 6'; totEl.textContent = '$0';
+      banner.classList.remove('show');
+      setCap(cap, 'رویدادها در حالِ رسیدن‌اند — نابه‌ترتیب و دیر.', 'Orders are arriving — out of order and late.');
+      await wait(1500);
+      let total = 0;
+      for (let i = 0; i < NORMAL.length; i++) {
+        const d = makeDot(NORMAL[i].et);
+        await wait(260);
+        d.classList.add('on');
+        total += NORMAL[i].amt;
+        nEl.textContent = (i + 1) + ' / 6';
+        totEl.textContent = '$' + total;
+      }
+      setCap(cap, 'حالا watermark جلو می‌رود…', 'Now the watermark advances…');
+      for (let step = 0; step <= 10; step++) {
+        wm.style.left = (step / 10 * 70) + '%';
+        if ((step / 10 * 70) > 33.4) { stateEl.textContent = 'CLOSED'; stateEl.className = 'done'; }
+        await wait(130);
+      }
+      setCap(cap, 'پنجره بسته شد؛ حالا سفارشِ دیررس (زمانِ ۲.۶) می‌رسد…', 'Window closed; now the late order (event time 2.6) arrives…');
+      await wait(700);
+      const late = makeDot(LATE.et, 'late');
+      await wait(120);
+      late.classList.add('on');
+      await wait(500);
+      late.classList.add('drop');
+      stateEl.className = 'done';
+      setCap(cap, 'دیررس دور ریخته شد ✗ — جمعِ پنجره برای همیشه ناقص می‌ماند.', 'Late order dropped ✗ — the window sum stays incomplete.');
+      banner.classList.add('show');
+      await wait(3400);
+      banner.classList.remove('show');
+      await wait(600);
+    }
+  }
+  cycle();
+})();
+
+/* ═══════════ ANIMATION 6: LOCKS vs ROW VERSIONS (TransactionsConcurrency) ═══════════ */
+(function () {
+  const stage = document.getElementById('tcStage');
+  if (!stage) return;
+  const cap = document.getElementById('tcCap');
+  const banner = document.getElementById('tcBanner');
+  const s1 = document.getElementById('tcS1'), s2 = document.getElementById('tcS2');
+  const s1s = document.getElementById('tcS1s'), s2s = document.getElementById('tcS2s');
+  const row = document.getElementById('tcRow'), val = document.getElementById('tcVal');
+  const lock = document.getElementById('tcLock'), ver = document.getElementById('tcVer');
+  const mode = document.getElementById('tcMode'), waitEl = document.getElementById('tcWait'), readEl = document.getElementById('tcRead');
+  function reset() {
+    s1.className = 'tc-sess'; s2.className = 'tc-sess';
+    s1s.textContent = 'idle'; s2s.textContent = 'idle';
+    row.classList.remove('dirty'); val.textContent = '500';
+    lock.classList.remove('on'); ver.classList.remove('on');
+    waitEl.textContent = '—'; waitEl.className = '';
+    readEl.textContent = '—'; readEl.className = '';
+    banner.classList.remove('show');
+  }
+  async function cycle() {
+    while (true) {
+      if (document.hidden) { await wait(900); continue; }
+      /* ── Act 1: pessimistic locks ── */
+      reset();
+      mode.textContent = 'LOCKS'; mode.className = 'warn';
+      setCap(cap, 'نوشتنِ A قفلِ انحصاری می‌گیرد؛ خواندنِ B باید پشتِ در بماند.', "A's write takes an exclusive lock; B's read must wait at the door.");
+      await wait(1500);
+      s1.classList.add('writing'); s1s.textContent = 'UPDATE';
+      row.classList.add('dirty'); val.textContent = '600';
+      lock.classList.add('on');
+      await wait(800);
+      s2.classList.add('waiting'); s2s.textContent = 'blocked…';
+      waitEl.textContent = 'YES'; waitEl.className = 'err';
+      setCap(cap, 'B پشتِ قفل ماند — خطایی نیست، فقط انتظار.', 'B is stuck behind the lock — no error, just waiting.');
+      await wait(1900);
+      lock.classList.remove('on'); row.classList.remove('dirty');
+      s1s.textContent = 'COMMIT';
+      s2.classList.remove('waiting'); s2.classList.add('reading'); s2s.textContent = 'reads 600';
+      readEl.textContent = '600'; readEl.className = '';
+      await wait(1700);
+      /* ── Act 2: row versioning ── */
+      reset();
+      mode.textContent = 'VERSIONS'; mode.className = 'live';
+      setCap(cap, 'با نسخه‌بندی، A نسخهٔ قدیمی را برای B جا می‌گذارد و رد می‌شود.', 'With row versioning, A leaves the old version behind for B and moves on.');
+      await wait(1500);
+      s1.classList.add('writing'); s1s.textContent = 'UPDATE';
+      row.classList.add('dirty'); val.textContent = '600';
+      ver.classList.add('on');
+      await wait(800);
+      s2.classList.add('reading'); s2s.textContent = 'reads 500';
+      waitEl.textContent = 'NO'; waitEl.className = 'live';
+      readEl.textContent = '500'; readEl.className = 'live';
+      setCap(cap, 'B نسخهٔ قبلی را بی‌درنگ می‌خواند و می‌رود — هیچ‌کس منتظر نمی‌ماند.', 'B reads the previous version instantly and leaves — nobody waits.');
+      banner.classList.add('show');
+      await wait(3000);
+      banner.classList.remove('show');
+      await wait(600);
+    }
+  }
+  cycle();
+})();
+</script>
 </body>
 
 </html>

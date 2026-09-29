@@ -1,0 +1,2274 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="light" class="no-js">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="راهنمای تراکنش‌ها و کنترل همروندی برای توسعه‌دهندگان بک‌اند .NET: ضمانت‌های ACID، سطح‌های ایزوله‌سازی، قفل‌ها و بن‌بست، تشدید قفل و نسخه‌بندی سطرها (MVCC) در SQL Server.">
+    <meta name="theme-color" content="#f6f2e9">
+    <title>تراکنش‌ها و کنترل همروندی — Transactions &amp; Concurrency Control | Backend Deep Dives</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F7A52'/%3E%3Cpath d='M32 14 L18 22 V34 L32 42 L46 34 V22 Z' fill='none' stroke='%23F6F2E9' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='28' r='3' fill='%23F6F2E9'/%3E%3Cpath d='M20 47 H44 M24 51 H40' stroke='%23F6F2E9' stroke-width='2.5' stroke-linecap='round' opacity='.6'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script>document.documentElement.classList.replace('no-js', 'js');</script>
+    <style>
+        :root {
+            --bg: #f6f2e9;
+            --bg-alt: #efeadd;
+            --surface: #fdfbf5;
+            --surface-alt: #f3efe3;
+            --line: #e0d8c3;
+            --line-strong: #cdc3a8;
+            --ink: #242920;
+            --muted: #5f624f;
+            --dim: #8f8c74;
+            --accent: #1f7a52;
+            --accent-soft: rgba(31, 122, 82, .11);
+            --accent-line: rgba(31, 122, 82, .4);
+            --amber: #c27803;
+            --amber-soft: rgba(194, 120, 3, .13);
+            --red: #c2492f;
+            --red-soft: rgba(194, 73, 47, .1);
+            --violet: #a05b2c;
+            --violet-soft: rgba(160, 91, 44, .11);
+            --blue: #2d6a9f;
+            --blue-soft: rgba(45, 106, 159, .11);
+            --code-bg: #1c241e;
+            --code-ink: #d8e2d4;
+            --code-muted: #8ca08e;
+            --shadow: 0 1px 2px rgba(36, 41, 32, .06);
+            --shadow-lg: 0 18px 46px -22px rgba(36, 41, 32, .26);
+            --dot: rgba(36, 41, 32, .06);
+            --mono: "JetBrains Mono", Consolas, monospace;
+        }
+
+        html[data-theme="dark"] {
+            --bg: #171a14;
+            --bg-alt: #121510;
+            --surface: #1f231b;
+            --surface-alt: #1a1e16;
+            --line: #31362a;
+            --line-strong: #424836;
+            --ink: #eae7d9;
+            --muted: #b3b29c;
+            --dim: #83846e;
+            --accent: #5cc08f;
+            --accent-soft: rgba(92, 192, 143, .14);
+            --accent-line: rgba(92, 192, 143, .45);
+            --amber: #e3a63c;
+            --amber-soft: rgba(227, 166, 60, .14);
+            --red: #e5745a;
+            --red-soft: rgba(229, 116, 90, .12);
+            --violet: #d08b4f;
+            --violet-soft: rgba(208, 139, 79, .13);
+            --blue: #6ba8d4;
+            --blue-soft: rgba(107, 168, 212, .14);
+            --code-bg: #121813;
+            --code-ink: #d5e0d2;
+            --code-muted: #7e937f;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .32);
+            --shadow-lg: 0 18px 46px -22px rgba(0, 0, 0, .55);
+            --dot: rgba(234, 231, 217, .05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            min-width: 320px;
+            overflow-x: hidden;
+            background-color: var(--bg);
+            background-image: radial-gradient(var(--dot) .8px, transparent .8px);
+            background-size: 22px 22px;
+            color: var(--ink);
+            font: 400 16px/1.95 "Vazirmatn", Tahoma, system-ui, sans-serif;
+            transition: background-color .3s ease, color .3s ease;
+        }
+
+        body::before { position: fixed; z-index: 60; inset: 0 0 auto; height: 3px; background: var(--accent); content: ""; }
+        html[lang="fa"] .en, html[lang="en"] .fa { display: none !important; }
+        html[lang="en"] body { line-height: 1.75; }
+        html[lang="en"] .en { font-size: .92em; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        :focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+        ::selection { background: var(--accent-soft); }
+        button, input { font: inherit; color: inherit; }
+        img, svg { max-width: 100%; }
+        code, .mono { direction: ltr; unicode-bidi: embed; font-family: var(--mono); }
+
+        p code, li code, td code {
+            border: 1px solid var(--line); border-radius: 5px; padding: .04em .38em;
+            background: var(--surface-alt); color: var(--accent); font-size: .86em;
+        }
+
+        .wrap { width: min(1080px, calc(100% - 40px)); margin-inline: auto; }
+
+        .ic { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+        .ic.sm { width: 15px; height: 15px; }
+        .ic.lg { width: 23px; height: 23px; }
+        .ic.fill { fill: currentColor; stroke: none; }
+
+        #progress { position: fixed; z-index: 61; top: 3px; inset-inline-start: 0; width: 0; height: 3px; background: var(--amber); transition: width .12s linear; }
+
+        .topbar { position: sticky; z-index: 50; top: 0; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(13px); -webkit-backdrop-filter: blur(13px); }
+        .topbar-inner { display: flex; align-items: center; gap: 12px; min-height: 58px; }
+
+        .brand { display: inline-flex; align-items: center; gap: 9px; flex: 1; min-width: 0; color: var(--ink); font-size: 15px; font-weight: 900; white-space: nowrap; }
+        .brand-mark { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; overflow: hidden; border-radius: 9px; background: var(--accent); }
+        .brand-mark svg { width: 100%; height: 100%; }
+
+        .nav-link, .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; transition: transform .22s ease, border-color .22s ease, background-color .22s ease, color .22s ease, box-shadow .22s ease; }
+        .nav-link { padding: 6px 12px; white-space: nowrap; }
+        .nav-link:hover, .btn:hover { border-color: var(--accent-line); color: var(--accent); text-decoration: none; transform: translateY(-2px); }
+        .btn { padding: 9px 17px; }
+        .btn.sm { padding: 6px 12px; font-size: 12px; }
+        .btn.icon { width: 36px; height: 36px; padding: 7px; }
+        .btn.primary { border-color: var(--accent); background: var(--accent); color: var(--bg); }
+        .btn.primary:hover { border-color: var(--accent); color: var(--bg); box-shadow: 0 8px 22px var(--accent-soft); filter: brightness(1.08); }
+        .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+        html[data-theme="light"] .moon, html[data-theme="dark"] .sun { display: none; }
+
+        .hero { position: relative; overflow: hidden; padding: 66px 0 62px; border-bottom: 1px solid var(--line); }
+        .hero::after { position: absolute; right: -150px; bottom: -180px; width: 460px; height: 460px; border: 1px solid var(--accent-line); border-radius: 50%; content: ""; opacity: .18; pointer-events: none; }
+        .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: center; gap: 48px; }
+        .hero-copy { animation: fade-up .7s ease-out both; }
+
+        .eyebrow { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; color: var(--accent); font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+        .eyebrow::before { width: 32px; height: 2px; background: var(--amber); content: ""; }
+
+        .hero h1 { max-width: 15ch; font-size: clamp(32px, 4.6vw, 56px); font-weight: 900; line-height: 1.3; letter-spacing: -.025em; }
+        .underword { position: relative; display: inline-block; white-space: nowrap; }
+        .underword::after { position: absolute; right: 0; bottom: -7px; left: 0; height: 8px; border-bottom: 3px solid var(--amber); border-radius: 50%; content: ""; transform: rotate(-1deg); }
+
+        .hero-lead { max-width: 57ch; margin-top: 22px; color: var(--muted); font-size: clamp(16px, 2vw, 19px); line-height: 1.95; }
+        .hero-note { max-width: 59ch; margin-top: 18px; padding: 13px 16px; border-inline-start: 3px solid var(--accent); border-radius: 0 9px 9px 0; background: var(--accent-soft); font-size: 13.5px; line-height: 1.9; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+
+        .hero-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 25px; }
+        .hero-chips a { padding: 4px 10px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); color: var(--muted); font-size: 11.5px; transition: transform .22s ease, border-color .22s ease, color .22s ease; }
+        .hero-chips a:hover { border-color: var(--accent-line); color: var(--accent); text-decoration: none; transform: translateY(-2px); }
+        .hero-chips b { margin-inline-end: 4px; color: var(--accent); font-family: var(--mono); font-size: 10px; }
+
+        .architecture { overflow: hidden; border: 1px solid var(--line-strong); border-radius: 17px; background: var(--code-bg); box-shadow: var(--shadow-lg); animation: fade-up .8s .12s ease-out both; display: flex; flex-direction: column; }
+        .window-bar { display: flex; align-items: center; gap: 7px; padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, .08); background: rgba(255, 255, 255, .04); direction: ltr; }
+        .window-bar i { width: 11px; height: 11px; border-radius: 50%; }
+        .window-bar i:nth-child(1) { background: #e0655a; }
+        .window-bar i:nth-child(2) { background: #e5b45a; }
+        .window-bar i:nth-child(3) { background: #58b78c; }
+        .window-bar span { margin-inline-start: 10px; color: var(--code-muted); font: 11px var(--mono); }
+
+        /* ============ Hero: all-or-nothing transfer ============ */
+        .hs-stage { padding: 22px 16px 10px; direction: ltr; }
+        .hs-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+        .hs-acct { position: relative; padding: 14px 14px 12px; border: 1px solid #35483b; border-radius: 12px; background: #202a23; text-align: center; transition: border-color .3s ease, box-shadow .3s ease; }
+        .hs-acct .nm { color: #8ca08e; font: 700 9.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+        .hs-acct .bal { margin-top: 4px; color: #d5e0d2; font: 700 23px var(--mono); transition: color .3s ease; }
+        .hs-acct .bal em { font-style: normal; font-size: 12px; color: #8ca08e; }
+        .hs-acct.pending { border-color: #d09a4e; box-shadow: 0 0 16px rgba(229, 180, 90, .22); }
+        .hs-acct.pending .bal { color: #ffe3ae; }
+        .hs-acct.crash { border-color: #c9563f; box-shadow: 0 0 18px rgba(229, 116, 90, .3); }
+        .hs-acct.crash .bal { color: #ffb4a0; }
+        .hs-acct.restored { border-color: #5cc08f; box-shadow: 0 0 16px rgba(92, 192, 143, .28); }
+        .hs-acct.restored .bal { color: #b9f0d2; }
+        .hs-arrow { display: grid; place-items: center; width: 58px; height: 40px; border-radius: 10px; border: 1px dashed #35483b; color: #8ca08e; font: 700 11px var(--mono); }
+        .hs-arrow.hot { color: #ffe3ae; border-color: #d09a4e; }
+        .hs-arrow.zap { color: #ffb4a0; border-color: #c9563f; font-size: 16px; }
+        .hs-op { margin-top: 16px; min-height: 26px; padding: 4px 12px; border: 1px solid #2f3d33; border-radius: 8px; background: #1a231d; color: #b3c3b4; font: 11px/1.9 var(--mono); text-align: center; }
+        .hs-op .kw { color: #7fc79f; }
+        .hs-op .bad { color: #e5745a; font-weight: 700; }
+        .hs-op .ok { color: #5cc08f; font-weight: 700; }
+        .architecture-caption { min-height: 46px; padding: 9px 16px 13px; border-top: 1px solid rgba(255, 255, 255, .07); color: var(--code-muted); font-size: 12px; line-height: 1.75; text-align: center; }
+
+        main { padding-bottom: 30px; }
+        .section { padding: 68px 0 0; scroll-margin-top: 74px; }
+        .section+.section { border-top: 1px dashed var(--line-strong); margin-top: 60px; padding-top: 62px; }
+
+        .section-heading { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+        .section-number { display: inline-grid; min-width: 39px; height: 31px; place-items: center; border: 1px solid var(--accent-line); border-radius: 8px; background: var(--accent-soft); color: var(--accent); font: 700 12px var(--mono); }
+        .section h2 { font-size: clamp(23px, 3.2vw, 33px); font-weight: 800; line-height: 1.45; }
+
+        .lead { max-width: 78ch; margin-bottom: 22px; font-size: 17px; line-height: 2; }
+        .sublead { max-width: 78ch; margin-bottom: 22px; color: var(--muted); font-size: 14.5px; line-height: 1.95; }
+
+        .source-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+        .source-row a { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); color: var(--muted); font-size: 11.5px; }
+        .source-row a:hover { border-color: var(--accent-line); color: var(--accent); text-decoration: none; }
+
+        .grid-2, .grid-3 { display: grid; gap: 17px; margin: 23px 0; }
+        .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+        .card { position: relative; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease; }
+        .card:hover { border-color: var(--accent-line); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+        .card h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; font-size: 15.5px; font-weight: 800; line-height: 1.55; }
+        .card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.9; }
+        .card ul { padding-inline-start: 20px; }
+
+        .icon-box { display: grid; width: 33px; height: 33px; flex: 0 0 auto; place-items: center; border-radius: 9px; font: 700 13px var(--mono); }
+        .icon-box.green { background: var(--accent-soft); color: var(--accent); }
+        .icon-box.amber { background: var(--amber-soft); color: var(--amber); }
+        .icon-box.red { background: var(--red-soft); color: var(--red); }
+        .icon-box.violet { background: var(--violet-soft); color: var(--violet); }
+        .icon-box.blue { background: var(--blue-soft); color: var(--blue); }
+
+        .callout { margin: 24px 0; padding: 17px 20px; border: 1px solid var(--accent-line); border-inline-start: 4px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
+        .callout.warning { border-color: rgba(194, 120, 3, .38); border-inline-start-color: var(--amber); background: var(--amber-soft); }
+        .callout strong.label { display: inline-block; margin-bottom: 7px; color: var(--accent); font: 700 11px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+        .callout.warning strong.label { color: var(--amber); }
+        .callout p { font-size: 14px; line-height: 1.95; }
+
+        .net-note { margin: 24px 0; padding: 18px 20px; border: 1px solid var(--accent-line); border-radius: 11px; background: var(--surface-alt); }
+        .net-note .badge { display: inline-block; margin-bottom: 8px; padding: 2px 9px; border-radius: 5px; background: var(--accent); color: var(--bg); font: 700 10px var(--mono); }
+        .net-note p { font-size: 14px; line-height: 1.95; }
+
+        .compare-wrap { overflow-x: auto; margin: 24px 0; border: 1px solid var(--line); border-radius: 11px; box-shadow: var(--shadow); }
+        .compare-table { width: 100%; min-width: 690px; border-collapse: collapse; font-size: 13px; }
+        .compare-table th, .compare-table td { padding: 12px 15px; border-bottom: 1px solid var(--line); text-align: start; vertical-align: top; }
+        .compare-table tr:last-child td { border-bottom: 0; }
+        .compare-table th { background: var(--surface-alt); color: var(--muted); font-size: 12px; }
+        .compare-table td { background: var(--surface); color: var(--muted); line-height: 1.8; }
+        .compare-table td:first-child { color: var(--ink); font-weight: 700; }
+
+        .good { color: var(--accent) !important; }
+        .caution { color: var(--amber) !important; }
+        .bad { color: var(--red) !important; }
+
+        .codebox { margin: 24px 0; overflow: hidden; border: 1px solid rgba(0, 0, 0, .17); border-radius: 11px; background: var(--code-bg); direction: ltr; box-shadow: var(--shadow); }
+        .code-title { padding: 9px 16px; border-bottom: 1px solid rgba(255, 255, 255, .08); color: var(--code-muted); font: 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+        .codebox pre { margin: 0; padding: 17px 19px; overflow-x: auto; color: var(--code-ink); font: 13px/1.75 var(--mono); text-align: left; white-space: pre; }
+        .codebox .kw { color: #7fc79f; }
+        .codebox .str { color: #e5b45a; }
+        .codebox .cm { color: #6e7f70; }
+        .codebox .fn { color: #d08b4f; }
+        .codebox .s2 { color: #6ba8d4; }
+
+        .demo { margin: 29px 0; padding: 23px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); box-shadow: var(--shadow); }
+        .demo-title { display: flex; align-items: center; gap: 9px; padding-bottom: 13px; border-bottom: 1px dashed var(--line-strong); font-size: 16px; font-weight: 800; }
+        .demo-title .ic { color: var(--accent); }
+        .demo-intro { margin: 14px 0 17px; color: var(--muted); font-size: 13.5px; line-height: 1.9; }
+
+        .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+        .tab { padding: 8px 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--muted); cursor: pointer; font-size: 12.5px; font-weight: 700; transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease; }
+        .tab:hover { border-color: var(--accent-line); color: var(--accent); transform: translateY(-1px); }
+        .tab[aria-selected="true"] { border-color: var(--accent); background: var(--accent); color: var(--bg); }
+
+        /* ============ Dark viz panel (shared by both demos) ============ */
+        .viz { overflow: hidden; border-radius: 11px; background: var(--code-bg); color: var(--code-ink); direction: ltr; }
+        .viz-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+        .viz-toolbar .tabs { margin: 0; }
+        .viz-toolbar .tab { border-color: #4d705b; background: transparent; color: #8ca08e; }
+        .viz-toolbar .tab:hover { color: #d5e0d2; border-color: #5cc08f; }
+        .viz-toolbar .tab[aria-selected="true"] { background: rgba(31, 122, 82, .4); border-color: #5cc08f; color: #d5e0d2; }
+        .viz .btn { border-color: #4d705b; background: #202a23; color: #cfe0cf; }
+        .viz .btn:hover { border-color: #5cc08f; color: #eafff3; }
+        .viz .btn.primary { border-color: #5cc08f; background: rgba(31, 122, 82, .45); color: #eafff3; }
+        .viz-body { position: relative; padding: 16px 14px 8px; }
+        .viz-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 4px 14px 14px; }
+        .viz-stat { padding: 8px; border: 1px solid #35483b; border-radius: 7px; color: #8ca08e; font: 9px/1.5 var(--mono); text-align: center; text-transform: uppercase; letter-spacing: .06em; }
+        .viz-stat b { display: block; margin-top: 2px; color: #cfe0cf; font-size: 13px; letter-spacing: 0; }
+        .viz-stat b.ok { color: #5cc08f; }
+        .viz-stat b.warn { color: #e5b45a; }
+        .viz-stat b.err { color: #e5745a; }
+        .viz-status { min-height: 52px; margin: 0 14px 14px; padding: 10px 13px; border: 1px solid #35483b; border-radius: 8px; color: #b3c3b4; font-size: 12.5px; line-height: 1.75; }
+        html[lang="fa"] .viz-status { text-align: right; direction: rtl; }
+        .viz-status b { color: #eafff3; }
+        .viz-status .bad { color: #e5745a; }
+        .viz-status .ok { color: #5cc08f; }
+
+        /* ============ Demo 1: conflict simulator (cfl) ============ */
+        .cfl-db { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; padding: 10px 12px; border: 1px dashed #35483b; border-radius: 10px; background: rgba(32, 42, 35, .5); }
+        .cfl-db-label { color: #6e7f70; font: 700 9px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+        #cflDb { display: contents; }
+        .cfl-dbrow { padding: 5px 10px; border: 1px solid #4d705b; border-radius: 7px; background: rgba(31, 122, 82, .16); color: #cfe0cf; font: 10.5px var(--mono); transition: border-color .3s ease, background-color .3s ease; }
+        .cfl-dbrow b { color: #8ee1b2; font-size: 12px; }
+        .cfl-dbrow.dirty { border-style: dashed; border-color: #d09a4e; background: rgba(229, 180, 90, .1); }
+        .cfl-dbrow.dirty b { color: #ffe3ae; }
+        .cfl-dbrow.bad { border-color: #c9563f; background: rgba(229, 116, 90, .14); animation: cflpop .45s ease; }
+        .cfl-dbrow.bad b { color: #ffb4a0; }
+        .cfl-dbrow.fix { border-color: #5cc08f; background: rgba(92, 192, 143, .16); animation: cflpop .45s ease; }
+        @keyframes cflpop { 0% { transform: scale(.88); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .cfl-lanes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .cfl-lane { padding: 11px 12px; border: 1px solid #2f3d33; border-radius: 10px; background: #1a231d; transition: border-color .3s ease, box-shadow .3s ease; min-height: 128px; }
+        .cfl-lane.s1 { border-top: 3px solid #5cc08f; }
+        .cfl-lane.s2 { border-top: 3px solid #6ba8d4; }
+        .cfl-lane-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; }
+        .cfl-lane-name { color: #cfe0cf; font: 700 10.5px var(--mono); letter-spacing: .05em; }
+        .cfl-lane.s2 .cfl-lane-name { color: #cfe6f5; }
+        .cfl-state { padding: 2px 8px; border-radius: 99px; font: 700 8.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; border: 1px solid #35483b; color: #8ca08e; transition: all .3s ease; }
+        .cfl-state.read { border-color: #d09a4e; color: #ffe3ae; background: rgba(229, 180, 90, .12); }
+        .cfl-state.write { border-color: #5cc08f; color: #b9f0d2; background: rgba(92, 192, 143, .12); }
+        .cfl-state.wait { border-color: #c9563f; color: #ffb4a0; background: rgba(229, 116, 90, .12); animation: blink-soft 1s ease-in-out infinite; }
+        .cfl-state.done { border-color: #4d705b; color: #8ca08e; }
+        @keyframes blink-soft { 50% { opacity: .45; } }
+        .cfl-lane.act { border-color: #d09a4e; box-shadow: 0 0 14px rgba(229, 180, 90, .14); }
+        .cfl-lane.act-write { border-color: #5cc08f; box-shadow: 0 0 14px rgba(92, 192, 143, .16); }
+        .cfl-lane.act-bad { border-color: #c9563f; box-shadow: 0 0 16px rgba(229, 116, 90, .22); }
+        .cfl-sql { margin-bottom: 8px; padding: 7px 9px; border-radius: 7px; background: #141b15; color: #7fc79f; font: 10.5px/1.7 var(--mono); white-space: pre-wrap; text-align: left; min-height: 40px; }
+        .cfl-sql .str { color: #e5b45a; }
+        .cfl-sql .cm { color: #6e7f70; }
+        .cfl-sql .s2c { color: #6ba8d4; }
+        .cfl-sees { display: flex; flex-wrap: wrap; gap: 6px; }
+        .cfl-chip { padding: 3px 8px; border-radius: 6px; background: #2e372f; color: #cfe0cf; font: 10px var(--mono); animation: cflpop .35s ease; }
+        .cfl-chip.stale { border: 1px solid rgba(229, 180, 90, .5); background: rgba(229, 180, 90, .13); color: #ffe3ae; }
+        .cfl-chip.snap { border: 1px solid rgba(107, 168, 212, .5); background: rgba(107, 168, 212, .13); color: #cfe6f5; }
+        .cfl-chip.bad { border: 1px solid rgba(229, 116, 90, .55); background: rgba(229, 116, 90, .15); color: #ffb4a0; }
+        .cfl-chip.ok { border: 1px solid rgba(92, 192, 143, .55); background: rgba(92, 192, 143, .14); color: #b9f0d2; }
+        .cfl-sees-label { width: 100%; color: #6e7f70; font: 700 8px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+
+        /* ============ Demo 2: locks vs MVCC (mv) ============ */
+        .mv-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr); gap: 10px; align-items: stretch; }
+        .mv-lane { padding: 11px 12px; border: 1px solid #2f3d33; border-radius: 10px; background: #1a231d; display: flex; flex-direction: column; gap: 8px; }
+        .mv-lane.t1 { border-top: 3px solid #5cc08f; }
+        .mv-lane.t2 { border-top: 3px solid #6ba8d4; }
+        .mv-lane-name { display: flex; align-items: center; justify-content: space-between; color: #cfe0cf; font: 700 10.5px var(--mono); letter-spacing: .05em; }
+        .mv-lane.t2 .mv-lane-name { color: #cfe6f5; }
+        .mv-ev { padding: 6px 9px; border-radius: 7px; background: #141b15; color: #b3c3b4; font: 10.5px/1.65 var(--mono); text-align: left; animation: cflpop .3s ease; }
+        .mv-ev b { color: #7fc79f; }
+        .mv-ev.wait { border: 1px dashed rgba(229, 116, 90, .5); color: #ffb4a0; }
+        .mv-ev.ver { border: 1px dashed rgba(107, 168, 212, .5); color: #cfe6f5; }
+        .mv-waitbar { height: 5px; border-radius: 3px; background: #26332b; overflow: hidden; }
+        .mv-waitbar i { display: block; height: 100%; width: 0; border-radius: 3px; background: #e5745a; transition: width .5s ease; }
+        .mv-row { padding: 12px; border: 1px solid #35483b; border-radius: 10px; background: rgba(32, 42, 35, .5); display: flex; flex-direction: column; gap: 9px; justify-content: center; }
+        .mv-row-title { text-align: center; color: #6e7f70; font: 700 9px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+        .mv-val { text-align: center; padding: 10px 8px; border: 1px solid #4d705b; border-radius: 9px; background: rgba(31, 122, 82, .14); font: 700 21px var(--mono); color: #8ee1b2; position: relative; transition: all .3s ease; }
+        .mv-val small { display: block; color: #8ca08e; font: 9px var(--mono); letter-spacing: .05em; }
+        .mv-val.uncommitted { border-color: #d09a4e; background: rgba(229, 180, 90, .1); color: #ffe3ae; }
+        .mv-lockbadge { position: absolute; top: -10px; inset-inline-end: -8px; padding: 2px 8px; border-radius: 99px; background: #c9563f; color: #ffe9e2; font: 700 8.5px var(--mono); letter-spacing: .06em; box-shadow: 0 2px 8px rgba(0, 0, 0, .4); animation: cflpop .35s ease; }
+        .mv-vs { padding: 8px 9px; border: 1px dashed #35483b; border-radius: 8px; }
+        .mv-vs-title { margin-bottom: 6px; color: #6e7f70; font: 700 8.5px var(--mono); letter-spacing: .07em; text-transform: uppercase; }
+        .mv-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; }
+        .mv-ver { padding: 4px 8px; border-radius: 6px; background: #2e372f; color: #cfe0cf; font: 10px var(--mono); animation: cflpop .35s ease; }
+        .mv-ver.old { border: 1px solid rgba(107, 168, 212, .55); background: rgba(107, 168, 212, .14); color: #cfe6f5; }
+        .mv-ver.cur { border: 1px solid rgba(92, 192, 143, .55); background: rgba(92, 192, 143, .15); color: #b9f0d2; }
+        .mv-ver.gone { opacity: .35; text-decoration: line-through; }
+
+        /* ============ Escalation micro-demo (esc) ============ */
+        .esc-wrap { padding: 6px 2px 2px; }
+        .esc-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
+        .esc-controls label { color: var(--muted); font-size: 12.5px; font-weight: 700; }
+        .esc-controls input[type="range"] { flex: 1 1 200px; accent-color: var(--accent); min-width: 150px; }
+        .esc-readout { font: 700 12px var(--mono); color: var(--accent); direction: ltr; }
+        .esc-stage { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 12px; }
+        .esc-table { position: relative; padding: 14px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface-alt); min-height: 132px; transition: border-color .3s ease, box-shadow .3s ease; }
+        .esc-table h4 { margin-bottom: 9px; color: var(--muted); font: 700 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+        .esc-dots { display: flex; flex-wrap: wrap; gap: 5px; }
+        .esc-dots i { width: 13px; height: 13px; border-radius: 4px; background: var(--accent-soft); border: 1px solid var(--accent-line); animation: cflpop .25s ease; }
+        .esc-dots i:nth-child(2n) { background: var(--blue-soft); border-color: rgba(45, 106, 159, .35); }
+        .esc-more { align-self: center; color: var(--dim); font: 700 11px var(--mono); }
+        .esc-tablelock { position: absolute; inset: 8px; display: none; place-items: center; border: 2px solid var(--red); border-radius: 9px; background: color-mix(in srgb, var(--red-soft) 75%, var(--surface-alt)); color: var(--red); font: 700 13px var(--mono); letter-spacing: .05em; text-align: center; animation: cflpop .35s ease; }
+        .esc-tablelock small { display: block; color: var(--muted); font: 10px var(--mono); letter-spacing: .02em; }
+        .esc-table.escalated { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+        .esc-table.escalated .esc-tablelock { display: grid; }
+        .esc-side { display: flex; flex-direction: column; gap: 10px; }
+        .esc-meter { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+        .esc-meter h4 { margin-bottom: 7px; color: var(--muted); font: 700 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+        .esc-track { height: 8px; border-radius: 4px; background: var(--surface-alt); border: 1px solid var(--line); overflow: hidden; }
+        .esc-track i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease, background-color .3s ease; }
+        .esc-track i.hot { background: var(--amber); }
+        .esc-track i.over { background: var(--red); }
+        .esc-meter p { margin-top: 7px; color: var(--dim); font: 10.5px var(--mono); direction: ltr; text-align: left; }
+        .esc-session { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 13px; line-height: 1.8; color: var(--muted); transition: border-color .3s ease; }
+        .esc-session b { display: inline-block; padding: 1px 8px; border-radius: 5px; font: 700 10px var(--mono); }
+        .esc-session b.go { background: var(--accent-soft); color: var(--accent); }
+        .esc-session b.stop { background: var(--red-soft); color: var(--red); animation: blink-soft 1.1s ease-in-out infinite; }
+        .esc-session.blocked { border-color: rgba(194, 73, 47, .4); }
+
+        /* ============ Deadlock figure (dl) ============ */
+        .dl-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; margin: 24px 0; }
+        .dl-node { padding: 15px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); text-align: center; font: 12px/2 var(--mono); direction: ltr; color: var(--muted); }
+        .dl-node b { display: block; color: var(--ink); font-size: 12.5px; }
+        .dl-node .holds { color: var(--accent); font-weight: 700; }
+        .dl-node .wants { color: var(--amber); font-weight: 700; }
+        .dl-core { display: grid; place-items: center; min-width: 108px; padding: 14px 12px; border: 2px solid var(--red); border-radius: 12px; background: var(--red-soft); color: var(--red); font: 700 12px/1.7 var(--mono); text-align: center; animation: blink-soft 1.4s ease-in-out infinite; }
+
+        .qa { overflow: hidden; margin: 10px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: var(--shadow); }
+        .qa-question { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 16px 19px; border: 0; background: transparent; color: var(--ink); cursor: pointer; font-size: 14.5px; font-weight: 700; line-height: 1.8; text-align: start; }
+        .qa-question::after { margin-inline-start: auto; color: var(--accent); content: "+"; font: 400 21px/1 var(--mono); transition: transform .3s ease; }
+        .qa.open .qa-question::after { transform: rotate(45deg); }
+        .qa-number { flex: 0 0 auto; color: var(--accent); font: 700 12px var(--mono); }
+        .qa-answer { display: grid; grid-template-rows: 0fr; color: var(--muted); font-size: 13.5px; line-height: 1.9; transition: grid-template-rows .35s ease; }
+        .qa-answer>div { overflow: hidden; padding: 0 19px 0; border-top: 1px dashed transparent; transition: padding .35s ease, border-color .35s ease; }
+        .qa.open .qa-answer { grid-template-rows: 1fr; }
+        .qa.open .qa-answer>div { padding: 14px 19px 17px 50px; border-color: var(--line-strong); }
+
+        .js .reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s cubic-bezier(.2, .8, .3, 1); }
+        .js .reveal.in { opacity: 1; transform: none; }
+
+        @keyframes fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: .01ms !important;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero-grid { grid-template-columns: 1fr; }
+            .hero h1 { max-width: none; }
+            .hero-copy { text-align: center; }
+            .eyebrow { justify-content: center; }
+            .hero-lead, .hero-note { margin-inline: auto; text-align: start; }
+            .hero-actions, .hero-chips { justify-content: center; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .cfl-lanes { grid-template-columns: 1fr; }
+            .mv-grid { grid-template-columns: 1fr; }
+            .dl-grid { grid-template-columns: 1fr; }
+            .esc-stage { grid-template-columns: 1fr; }
+            .viz-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 650px) {
+            .wrap { width: min(100% - 28px, 1080px); }
+            .topbar-inner { gap: 7px; }
+            .brand { font-size: 13px; }
+            .brand-mark { width: 28px; height: 28px; }
+            .nav-link { padding: 5px 8px; font-size: 11px; }
+            .btn.icon { width: 34px; height: 34px; }
+            .hero { padding: 45px 0 48px; }
+            .hero-grid { gap: 29px; }
+            .hero h1 { font-size: clamp(29px, 9vw, 44px); }
+            .grid-2 { grid-template-columns: 1fr; }
+            .demo { padding: 17px; }
+            .qa.open .qa-answer>div { padding-inline-start: 19px; }
+            .hs-acct .bal { font-size: 19px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="progress" aria-hidden="true"></div>
+    <nav class="topbar" aria-label="Primary navigation">
+        <div class="wrap topbar-inner">
+            <a class="brand" href="./index.html">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 64 64" fill="none">
+                        <rect width="64" height="64" rx="14" fill="var(--accent)" />
+                        <path d="M32 14 L18 22 V34 L32 42 L46 34 V22 Z" stroke="var(--bg)" stroke-width="2.5"
+                            stroke-linejoin="round" fill="none" />
+                        <circle cx="32" cy="28" r="3" fill="var(--bg)" />
+                        <path d="M20 47 H44 M24 51 H40" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"
+                            opacity=".6" />
+                    </svg>
+                </span>
+                <span class="fa">تراکنش‌ها و همروندی</span><span class="en">Transactions &amp; Concurrency</span>
+            </a>
+            <a class="nav-link" href="./index.html">
+                <svg class="ic sm" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m3 11 9-8 9 8M5 10v10h14V10M9 20v-6h6v6" />
+                </svg>
+                <span class="fa">صفحه اصلی</span><span class="en">Home</span>
+            </a>
+            <button class="btn icon" id="themeButton" type="button" aria-label="تغییر پوسته / Toggle theme"
+                title="تغییر پوسته / Toggle theme">
+                <svg class="ic sm sun" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4" />
+                    <path
+                        d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+                </svg>
+                <svg class="ic sm moon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" />
+                </svg>
+            </button>
+            <button class="btn icon" id="languageButton" type="button" aria-label="تغییر زبان / Switch language"
+                title="تغییر زبان / Switch language">
+                <span class="fa" aria-hidden="true">EN</span><span class="en" aria-hidden="true">فا</span>
+            </button>
+        </div>
+    </nav>
+    <header class="hero" id="top">
+        <div class="wrap hero-grid">
+            <div class="hero-copy">
+                <div class="eyebrow"><span class="fa">Backend Deep Dives · موضوع ۰۶</span><span class="en">Backend Deep
+                        Dives · Topic 06</span></div>
+                <h1>
+                    <span class="fa">تراکنش‌ها و کنترل <span class="underword">همروندی</span></span>
+                    <span class="en">Transactions &amp; <span class="underword">Concurrency</span> Control</span>
+                </h1>
+                <p class="hero-lead">
+                    <span class="fa">دیتابیس فقط یک فایل نیست — چندین کاربر هم‌زمان از آن می‌خوانند و در آن می‌نویسند.
+                        تراکنش، ابزارِ دیتابیس است برای اینکه این شلوغی به خراب‌شدنِ داده ختم نشود. از ضمانت‌های ACID تا
+                        قفل‌ها، سطح‌های ایزوله‌سازی و نسخه‌بندی سطرها در SQL Server.</span>
+                    <span class="en">A database serves many users at once — reading and writing the same data. A
+                        transaction is the tool that keeps this rush from corrupting anything. From ACID guarantees to
+                        isolation levels, and the real mechanisms inside SQL Server: locks and row versioning.</span>
+                </p>
+                <div class="hero-note">
+                    <span class="fa"><b>نکتهٔ کلیدی:</b> اگر اپ شما وسطِ انتقالِ پول بین دو حساب کرش کند، چه؟ اگر دو مشتری
+                        هم‌زمان آخرین کالای انبار را بخرند، چه؟ تراکنش‌ها و کنترل همروندی، پاسخِ دقیقِ همین سؤال‌هاست.</span>
+                    <span class="en"><b>The central idea:</b> what happens if your app crashes halfway through a money
+                        transfer? What if two customers buy the last item in stock at the same moment? Transactions and
+                        concurrency control are the precise answer to those questions.</span>
+                </div>
+                <div class="hero-actions">
+                    <a class="btn primary" href="#s1"><span class="fa">شروع از مبانی</span><span class="en">Start with
+                            the basics</span><span aria-hidden="true">↓</span></a>
+                </div>
+                <div class="hero-chips" aria-label="Section shortcuts">
+                    <a href="#s1"><b>01</b><span class="fa">چیستی تراکنش</span><span class="en">What &amp; why</span></a>
+                    <a href="#s2"><b>02</b><span class="fa">چه خطرهایی</span><span class="en">What goes wrong</span></a>
+                    <a href="#s3"><b>03</b><span class="fa">سطح‌ها</span><span class="en">Isolation levels</span></a>
+                    <a href="#s4"><b>04</b><span class="fa">انحراف نوشتاری</span><span class="en">Write skew</span></a>
+                    <a href="#s5"><b>05</b><span class="fa">قفل‌ها و بن‌بست</span><span class="en">Locks &amp; deadlocks</span></a>
+                    <a href="#s7"><b>07</b><span class="fa">نسخه‌بندی</span><span class="en">MVCC</span></a>
+                    <a href="#s8"><b>08</b><span class="fa">سریال‌پذیری</span><span class="en">Serializability</span></a>
+                    <a href="#s9"><b>09</b><span class="fa">انتخاب عملی</span><span class="en">In practice</span></a>
+                    <a href="#s10"><b>10</b><span class="fa">نقشهٔ مطالعه</span><span class="en">Reading list</span></a>
+                    <a href="#self"><b>✓</b><span class="fa">خودآزمایی</span><span class="en">Self-check</span></a>
+                </div>
+            </div>
+            <div class="architecture" aria-label="Live all-or-nothing transfer demo">
+                <div class="window-bar"><i></i><i></i><i></i><span>bank-transfer · all-or-nothing</span></div>
+                <div class="hs-stage" id="hsStage" aria-hidden="true">
+                    <div class="hs-grid">
+                        <div class="hs-acct" id="hsA">
+                            <div class="nm">Account A</div>
+                            <div class="bal">$<span id="hsABal">1000</span></div>
+                        </div>
+                        <div class="hs-arrow" id="hsArrow">→ $100</div>
+                        <div class="hs-acct" id="hsB">
+                            <div class="nm">Account B</div>
+                            <div class="bal">$<span id="hsBBal">300</span></div>
+                        </div>
+                    </div>
+                    <div class="hs-op" id="hsOp"><span class="kw">BEGIN TRAN</span>; -- one transfer, two writes</div>
+                </div>
+                <div class="architecture-caption" id="heroCaption">
+                    <span class="fa">یک انتقال، دو نوشتن. تراکنش می‌گوید: یا هر دو انجام می‌شوند، یا هیچ‌کدام.</span>
+                    <span class="en">One transfer, two writes. The transaction says: either both happen, or neither
+                        does.</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="wrap">
+        <!-- ═══════════ S1 — WHAT IS A TRANSACTION ═══════════ -->
+        <section class="section reveal" id="s1">
+            <div class="section-heading"><span class="section-number">01</span>
+                <h2><span class="fa">تراکنش چیست و چرا اهمیت دارد؟</span><span class="en">What is a transaction, and why it
+                        matters</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/ch08.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 2e · فصل ۸ — Transactions</span><span
+                        class="en">DDIA 2e · Ch. 8 — Transactions</span></a>
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/ch07.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 1e · فصل ۷ — همان فصل</span><span
+                        class="en">DDIA 1e · Ch. 7 — same chapter</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">تراکنش، گروهی از خواندن‌ها و نوشتن‌هاست که دیتابیس مثل <b>یک واحدِ تنها</b> اجراشان می‌کند:
+                    یا همه انجام می‌شوند، یا هیچ‌کدام. کتاب فصلِ تراکنش‌ها را با فهرستی از بلاهایی که ممکن است نازل شود شروع
+                    می‌کند: خرابی سخت‌افزار وسطِ نوشتن، کرشِ اپلیکیشن وسطِ چند عملیات، قطعِ شبکه، و چند کاربر که هم‌زمان
+                    تغییراتِ هم را می‌پوشانند. تراکنش، ابزارِ استانداردِ مقابله با همهٔ این‌هاست.</span>
+                <span class="en">A transaction is a group of reads and writes that the database runs as <b>one single
+                        unit</b>: either all of them happen, or none of them do. The book opens its transactions chapter
+                    with a list of things that can go wrong: hardware failing mid-write, an app crashing halfway through
+                    a series of operations, a network cut, and several users overwriting each other's changes at the
+                    same time. The transaction is the standard tool for handling all of these.</span>
+            </p>
+            <p class="sublead">
+                <span class="fa">این ضمانت‌ها در چهار کلمه خلاصه می‌شوند: <b>ACID</b>. این کلمه را زیاد شنیده‌اید؛ اینجا
+                    معنای دقیقِ هر حرف را می‌گذاریم — با انگشت روی حرفی که بیشتر از همه بد فهمیده می‌شود.</span>
+                <span class="en">These guarantees are summed up in one word: <b>ACID</b>. You have heard it a hundred
+                    times; here is what each letter actually means — with a finger on the one that gets misunderstood the
+                    most.</span>
+            </p>
+            <div class="grid-2">
+                <article class="card">
+                    <h3><span class="icon-box green">A</span><span class="fa">اتمیسیتی — همه یا هیچ</span><span
+                            class="en">Atomicity — all or nothing</span></h3>
+                    <p><span class="fa">اگر وسطِ کار خطایی رخ بدهد، همهٔ تغییرات تا همین‌جا لغو می‌شوند (rollback). مثالِ
+                            انتقالِ پول: اگر بعد از کم‌کردن از حسابِ اول و <b>قبل از</b> اضافه‌کردن به حسابِ دوم کرش کنید،
+                            دیتابیس هر دو را به حالتِ قبل برمی‌گرداند. پول در هوا گم نمی‌شود.</span><span class="en">If
+                            anything fails mid-way, every change so far is undone (rolled back). Money-transfer example:
+                            if you crash after debiting one account but <b>before</b> crediting the other, the database
+                            undoes both. No money vanishes into thin air.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box amber">C</span><span class="fa">سازگاری — ویژگیِ اپلیکیشن!</span><span
+                            class="en">Consistency — an application property!</span></h3>
+                    <p><span class="fa">«C» معمول‌بدفهم‌ترین حرفِ این کلمه است. اینجا سازگاری یعنی داده‌ها باید طبقِ
+                            قوانینِ <b>برنامهٔ شما</b> معنادار باشند — مثلاً مجموعِ دو حساب بعد از انتقال ثابت بماند. دیتابیس
+                            قانونِ کسب‌وکارِ شما را نمی‌داند؛ فقط از درستیِ ساختاری (کلیدها و قیدها) دفاع می‌کند.</span><span
+                            class="en">"C" is the most misunderstood letter of the four. Here, consistency means your data
+                            must make sense according to <b>your application's</b> rules — say, the total of two accounts
+                            staying the same after a transfer. The database does not know your business rules; it only
+                            defends structural correctness (keys and constraints).</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box blue">I</span><span class="fa">ایزوله‌سازی — انگار تنهاست</span><span
+                            class="en">Isolation — as if it were alone</span></h3>
+                    <p><span class="fa">تراکنش‌های هم‌زمان نباید پایِ هم بپیچند: هر تراکنش باید طوری رفتار کند که انگار
+                            تنها اجرا می‌شود. در عمل، دیتابیس‌ها این را با درجه‌های مختلفِ سخت‌گیری عرضه می‌کنند — همان
+                            <b>سطح‌های ایزوله‌سازی</b> که بخشِ بزرگی از این صفحه را می‌سازند.</span><span
+                            class="en">Concurrent transactions must not step on each other: each one should behave as if it
+                            were running alone. In practice, databases offer this in different degrees of strictness — the
+                            <b>isolation levels</b>, which make up a large part of this page.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box violet">D</span><span class="fa">دوام — بعد از کامیت، ماندگار</span><span
+                            class="en">Durability — committed means permanent</span></h3>
+                    <p><span class="fa">وقتی تراکنش کامیت شد، داده باید در برابر هر خرابی‌ای دوام بیاورد — قطعِ برق، کرشِ
+                            سرور، هر چیزی. دیتابیس تغییرات را قبل از اعمال، در یک لاگ می‌نویسد (در SQL Server: لاگِ
+                            تراکنش) — همان لاگی که در صفحهٔ ایندکس‌ها درباره‌اش خواندید.</span><span class="en">Once a
+                            transaction commits, the data must survive anything — power loss, server crash, anything. The
+                            database writes changes to a log first (in SQL Server: the transaction log) — the same log you
+                            read about on the Indexes page.</span></p>
+                </article>
+            </div>
+            <div class="callout warning"><strong class="label fa">دامِ واژه‌ها</strong><strong class="label en">The wording
+                    trap</strong>
+                <p><span class="fa">وقتی کسی می‌گوید «دیتابیسِ من سازگار (consistent) است»، بپرسید: «سازگار با چه قانونی؟».
+                        اگر قانون را اپلیکیشن تعریف می‌کند — مثلاً «همیشه حداقل یک پزشک کشیک باشد» — این <b>اپلیکیشن</b>
+                        است که باید آن را ضمانت کند، نه دیتابیس. و اگر «سازگاری» را در بحثِ قضیهٔ CAP شنیده‌اید، آن یکی معنای
+                        کاملاً متفاوتی دارد (همهٔ گره‌ها جوابِ یکسان بدهند). این نکتهٔ کوچک، چند بار در ادامه برمی‌گردد.</span><span
+                        class="en">When someone says "my database is consistent", ask: consistent with <b>which</b> rule?
+                        If the application defines the rule — say, "at least one doctor must always be on call" — then the
+                        <b>application</b> must enforce it, not the database. And if you have heard "consistency" in CAP
+                        theorem discussions, that one means something entirely different (all nodes returning the same
+                        answer). This small point comes back several times ahead.</span></p>
+            </div>
+            <p class="sublead">
+                <span class="fa">یک تفکیکِ دیگر از کتاب: بیشترِ عملیات‌های روزمره <b>تک‌آبجکتی</b>اند — یک سطر را بخوان، یک
+                    سطر را به‌روز کن. تراکنش آن‌جا واقعاً لازم می‌شود که <b>چند چیز</b> باید با هم درست بمانند: انتقالِ پول
+                    بین دو حساب، یا ثبتِ سفارش و کم‌کردنِ موجودی در یک حرکت. درستیِ چندآبجکتی، جایی است که اتمیسیتی و
+                    ایزوله‌سازی معنای واقعی پیدا می‌کنند.</span>
+                <span class="en">One more distinction from the book: most everyday operations are <b>single-object</b> —
+                    read a row, update a row. Transactions really matter when <b>several things</b> must stay correct
+                    together: moving money between two accounts, or recording an order and reducing stock in one move.
+                    Multi-object correctness is where atomicity and isolation get their real meaning.</span>
+            </p>
+            <div class="net-note"><span class="badge">.NET</span>
+                <p><span class="fa">در دات‌نت، هر جا چند دستورِ دیتابیسی باید با هم موفق شوند، آن‌ها را در یک تراکنش
+                        بپیچید: <code>TransactionScope</code> یا <code>BeginTransaction</code> در EF Core. یک
+                        <code>SaveChanges</code> به‌تنهایی خودش یک تراکنش است؛ اما ترکیبِ چند <code>SaveChanges</code>، یک
+                        فراخوانیِ سرویسِ خارجی، و نوشتنِ دوباره — بدون تراکنشِ صریح، خطرِ دادهٔ نیمه‌کاره دارد.</span><span
+                        class="en">In .NET, whenever several database commands must succeed together, wrap them in a
+                        transaction: <code>TransactionScope</code> or EF Core's <code>BeginTransaction</code>. A single
+                        <code>SaveChanges</code> is already one transaction by itself; but combining several
+                        <code>SaveChanges</code> calls, an external service call, and more writes — without an explicit
+                        transaction — risks leaving data half-done.</span></p>
+            </div>
+        </section>
+
+        <!-- ═══════════ S2 — WHAT CAN GO WRONG ═══════════ -->
+        <section class="section reveal" id="s2">
+            <div class="section-heading"><span class="section-number">02</span>
+                <h2><span class="fa">وقتی دو تراکنش هم‌زمان می‌شوند: چه خطرهایی وجود دارد؟</span><span class="en">When two
+                        transactions collide: what can go wrong</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/ch08.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 2e · فصل ۸ — Weak Isolation</span><span
+                        class="en">DDIA 2e · Ch. 8 — Weak Isolation</span></a>
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/ch07.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 1e · فصل ۷</span><span class="en">DDIA
+                        1e · Ch. 7</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">حالا نیمهٔ سخت: تراکنش‌ها هم‌زمان اجرا می‌شوند و به دادهٔ مشترک دست می‌زنند. کتاب سه
+                    خرابکاریِ کلاسیک را یکی‌یکی باز می‌کند. دو سناریوی این بخش — <b>آخرین کالای انبار</b> و بعداً
+                    <b>شیفتِ کشیکِ پزشکان</b> — تا آخرِ صفحه با ما می‌مانند.</span>
+                <span class="en">Now the hard half: transactions run at the same time and touch shared data. The book
+                    walks through three classic failures one by one. Two scenarios from this section — the <b>last item in
+                        stock</b> and, later, the <b>doctors' on-call shift</b> — stay with us for the rest of the
+                    page.</span>
+            </p>
+            <div class="grid-3">
+                <article class="card">
+                    <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg></span><span
+                            class="fa">خواندنِ کثیف (Dirty Read)</span><span class="en">Dirty read</span></h3>
+                    <p><span class="fa">تراکنشِ ۱ داده‌ای را تغییر داده ولی هنوز کامیت نکرده. تراکنشِ ۲ همان تغییرِ
+                            کامیت‌نشده را می‌خواند. اگر تراکنشِ ۱ عقب‌نشینی کند، تراکنشِ ۲ روی داده‌ای ساخته که هرگز واقعاً
+                            وجود نداشته است.</span><span class="en">Transaction 1 has changed data but not committed yet.
+                            Transaction 2 reads that uncommitted change. If transaction 1 rolls back, transaction 2 has
+                            built on data that never really existed.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box red"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg></span><span
+                            class="fa">نوشتنِ کثیف (Dirty Write)</span><span class="en">Dirty write</span></h3>
+                    <p><span class="fa">تراکنشِ ۲ روی داده‌ای بنویسد که تراکنشِ ۱ هنوز کامیت نکرده. معمولاً فاجعه است، چون
+                            اگر تراکنشِ ۱ برگردد، تکلیفِ تغییرِ تراکنشِ ۲ نامشخص می‌ماند. سطح‌های استاندارد این را با قفلِ
+                            انحصاری می‌بندند.</span><span class="en">Transaction 2 writes over data that transaction 1 has
+                            not committed yet. This is usually a disaster: if transaction 1 rolls back, nobody knows what
+                            to do with transaction 2's change. Standard isolation levels prevent it with exclusive
+                            locks.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box violet"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v8M8 7l4 4 4-4" /><path d="M4 14h16M4 18h16M4 22h16" /></svg></span><span
+                            class="fa">به‌روزرسانیِ گم‌شده (Lost Update)</span><span class="en">Lost update</span></h3>
+                    <p><span class="fa">هر دو تراکنش مقدارِ فعلی را می‌خوانند، هر کدام بر اساس همان مقدارِ قدیمی نتیجهٔ
+                            تازه‌ای می‌سازند و می‌نویسند. نوشتنِ دوم، نوشتنِ اول را می‌پوشاند — <b>بدون هیچ خطایی</b>.
+                            خطرناک‌ترین مورد، همین است: هیچ هشداری نمی‌آید.</span><span class="en">Both transactions read
+                            the current value. Each one computes a new value from that same stale read and writes it. The
+                            second write covers the first — <b>with no error at all</b>. This is the most dangerous case:
+                            nothing warns you.</span></p>
+                </article>
+            </div>
+            <p class="sublead">
+                <span class="fa">موردِ سوم را با یک سناریوی واقعی ببینیم — <b>آخرین کالای انبار</b>. فقط یک هدفون مانده و دو
+                    مشتری، سارا و آرمان، دقیقاً در یک لحظه دکمهٔ خرید را می‌زنند:</span>
+                <span class="en">Let's look at the third case with a real scenario — the <b>last item in stock</b>. There
+                    is exactly one pair of headphones left, and two customers, Sara and Arman, press "buy" at the very
+                    same moment:</span>
+            </p>
+            <div class="codebox">
+                <div class="code-title">SQL — the last-item inventory race</div>
+                <pre><code><span class="cm">-- Products(Id, Name, Stock)  →  the headphones row has Stock = 1</span>
+
+<span class="cm">-- Session 1 (Sara)                      -- Session 2 (Arman)</span>
+<span class="kw">SELECT</span> Stock <span class="kw">FROM</span> Products       <span class="kw">SELECT</span> Stock <span class="kw">FROM</span> Products
+<span class="kw">WHERE</span> Id = 7;  <span class="cm">-- reads 1</span>          <span class="kw">WHERE</span> Id = 7;  <span class="cm">-- reads 1</span>
+
+<span class="cm">-- app thinks: "1 in stock, sell it"   -- app thinks: "1 in stock, sell it"</span>
+
+<span class="kw">UPDATE</span> Products <span class="kw">SET</span> Stock = 0        <span class="kw">UPDATE</span> Products <span class="kw">SET</span> Stock = 0
+<span class="kw">WHERE</span> Id = 7;                          <span class="kw">WHERE</span> Id = 7;
+<span class="kw">COMMIT</span>;                                <span class="kw">COMMIT</span>;  <span class="cm">-- silently overwrites!</span>
+
+<span class="cm">-- result: Stock = 0, but TWO orders were sold</span></code></pre>
+            </div>
+            <div class="callout warning"><strong class="label fa">چرا هیچ خطایی نمی‌آید؟</strong><strong class="label en">Why is there no error?</strong>
+                <p><span class="fa">هر دو سفارش «موفق» ثبت می‌شوند، موجودی صفر است، و یک مشتری کالایی را می‌خرد که وجود
+                        ندارد. این باگِ دیتابیس نیست — کدِ اپلیکیشن مقدار را خواند، تصمیم گرفت، و <b>کل مقدار را بازنویسی
+                            کرد</b> (الگوی خواندن-تغییردادن-نوشتن). دیتابیس فقط اطاعت کرد. هر دو نوشتن، عددِ یکسانی گذاشتند؛
+                        نوشتنِ دوم، اثرِ نوشتنِ اول را — که یک فروشِ جداگانه بود — بی‌صدا گم کرد.</span><span class="en">Both
+                        orders are "successfully" placed, stock is zero, and one customer bought an item that does not
+                        exist. This is not a database bug — the application code read the value, decided, and <b>rewrote
+                            the whole value</b> (the read-modify-write pattern). The database simply obeyed. Both writes
+                        stored the same number; the second one silently lost the effect of the first — which was a
+                        separate sale.</span></p>
+            </div>
+            <div class="net-note"><span class="badge">.NET</span>
+                <p><span class="fa">خطِ اولِ دفاع در کدِ خودتان است: به‌جای <code>SET Stock = 0</code> بنویسید
+                        <code>SET Stock = Stock - 1 WHERE Id = 7 AND Stock &gt; 0</code> و تعدادِ سطرهای تأثیرگرفته را چک
+                        کنید. اگر صفر بود، کالا تمام شده و باید بگویید «ناموجود». این الگوی <b>مقایسه-و-تنظیم</b>
+                        (compare-and-set) است — دقیقاً همان چیزی که کتاب برای جلوگیری از به‌روزرسانیِ گم‌شده پیشنهاد
+                        می‌دهد. در بخشِ ۴ همین سناریو را قدم‌به‌قدم در دمو می‌بینید.</span><span class="en">Your first
+                        line of defense lives in your own code: instead of <code>SET Stock = 0</code>, write
+                        <code>SET Stock = Stock - 1 WHERE Id = 7 AND Stock &gt; 0</code> and check the affected row
+                        count. If it is zero, the item is gone — return "sold out". This is the <b>compare-and-set</b>
+                        pattern — exactly what the book recommends against lost updates. In section 4 you will step
+                        through this very scenario in the demo.</span></p>
+            </div>
+        </section>
+
+        <!-- ═══════════ S3 — ISOLATION LEVELS SPECTRUM ═══════════ -->
+        <section class="section reveal" id="s3">
+            <div class="section-heading"><span class="section-number">03</span>
+                <h2><span class="fa">سطح‌های ایزوله‌سازی — یک طیف، نه یک چک‌لیست</span><span class="en">Isolation levels —
+                        a spectrum, not a checklist</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/ch08.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 2e · فصل ۸ — Weak Isolation
+                        Levels</span><span class="en">DDIA 2e · Ch. 8 — Weak Isolation Levels</span></a>
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/ch07.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 1e · فصل ۷</span><span class="en">DDIA
+                        1e · Ch. 7</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">ایزوله‌سازیِ کامل یعنی هر تراکنش انگار تنها اجرا می‌شود — نتیجه‌اش طوری باشد که گویی
+                    تراکنش‌ها <b>پشت سر هم</b> اجرا شده‌اند. اما این گران است. پس دیتابیس‌ها طیفی از سطح‌ها را پیشنهاد
+                    می‌دهند: هر چه بالاتر بروید، ضمانتِ بیشتر و سرعتِ کمتر. کتاب این سطح‌ها را نه به‌شکلِ چک‌لیست، بلکه به‌شکلِ
+                    بده‌بستان معرفی می‌کند — درست همان نگاه، در جدولِ زیر است.</span>
+                <span class="en">Full isolation means every transaction behaves as if it runs alone — as if the
+                    transactions ran <b>one after another</b>. But that is expensive. So databases offer a spectrum of
+                    levels: the higher you go, the more guarantees you get and the slower it runs. The book presents these
+                    levels as trade-offs, not as a checklist — and the table below follows exactly that view.</span>
+            </p>
+            <div class="compare-wrap">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th><span class="fa">سطح</span><span class="en">Level</span></th>
+                            <th><span class="fa">چه چیزی را می‌بندد؟</span><span class="en">What it prevents</span></th>
+                            <th><span class="fa">چه چیزی هنوز ممکن است؟</span><span class="en">What is still possible</span></th>
+                            <th><span class="fa">هزینه</span><span class="en">Cost</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Read Committed</td>
+                            <td><span class="fa">خواندنِ کثیف و نوشتنِ کثیف. پیش‌فرضِ اکثرِ دیتابیس‌ها — از جمله SQL
+                                    Server.</span><span class="en">Dirty reads and dirty writes. The default in most
+                                    databases — including SQL Server.</span></td>
+                            <td><span class="fa">خواندنِ تکرارناپذیر: یک کوئریِ تکراری در یک تراکنش ممکن است جوابِ متفاوتی
+                                    بدهد، چون وسطش کسی کامیت کرده.</span><span class="en">Non-repeatable reads: running
+                                    the same query twice in one transaction can return different answers, because someone
+                                    committed in between.</span></td>
+                            <td class="good"><span class="fa">کم</span><span class="en">Low</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="fa">Snapshot / Repeatable Read</span><span class="en">Snapshot / Repeatable
+                                    Read</span></td>
+                            <td><span class="fa">به‌علاوه، ناپایداریِ خواندنِ تکراری را هم می‌بندد: تراکنش عکسِ لحظهٔ شروعِ
+                                    خودش را می‌بیند (اسنپ‌شات).</span><span class="en">Also prevents non-repeatable reads:
+                                    the transaction sees a snapshot taken at its start.</span></td>
+                            <td><span class="fa">انحراف نوشتاری و شبح‌ها — همان که در بخش بعد می‌آید.</span><span
+                                    class="en">Write skew and phantoms — coming in the next section.</span></td>
+                            <td class="caution"><span class="fa">متوسط</span><span class="en">Medium</span></td>
+                        </tr>
+                        <tr>
+                            <td>Serializable</td>
+                            <td><span class="fa">همه‌چیز را می‌بندد: نتیجه دقیقاً مثل اجرای پشت‌سرهم است، از جمله جلوی
+                                    انحراف نوشتاری را می‌گیرد.</span><span class="en">Prevents everything: the result is
+                                    exactly as if execution were serial, write skew included.</span></td>
+                            <td><span class="fa">هیچ‌کدام از مشکلاتِ بالا — فقط هزینه‌اش می‌ماند.</span><span
+                                    class="en">None of the problems above — only its cost remains.</span></td>
+                            <td class="bad"><span class="fa">زیاد</span><span class="en">High</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout warning"><strong class="label fa">هشدارِ اسم‌ها</strong><strong class="label en">A warning
+                    about the names</strong>
+                <p><span class="fa">این برچسب‌ها بینِ دیتابیس‌ها دقیقاً یک معنا ندارند. مثلاً <code>REPEATABLE READ</code>
+                        در PostgreSQL عملاً همان ایزوله‌سازیِ اسنپ‌شات است، اما در استانداردِ قدیمیِ SQL معنای باریک‌تری
+                        داشت. <code>SNAPSHOT</code> در SQL Server یک سطحِ جداگانه است، در حالی که در PostgreSQL داخلِ همان
+                        repeatable read آمده. همیشه <b>رفتارِ واقعیِ دیتابیسِ خودتان</b> را چک کنید، نه فقط اسمِ سطح
+                        را.</span><span class="en">These labels do not mean exactly the same thing across databases. For
+                        example, PostgreSQL's <code>REPEATABLE READ</code> is effectively snapshot isolation, while the old
+                        SQL standard meant something narrower by the name. <code>SNAPSHOT</code> is a separate level in SQL
+                        Server, but it is built into repeatable read in PostgreSQL. Always check <b>your own database's
+                            real behavior</b>, not just the level's name.</span></p>
+            </div>
+            <div class="net-note"><span class="badge">.NET</span>
+                <p><span class="fa">در EF Core می‌توانید سطح را برای هر تراکنش جداگانه تنظیم کنید:
+                        <code>BeginTransaction(IsolationLevel.Serializable)</code>. فقط یادتان باشد: سطحِ بالاتر یعنی قفلِ
+                        بیشتر یا اعتبارسنجیِ بیشتر در لحظهٔ کامیت. پس سطح را فقط برای همان عملیاتی بالا ببرید که واقعاً به
+                        آن نیاز دارند — نه برای کلِ برنامه.</span><span class="en">In EF Core you can set the level per
+                        transaction: <code>BeginTransaction(IsolationLevel.Serializable)</code>. Just remember: a higher
+                        level means more locking or more validation at commit time. So raise the level only for the
+                        operations that truly need it — not for the whole application.</span></p>
+            </div>
+        </section>
+
+        <!-- ═══════════ S4 — WRITE SKEW + DEMO 1 ═══════════ -->
+        <section class="section reveal" id="s4">
+            <div class="section-heading"><span class="section-number">04</span>
+                <h2><span class="fa">انحراف نوشتاری — باگی که به‌آسانی از چشم در می‌رود</span><span class="en">Write skew —
+                        the isolation bug that's easy to miss</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/ch08.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 2e · فصل ۸ — Write Skew and
+                        Phantoms</span><span class="en">DDIA 2e · Ch. 8 — Write Skew and Phantoms</span></a>
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/ch07.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 1e · فصل ۷ — مثالِ پزشکانِ
+                        کشیک</span><span class="en">DDIA 1e · Ch. 7 — the doctors-on-call example</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">حالا ظریف‌ترین باگِ همروندی: <b>انحراف نوشتاری</b> (write skew). سناریوی کتاب، دقیقاً از
+                    دنیای واقعی است — شیفتِ کشیکِ پزشکان یک بیمارستان. قانون ساده است: همیشه باید <b>حداقل یک پزشک</b> کشیک
+                    باشد.</span>
+                <span class="en">Now the subtlest concurrency bug of all: <b>write skew</b>. The book's scenario comes
+                    straight from the real world — doctors' on-call shifts in a hospital. The rule is simple: there must
+                    always be <b>at least one doctor</b> on call.</span>
+            </p>
+            <p class="sublead">
+                <span class="fa">دو پزشک — سارا و بابک — هر دو هم‌زمان تصمیم می‌گیرند از کشیک خارج شوند. هر درخواست در
+                    تراکنشِ خودش، با سطحِ اسنپ‌شات، اجرا می‌شود: اول می‌خواند «چند نفر کشیک‌اند؟»، می‌بیند ۲ نفر، نتیجه
+                    می‌گیرد «یکی دیگر هست، پس می‌توانم بروم»، و فقط سطرِ <b>خودش</b> را به‌روز می‌کند. هر دو تصمیم،
+                    به‌تنهایی کاملاً درست بودند. نتیجه؟ صفر پزشکِ کشیک.</span>
+                <span class="en">Two doctors — Sara and Ben — both decide to go off duty at the same moment. Each request
+                    runs in its own transaction, at the snapshot level: it first reads "how many are on call?", sees 2,
+                    concludes "someone else is still there, so I may leave", and updates only <b>its own</b> row. Each
+                    decision was perfectly correct on its own. The result? Zero doctors on call.</span>
+            </p>
+            <div class="codebox">
+                <div class="code-title">SQL — each doctor's request (under snapshot isolation)</div>
+                <pre><code><span class="kw">BEGIN TRAN</span>;  <span class="cm">-- SNAPSHOT isolation</span>
+
+<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> Doctors
+<span class="kw">WHERE</span> OnCall = 1 <span class="kw">AND</span> Shift = <span class="str">'tonight'</span>;
+<span class="cm">-- result: 2  →  "safe, someone else is there"</span>
+
+<span class="kw">UPDATE</span> Doctors <span class="kw">SET</span> OnCall = 0
+<span class="kw">WHERE</span> Name = <span class="str">'Sara'</span>;  <span class="cm">-- only my own row</span>
+
+<span class="kw">COMMIT</span>;  <span class="cm">-- Ben runs the same thing at the same time…</span></code></pre>
+            </div>
+            <div class="callout"><strong class="label fa">چرا اسنپ‌شات این را نمی‌گیرد؟</strong><strong class="label en">Why doesn't snapshot isolation catch it?</strong>
+                <p><span class="fa">چون دو تراکنش روی دو سطرِ <b>متفاوت</b> نوشتند — هیچ تعارضِ نوشتن-نوشتنی وجود نداشت که
+                        موتور ببیند. مشکل از جنسِ «خواندن، سپس تصمیم‌گرفتن» است: تصمیمِ هر تراکنش به نتیجهٔ تراکنشِ دیگر
+                        وابسته بود، ولی هیچ‌کدام از دیگری خبر نداشت. کتاب این را با مفهومِ <b>شبح</b> (phantom) توضیح
+                        می‌دهد: تراکنش شما بر اساس مجموعه‌ای از سطرها تصمیم گرفت که تراکنشِ دیگر داشت همان مجموعه را تغییر
+                        می‌داد.</span><span class="en">Because the two transactions wrote to <b>different</b> rows — there
+                        was no write-write conflict for the engine to notice. The problem is a "read, then decide" pattern:
+                        each transaction's decision depended on the other one's outcome, but neither knew about it. The
+                        book explains this with the notion of a <b>phantom</b>: your transaction decided based on a set of
+                        rows that another transaction was in the middle of changing.</span></p>
+            </div>
+            <div class="demo" id="conflictDemo">
+                <div class="demo-title">
+                    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" /><circle cx="12" cy="12" r="3" /></svg>
+                    <span class="fa">دمو ۱: شبیه‌سازِ مسابقه — به‌روزرسانیِ گم‌شده و انحراف نوشتاری</span>
+                    <span class="en">Demo 1: The race simulator — lost update and write skew</span>
+                </div>
+                <p class="demo-intro">
+                    <span class="fa">هر دو سناریوی این صفحه را قدم‌به‌قدم اجرا کنید. بین دو تب جابه‌جا شوید و با «قدم بعدی»
+                        جلو بروید: ببینید هر سشن چه می‌خواند، چه می‌نویسد، و دقیقاً کجا سطحِ ایزوله‌سازی از دیدنِ تعارض
+                        عاجز می‌ماند. قدمِ پایانی، راه‌حل را هم نشان می‌دهد.</span>
+                    <span class="en">Step through both scenarios from this page. Switch between the two tabs and move
+                        forward with "Next step": watch what each session reads, what it writes, and exactly where the
+                        isolation level fails to see the conflict. The final step shows the fix too.</span>
+                </p>
+                <div class="viz">
+                    <div class="viz-toolbar">
+                        <div class="tabs" role="tablist" aria-label="Scenario">
+                            <button class="tab" type="button" id="cflTabInv" aria-selected="true">
+                                <span class="fa">آخرین کالای انبار</span><span class="en">Last-item inventory</span>
+                            </button>
+                            <button class="tab" type="button" id="cflTabDoc" aria-selected="false">
+                                <span class="fa">شیفتِ کشیکِ پزشکان</span><span class="en">On-call doctors</span>
+                            </button>
+                        </div>
+                        <button class="btn sm primary" id="cflNext" type="button">
+                            <span class="fa">قدم بعدی</span><span class="en">Next step</span>
+                        </button>
+                        <button class="btn sm" id="cflPlay" type="button">
+                            <span class="fa">پخش خودکار</span><span class="en">Play all</span>
+                        </button>
+                        <button class="btn sm" id="cflReset" type="button">
+                            <span class="fa">بازنشانی</span><span class="en">Reset</span>
+                        </button>
+                    </div>
+                    <div class="viz-body">
+                        <div class="cfl-db">
+                            <span class="cfl-db-label">database</span>
+                            <span id="cflDb"></span>
+                        </div>
+                        <div class="cfl-lanes">
+                            <div class="cfl-lane s1" id="cflLaneS1">
+                                <div class="cfl-lane-head">
+                                    <span class="cfl-lane-name" id="cflS1Name">SESSION 1 — Sara</span>
+                                    <span class="cfl-state" id="cflS1State">idle</span>
+                                </div>
+                                <div class="cfl-sql" id="cflS1Sql"></div>
+                                <div class="cfl-sees" id="cflS1Sees"></div>
+                            </div>
+                            <div class="cfl-lane s2" id="cflLaneS2">
+                                <div class="cfl-lane-head">
+                                    <span class="cfl-lane-name" id="cflS2Name">SESSION 2 — Arman</span>
+                                    <span class="cfl-state" id="cflS2State">idle</span>
+                                </div>
+                                <div class="cfl-sql" id="cflS2Sql"></div>
+                                <div class="cfl-sees" id="cflS2Sees"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="viz-status" id="cflStatus" aria-live="polite">
+                        <span class="fa">یک سناریو انتخاب کنید و با «قدم بعدی» جلو بروید.</span>
+                        <span class="en">Pick a scenario and move forward with "Next step".</span>
+                    </div>
+                    <div class="viz-stats">
+                        <div class="viz-stat"><span class="fa">قدم</span><span class="en">step</span><b id="cflStepNo">0 / 0</b></div>
+                        <div class="viz-stat"><span class="fa">سطح ایزوله</span><span class="en">isolation level</span><b id="cflLevel" class="warn">READ COMMITTED</b></div>
+                        <div class="viz-stat"><span class="fa">تعارض دیده شد؟</span><span class="en">conflict seen?</span><b id="cflConflict">—</b></div>
+                        <div class="viz-stat"><span class="fa">نتیجه</span><span class="en">outcome</span><b id="cflOutcome">…</b></div>
+                    </div>
+                </div>
+            </div>
+            <p class="sublead">
+                <span class="fa">راه‌حل‌ها سه دسته‌اند: <b>(۱)</b> سریال‌پذیریِ واقعی — که تعارض را با قفل یا اعتبارسنجی
+                    می‌گیرد؛ <b>(۲)</b> هماهنگی در سطحِ اپلیکیشن — مثلاً یک قفل یا صف برای همین یک عملیات؛ <b>(۳)</b> در
+                    خودِ دیتابیس — قید یا تریگری که «حداقل یک کشیک» را در لحظهٔ کامیت بررسی کند. انتخاب بین این‌ها را در
+                    بخشِ ۹ می‌بینیم.</span>
+                <span class="en">There are three families of fixes: <b>(1)</b> true serializability — catching the conflict
+                    with locks or validation; <b>(2)</b> coordination at the application level — for instance a lock or a
+                    queue for this single operation; <b>(3)</b> inside the database itself — a constraint or trigger that
+                    checks "at least one on call" at commit time. We'll choose between these in section 9.</span>
+            </p>
+            <div class="net-note"><span class="badge">.NET</span>
+                <p><span class="fa">نشانهٔ کلاسیکِ انحراف نوشتاری در کد دات‌نت: <code>SELECT</code> برای شمارش یا بررسی یک
+                        شرط، سپس <code>if</code>، سپس <code>UPDATE</code> روی سطرهای دیگر. هر جا این الگو را دیدید و شرط
+                        به‌شمردنِ «بقیهٔ سطرها» وابسته بود، زنگِ خطر را بشنوید: یا تراکنش را سریال‌پذیر کنید، یا آن شرط را
+                        در خودِ دیتابیس (قید/تریگر) یا در یک قفلِ اپلیکیشنی متمرکز کنید.</span><span class="en">The classic
+                        write-skew shape in .NET code: a <code>SELECT</code> that counts or checks a condition, then an
+                        <code>if</code>, then an <code>UPDATE</code> on other rows. Wherever you see this pattern and the
+                        condition depends on counting the other rows, hear the alarm: either make the transaction
+                        serializable, or move that condition into the database (constraint/trigger) or into an application
+                        lock.</span></p>
+            </div>
+        </section>
+        <!-- ═══════════ S5 — SQL SERVER LOCKING ═══════════ -->
+        <section class="section reveal" id="s5">
+            <div class="section-heading"><span class="section-number">05</span>
+                <h2><span class="fa">SQL Server چطور این را اجرا می‌کند: قفل‌ها</span><span class="en">How SQL Server
+                        actually enforces this: locking</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://aboutsqlserver.com/publications/" target="_blank" rel="noopener"><span>↗</span><span
+                        class="fa">Pro SQL Server Internals 2e · فصل ۱۷ — انواع قفل</span><span class="en">Pro SQL Server
+                        Internals 2e · Ch. 17 — Lock types</span></a>
+                <a href="https://aboutsqlserver.com/publications/" target="_blank" rel="noopener"><span>↗</span><span
+                        class="fa">همان کتاب · فصل ۱۹ — بن‌بست‌ها</span><span class="en">Same book · Ch. 19 —
+                        Deadlocks</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">تا اینجا همه‌چیز تئوری بود — مستقل از هر فروشنده. حالا نیمهٔ عملی: در دیتابیسی که هر روز
+                    با آن کار می‌کنید، این سطح‌ها چطور پیاده می‌شوند؟ پاسخِ پیش‌فرضِ SQL Server یک مکانیزم قدیمی و محکم
+                    است: <b>قفل</b>. وقتی تراکنشی سطری را می‌خواند یا تغییر می‌دهد، موتور روی آن سطر قفل می‌گذارد و بقیه
+                    باید رعایت کنند.</span>
+                <span class="en">So far everything was theory — vendor-neutral. Now the practical half: inside the database
+                    you work with every day, how are these levels actually implemented? SQL Server's default answer is an
+                    old, solid mechanism: <b>locks</b>. When a transaction reads or changes a row, the engine places a lock
+                    on that row, and everyone else must respect it.</span>
+            </p>
+            <div class="grid-3">
+                <article class="card">
+                    <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /></svg></span><span
+                            class="fa">قفلِ مشترک (S)</span><span class="en">Shared lock (S)</span></h3>
+                    <p><span class="fa">برای <b>خواندن</b>. چند تراکنش می‌توانند هم‌زمان قفلِ مشترکِ یک سطر را داشته باشند
+                            — خواندن با خواندن دعوا ندارد. تا وقتی کسی نخواهد بنویسد، هیچ‌کس منتظر نمی‌ماند.</span><span
+                            class="en">Taken for <b>reading</b>. Many transactions can hold a shared lock on the same row
+                            at once — reads do not fight reads. Nobody waits, until someone wants to write.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box red"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg></span><span
+                            class="fa">قفلِ انحصاری (X)</span><span class="en">Exclusive lock (X)</span></h3>
+                    <p><span class="fa">برای <b>نوشتن</b>. فقط یک تراکنش — و هیچ‌کسِ دیگر، نه خواندن و نه نوشتن، تا پایانِ
+                            تراکنش. همان «منتظر ماندنِ» معروف، دقیقاً همین‌جاست: سشنی پشتِ یک قفلِ انحصاری گیر می‌کند.
+                            این همان <b>بلاک‌شدن</b> (blocking) است که در پروداکشن می‌بینید.</span><span class="en">Taken
+                            for <b>writing</b>. One transaction only — and nobody else, no reads and no writes, until it
+                            finishes. That famous "waiting" happens exactly here: a session stuck behind an exclusive lock.
+                            This is the <b>blocking</b> you see in production.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg></span><span
+                            class="fa">قفلِ به‌روزرسانی (U)</span><span class="en">Update lock (U)</span></h3>
+                    <p><span class="fa">حدِ وسط: «می‌خوانم و شاید به‌روز کنم». دو تراکنش نمی‌توانند هم‌زمان قفلِ U روی یک
+                            سطر بگیرند — پس کلاسِ معروفی از بن‌بست (دو سشن که هم‌زمان قصدِ به‌روزرسانی دارند) از همان ابتدا
+                            شکل نمی‌گیرد. لحظهٔ نوشتن، قفل به X ارتقا می‌یابد.</span><span class="en">The middle ground:
+                            "I'll read, and maybe update". Two transactions cannot hold a U lock on the same row at once —
+                            so a classic class of deadlock (two sessions both wanting to update) never gets to start. At
+                            write time, the lock is upgraded to X.</span></p>
+                </article>
+            </div>
+            <p class="sublead">
+                <span class="fa">بلاک‌شدن را دقیق ببینیم. سشنِ ۲ کارِ اشتباهی نکرده — فقط می‌خواهد همان سطری را بخواند که
+                    سشنِ ۱ هنوز با آن کار دارد:</span>
+                <span class="en">Let's watch blocking happen, precisely. Session 2 does nothing wrong — it just wants to
+                    read the very row that session 1 is still working with:</span>
+            </p>
+            <div class="codebox">
+                <div class="code-title">SQL — plain blocking under READ COMMITTED</div>
+                <pre><code><span class="cm">-- Session 1                             -- Session 2</span>
+<span class="kw">BEGIN TRAN</span>;
+<span class="kw">UPDATE</span> Orders <span class="kw">SET</span> Status = <span class="str">'Paid'</span>
+<span class="kw">WHERE</span> Id = 501;  <span class="cm">-- takes an X lock</span>
+                                          <span class="kw">SELECT</span> * <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> Id = 501;
+                                          <span class="cm">-- blocked: it wants an S lock,</span>
+                                          <span class="cm">-- but the X lock is held</span>
+<span class="kw">COMMIT</span>;         <span class="cm">-- lock released</span>
+                                          <span class="cm">-- now the SELECT returns</span></code></pre>
+            </div>
+            <p class="sublead">
+                <span class="fa">بلاک‌شدن ناخوشایند است ولی بی‌خطر: بالاخره یک طرف تمام می‌شود و طرفِ دیگر ادامه می‌دهد.
+                    <b>بن‌بست</b> چیزِ بدتری است. دو تراکنش را تصور کنید که هر کدام قفلی را نگه داشته و قفلِ دیگری را
+                    می‌خواهد — هیچ‌کدام نمی‌تواند جلو برود، تا ابد. فصل ۱۹ کتاب چند شکلِ واقعی را نشان می‌دهد: بن‌بستِ
+                    کلاسیکِ دو سطری، بن‌بست بر اثرِ کوئریِ بهینه‌نشده (وقتی به‌جای یک سطر، یک بازه قفل می‌شود)، بن‌بستِ
+                    خواندن/به‌روزرسانیِ هم‌زمان، و بن‌بستِ چند به‌روزرسانی روی یک سطر. شکلِ کلاسیکش این است:</span>
+                <span class="en">Blocking is annoying but harmless: eventually one side finishes and the other moves on. A
+                    <b>deadlock</b> is worse. Picture two transactions that each hold a lock the other one needs — neither
+                    can ever move. Chapter 19 of the book shows several real shapes: the classic two-row deadlock, deadlocks
+                    caused by non-optimized queries (when a whole range gets locked instead of one row), deadlocks from
+                    simultaneous read/update statements, and deadlocks from multiple updates of the same row. The classic
+                    shape looks like this:</span>
+            </p>
+            <div class="dl-grid" aria-label="Deadlock cycle">
+                <div class="dl-node"><b>Session 1</b>holds → <span class="holds">lock on Order 1</span><br>wants → <span
+                        class="wants">lock on Order 2</span></div>
+                <div class="dl-core">CYCLE =<br>DEADLOCK<br>✗</div>
+                <div class="dl-node"><b>Session 2</b>holds → <span class="holds">lock on Order 2</span><br>wants → <span
+                        class="wants">lock on Order 1</span></div>
+            </div>
+            <div class="codebox">
+                <div class="code-title">SQL — the classic two-row deadlock</div>
+                <pre><code><span class="cm">-- Session 1                             -- Session 2</span>
+<span class="kw">BEGIN TRAN</span>;                              <span class="kw">BEGIN TRAN</span>;
+<span class="kw">UPDATE</span> Orders <span class="kw">SET</span> Qty = Qty + 1     <span class="kw">UPDATE</span> Orders <span class="kw">SET</span> Qty = Qty + 1
+<span class="kw">WHERE</span> Id = 1;   <span class="cm">-- locks row 1</span>     <span class="kw">WHERE</span> Id = 2;   <span class="cm">-- locks row 2</span>
+
+<span class="kw">UPDATE</span> Orders <span class="kw">SET</span> Qty = Qty + 1     <span class="kw">UPDATE</span> Orders <span class="kw">SET</span> Qty = Qty + 1
+<span class="kw">WHERE</span> Id = 2;   <span class="cm">-- waits for S2…</span>  <span class="kw">WHERE</span> Id = 1;   <span class="cm">-- waits for S1…</span>
+
+<span class="cm">-- SQL Server detects the cycle and kills one session:</span>
+<span class="cm">-- error 1205, "deadlock victim" — the other one proceeds</span></code></pre>
+            </div>
+            <div class="callout"><strong class="label fa">کم‌کردنِ شانسِ بن‌بست — از فصل ۱۹</strong><strong class="label en">Reducing the chance of deadlocks — from Ch. 19</strong>
+                <p><span class="fa">قانون‌های کتاب ساده‌اند: <b>(۱)</b> در همهٔ تراکنش‌ها به اشیاء با یک ترتیبِ ثابت دسترسی
+                        کنید؛ <b>(۲)</b> تراکنش‌ها را کوتاه نگه دارید؛ <b>(۳)</b> هیچ‌وقت وسطِ تراکنش منتظرِ کاربر نمانید؛
+                        <b>(۴)</b> ایندکسِ خوب بگذارید تا کوئری به‌جای اسکنِ جدول، فقط سطرِ خودش را قفل کند؛ و <b>(۵)</b>
+                        برای خطای ۱۲۰۵ ری‌ترای خودکار بگذارید — بن‌بست در سیستم‌های شلوغ «اگر» ندارد، «کِی» دارد.</span><span
+                        class="en">The book's rules are simple: <b>(1)</b> access objects in the same fixed order in every
+                        transaction; <b>(2)</b> keep transactions short; <b>(3)</b> never wait for user input inside a
+                        transaction; <b>(4)</b> add good indexes so queries lock only their own rows instead of scanning the
+                        table; and <b>(5)</b> auto-retry on error 1205 — in busy systems, deadlocks are not an "if", they
+                        are a "when".</span></p>
+            </div>
+            <div class="net-note"><span class="badge">.NET</span>
+                <p><span class="fa">در دات‌نت، بن‌بست به‌شکلِ <code>SqlException</code> با
+                        <code>Number == 1205</code> می‌رسد. الگوی استاندارد: گرفتنِ این خطا، کمی تأخیرِ تصادفی، و اجرای
+                        دوبارهٔ تراکنش — کتابخانه‌هایی مثل Polly دقیقاً برای همین ساخته شده‌اند. و اگر از EF Core استفاده
+                        می‌کنید: هر درخواستِ وب باید یک تراکنشِ کوتاه باشد، نه تراکنشی که تا آخرِ درخواست باز بماند و
+                        قفل‌ها را نگه دارد.</span><span class="en">In .NET, a deadlock arrives as a
+                        <code>SqlException</code> with <code>Number == 1205</code>. The standard pattern: catch it, wait a
+                        short random delay, and run the transaction again — libraries like Polly exist for exactly this. And
+                        if you use EF Core: each web request should be one short transaction, not a transaction that stays
+                        open for the whole request while holding locks.</span></p>
+            </div>
+        </section>
+
+        <!-- ═══════════ S6 — LOCK ESCALATION ═══════════ -->
+        <section class="section reveal" id="s6">
+            <div class="section-heading"><span class="section-number">06</span>
+                <h2><span class="fa">تشدید قفل — وقتی قفل‌های ریز یک‌دفعه درشت می‌شوند</span><span class="en">Lock
+                        escalation — when many small locks suddenly become one big lock</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://aboutsqlserver.com/publications/" target="_blank" rel="noopener"><span>↗</span><span
+                        class="fa">Pro SQL Server Internals 2e · فصل ۲۰ — تشدید قفل</span><span class="en">Pro SQL Server
+                        Internals 2e · Ch. 20 — Lock Escalation</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">هر قفل در حافظهٔ دیتابیس جا می‌گیرد. وقتی یک دستور هزاران سطر را قفل می‌کند — مثلاً یک
+                    <code>UPDATE</code> یا <code>DELETE</code> بزرگ — هزینهٔ مدیریتِ این همه قفل سنگین می‌شود. فصل ۲۰ توضیح
+                    می‌دهد که در آن نقطه، موتور یک تصمیمِ اقتصادی می‌گیرد: همهٔ قفل‌های ریزِ سطری و صفحه‌ای را دور می‌ریزد و
+                    <b>یک قفلِ انحصاری روی کلِ جدول</b> می‌گیرد. به این می‌گویند تشدید قفل (lock escalation).</span>
+                <span class="en">Every lock occupies memory in the database. When one statement locks thousands of rows —
+                    a large <code>UPDATE</code> or <code>DELETE</code>, say — managing all those locks becomes heavy.
+                    Chapter 20 explains that at that point, the engine makes an economic decision: it drops all the small
+                    row and page locks and takes <b>one exclusive lock on the whole table</b>. This is called lock
+                    escalation.</span>
+            </p>
+            <p class="sublead">
+                <span class="fa">آستانهٔ معروف حدود <b>۵۰۰۰ قفل</b> برای یک دستور است — ولی عددِ قطعی نیست: اگر حافظهٔ
+                    دیتابیس تحت فشار باشد، تشدید زودتر اتفاق می‌افتد. شرطش هم این است که قفل‌ها همه متعلق به یک دستور
+                    باشند؛ قفل‌های تراکنش‌های مختلف با هم جمع نمی‌شوند.</span>
+                <span class="en">The famous threshold is about <b>5,000 locks</b> for a single statement — but it is not a
+                    hard number: under memory pressure, escalation happens sooner. One condition applies: the locks must all
+                    belong to the same statement; locks from different transactions are never combined.</span>
+            </p>
+            <div class="callout warning"><strong class="label fa">چرا در پروداکشن غافلگیرکننده است؟</strong><strong
+                    class="label en">Why it surprises people in production</strong>
+                <p><span class="fa">تا لحظهٔ تشدید، همه‌چیز «سطری» بود: تراکنش‌های دیگر فقط سطرهای خودشان را می‌خواستند و
+                        مشکلی نبود. بعد از تشدید، هر تراکنشِ دیگری که حتی به <b>یک سطر</b> از آن جدول نیاز داشته باشد بلاک
+                        می‌شود — تا کارِ آن آپدیتِ بزرگ تمام شود. یک شغلِ نگهداریِ شبانه می‌تواند کلِ جدول را برای چند دقیقه
+                        ببندد و عملاً سایت را متوقف کند؛ و چون همهٔ کوئری‌ها «به‌ظاهر بی‌ربط» گیر کرده‌اند، پیدا کردنِ ریشه
+                        بدون دانستنِ این مکانیزم سخت است.</span><span class="en">Until the escalation, everything was
+                        row-level: other transactions only wanted their own rows, so nothing collided. After the
+                        escalation, any other transaction that needs even <b>one row</b> of that table is blocked — until
+                        the big update finishes. One nightly maintenance job can close off a whole table for minutes and
+                        effectively stop the site; and since all the stuck queries look unrelated, finding the root cause
+                        is hard unless you know this mechanism.</span></p>
+            </div>
+            <div class="demo" id="escDemo">
+                <div class="demo-title">
+                    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13" /><path d="M9 21v-6h6v6" /></svg>
+                    <span class="fa">میکرودمو: آستانهٔ تشدید قفل</span>
+                    <span class="en">Micro-demo: the lock escalation threshold</span>
+                </div>
+                <p class="demo-intro">
+                    <span class="fa">لغزنده را حرکت دهید: یک <code>UPDATE</code> بزرگ سطرهای بیشتری را قفل می‌کند. ببینید در
+                        آستانهٔ حدودِ ۵۰۰۰ قفل چه اتفاقی می‌افتد — و سشنِ بی‌خبرِ سمتِ راست چطور ناگهان پشتِ درِ بسته
+                        می‌ماند.</span>
+                    <span class="en">Move the slider: a big <code>UPDATE</code> locks more and more rows. Watch what
+                        happens around the 5,000-lock threshold — and how the unsuspecting session on the right suddenly
+                        ends up stuck outside a closed door.</span>
+                </p>
+                <div class="esc-wrap">
+                    <div class="esc-controls">
+                        <label for="escRange"><span class="fa">سطرهای قفل‌شده توسط یک دستور:</span><span class="en">Rows locked by one statement:</span></label>
+                        <input type="range" id="escRange" min="0" max="8000" step="200" value="1000">
+                        <span class="esc-readout" id="escCount">1,000 row locks</span>
+                    </div>
+                    <div class="esc-stage">
+                        <div class="esc-table" id="escTable">
+                            <h4>Orders <span class="fa">— جدول</span><span class="en">— the table</span></h4>
+                            <div class="esc-dots" id="escDots"></div>
+                            <span class="esc-more" id="escMore"></span>
+                            <div class="esc-tablelock" aria-hidden="true">🔒 TABLE LOCK (X)<small id="escLockSub"></small></div>
+                        </div>
+                        <div class="esc-side">
+                            <div class="esc-meter">
+                                <h4><span class="fa">حافظهٔ مدیرِ قفل</span><span class="en">Lock manager memory</span></h4>
+                                <div class="esc-track"><i id="escBar"></i></div>
+                                <p id="escMem">≈ 96 KB — row locks</p>
+                            </div>
+                            <div class="esc-session" id="escSession">
+                                <span class="fa">سشنِ دیگر می‌خواهد <b>یک</b> سطرِ همین جدول را بخواند: <b class="go" id="escGo">می‌تواند ✓</b></span>
+                                <span class="en">Another session wants to read <b>one</b> row of this table: <b class="go" id="escGoEn">it can ✓</b></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="net-note"><span class="badge">.NET</span>
+                <p><span class="fa">در عمل: آپدیت‌ها و حذف‌های بزرگ را دسته‌بندی کنید — مثلاً ۲۰۰۰ سطر در هر تراکنش، با یک
+                        حلقه — تا هیچ دستوری به آستانهٔ تشدید نرسد. اگر جدولی ذاتاً داغ و پرتنش است، پارتیشن‌بندی هم کمک
+                        می‌کند — همان موضوعی که در صفحهٔ پارتیشن‌بندیِ داده خواندید. ابزارِ تشخیص هم دارید:
+                        <code>sp_traceflag</code> یا Extended Events می‌توانند رویدادِ تشدید را ثبت کنند.</span><span
+                        class="en">In practice: chunk large updates and deletes — say 2,000 rows per transaction, in a loop
+                        — so no single statement reaches the escalation threshold. If a table is inherently hot,
+                        partitioning helps too — the same topic you read about on the Data Partitioning page. You also have
+                        detection tools: trace flags or Extended Events can capture escalation events.</span></p>
+            </div>
+        </section>
+
+        <!-- ═══════════ S7 — MVCC / ROW VERSIONING ═══════════ -->
+        <section class="section reveal" id="s7">
+            <div class="section-heading"><span class="section-number">07</span>
+                <h2><span class="fa">جایگزینِ خوش‌بینانه: نسخه‌بندی سطرها (MVCC)</span><span class="en">The optimistic
+                        alternative: row versioning (MVCC)</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://aboutsqlserver.com/publications/" target="_blank" rel="noopener"><span>↗</span><span
+                        class="fa">Pro SQL Server Internals 2e · فصل ۲۱ — سطح‌های خوش‌بینانه</span><span class="en">Pro SQL
+                        Server Internals 2e · Ch. 21 — Optimistic isolation levels</span></a>
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/ch08.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 2e · فصل ۸ — اسنپ‌شات و
+                        MVCC</span><span class="en">DDIA 2e · Ch. 8 — snapshots &amp; MVCC</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">قفل‌ها جواب می‌دهند، اما قیمت‌شان بلاک‌شدن است — خواننده پشتِ نویسنده می‌ماند، نویسنده
+                    پشتِ خواننده. سؤالِ طبیعی: می‌شود خواننده‌ها اصلاً معطل نشوند؟ بله. ایده‌ای به نام <b>کنترل همروندیِ
+                        چند-نسخه‌ای</b> (MVCC): به‌جای اینکه خواننده را نگه داریم، <b>نسخهٔ قبلیِ</b> داده را به او می‌دهیم.
+                    نویسنده نسخهٔ تازه می‌سازد؛ خواننده نسخه‌ای را می‌بیند که برایش معنادار است. هیچ‌کس منتظرِ دیگری
+                    نمی‌ماند.</span>
+                <span class="en">Locks work, but their price is blocking — readers wait behind writers, writers wait
+                    behind readers. The natural question: can readers avoid waiting altogether? Yes. The idea is called
+                    <b>Multi-Version Concurrency Control</b> (MVCC): instead of holding the reader, hand it a
+                    <b>previous version</b> of the data. The writer creates a fresh version; the reader sees the version
+                    that makes sense for it. Nobody waits for anybody.</span>
+            </p>
+            <div class="grid-2">
+                <article class="card">
+                    <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" /></svg></span><span
+                            class="fa">READ COMMITTED SNAPSHOT (RCSI)</span><span class="en">READ COMMITTED SNAPSHOT
+                            (RCSI)</span></h3>
+                    <p><span class="fa">جایگزینِ همان سطحِ پیش‌فرض، بدون تغییر در کد. هر <code>SELECT</code> آخرین نسخهٔ
+                            <b>کامیت‌شده</b>ٔ سطر را می‌خواند — حتی اگر تراکنشِ دیگری درست همان لحظه وسطِ تغییر دادنش باشد.
+                            بلاکی در کار نیست؛ هر عبارت، عکسِ لحظهٔ خودش را می‌بیند. فعال‌سازی با یک دستور روی دیتابیس:
+                            <code>ALTER DATABASE ... SET READ_COMMITTED_SNAPSHOT ON</code>.</span><span class="en">A drop-in
+                            replacement for the default level, with zero code changes. Every <code>SELECT</code> reads the
+                            last <b>committed</b> version of a row — even if another transaction is mid-change on it at
+                            that very moment. No blocking; each statement sees its own point-in-time picture. One database
+                            command turns it on:
+                            <code>ALTER DATABASE ... SET READ_COMMITTED_SNAPSHOT ON</code>.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box blue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M3 9h18" /></svg></span><span
+                            class="fa">SNAPSHOT</span><span class="en">SNAPSHOT</span></h3>
+                    <p><span class="fa">سطحِ کامل‌تر: کلِ تراکنش، عکسِ <b>لحظهٔ شروعش</b> را می‌بیند — همان چیزی که در
+                            بخشِ ۳ به اسمِ ایزوله‌سازیِ اسنپ‌شات شناختید. باید هم در دیتابیس فعال شود و هم هر تراکنش آن را
+                            درخواست کند (<code>SET TRANSACTION ISOLATION LEVEL SNAPSHOT</code>). یادتان باشد: انحراف نوشتاریِ
+                            پزشکان را این سطح هم نمی‌گیرد.</span><span class="en">The fuller level: the entire transaction
+                            sees a snapshot from <b>its start time</b> — exactly what you met in section 3 as snapshot
+                            isolation. It must be enabled at the database level, and each transaction must request it
+                            (<code>SET TRANSACTION ISOLATION LEVEL SNAPSHOT</code>). Remember: this level still does not
+                            catch the doctors' write skew.</span></p>
+                </article>
+            </div>
+            <p class="sublead">
+                <span class="fa">این نسخه‌ها کجا می‌روند؟ فصل ۲۱ نشان می‌دهد: وقتی سطری تغییر می‌کند، نسخهٔ قبلی‌اش در
+                    <b>مخزنِ نسخه‌ها</b> (داخل دیتابیسِ <code>tempdb</code>) ذخیره می‌شود. هر نسخه یک نشانگرِ تراکنش دارد و
+                    نسخه‌ها مثل یک زنجیره به هم وصل می‌شوند. خواننده از آخرین نسخه شروع می‌کند؛ اگر آن نسخه برایش «خیلی
+                    تازه» باشد (تراکنشِ سازنده‌اش هنوز کامیت نشده)، روی زنجیره عقب می‌رود تا نسخهٔ قابل‌قبول را پیدا کند.
+                    وقتی هم هیچ تراکنشی به نسخه‌های قدیمی نیاز نداشته باشد، موتور آن‌ها را پاک می‌کند.</span>
+                <span class="en">Where do these versions go? Chapter 21 shows: when a row changes, its previous version is
+                    stored in the <b>version store</b> (inside the <code>tempdb</code> database). Each version carries a
+                    transaction marker, and versions link together like a chain. A reader starts at the newest version; if
+                    that version is "too new" for it (its creating transaction has not committed yet), it walks back along
+                    the chain until it finds an acceptable version. And when no transaction needs the old versions anymore,
+                    the engine cleans them up.</span>
+            </p>
+            <div class="callout"><strong class="label fa">بستنِ حلقه</strong><strong class="label en">Closing the loop</strong>
+                <p><span class="fa">«ایزوله‌سازیِ اسنپ‌شات» که در فصلِ تئوری خواندید، یک <b>مفهومِ مستقل از فروشنده</b>
+                        است؛ <code>READ_COMMITTED_SNAPSHOT</code> و <code>SNAPSHOT</code> در SQL Server همان مفهوم را با
+                        مخزنِ نسخه‌ها پیاده‌سازی می‌کنند. همین ایده را در PostgreSQL و اکثرِ دیتابیس‌های مدرن هم می‌بینید،
+                        فقط با جزئیاتِ متفاوت.</span><span class="en">The "snapshot isolation" you read about in the
+                        theory chapter is a <b>vendor-neutral concept</b>; SQL Server's
+                        <code>READ_COMMITTED_SNAPSHOT</code> and <code>SNAPSHOT</code> implement that same concept with a
+                        version store. You will find the same idea in PostgreSQL and most modern databases — only the
+                        details differ.</span></p>
+            </div>
+            <div class="callout warning"><strong class="label fa">این هم رایگان نیست</strong><strong class="label en">This isn't free either</strong>
+                <p><span class="fa">نسخه‌ها جا می‌گیرند — فشار روی <code>tempdb</code>. تراکنش‌های خیلی طولانی نمی‌گذارند
+                        نسخه‌های قدیمی پاک شوند. و اگر زنجیرهٔ نسخه‌ها برای یک خواننده خیلی بلند شده باشد، خطای ۳۹۶۰
+                        («نسخهٔ مناسب پیدا نشد») می‌گیرید و تراکنش لغو می‌شود. مهم‌تر از همه: اسنپ‌شات فقط مشکلِ
+                        <b>خواندن</b> را حل می‌کند؛ تعارضِ نوشتن — همان انحراف نوشتاری — سرِ جایش است.</span><span
+                        class="en">Versions take space — pressure on <code>tempdb</code>. Very long transactions stop old
+                        versions from being cleaned up. And if the version chain gets too long for a reader, you get error
+                        3960 ("a suitable version was not found") and the transaction is aborted. Most importantly:
+                        snapshots only fix the <b>reading</b> side; write conflicts — that write skew from before — are
+                        still on the table.</span></p>
+            </div>
+            <div class="demo" id="mvccDemo">
+                <div class="demo-title">
+                    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9" /></svg>
+                    <span class="fa">دمو ۲: قفل در برابر نسخه‌بندی — یک سطر، دو تراکنش</span>
+                    <span class="en">Demo 2: Locking vs row versioning — one row, two transactions</span>
+                </div>
+                <p class="demo-intro">
+                    <span class="fa">تراکنشِ ۱ می‌خواهد موجودیِ حساب را از ۵۰۰ به ۶۰۰ برساند؛ تراکنشِ ۲ همان لحظه می‌خواهد
+                        موجودی را بخواند. حالت را عوض کنید: در حالتِ بدبینانه (قفل)، تراکنشِ ۲ پشتِ در می‌ماند؛ در حالتِ
+                        خوش‌بینانه (MVCC)، نسخهٔ قبلی را می‌گیرد و رد می‌شود. قدم‌به‌قدم ببینید هر سشن چه می‌بیند و کِی
+                        اجازهٔ جلو رفتن دارد.</span>
+                    <span class="en">Transaction 1 wants to move an account balance from 500 to 600; transaction 2 wants
+                        to read the balance at the same moment. Switch modes: in the pessimistic (locking) mode,
+                        transaction 2 waits at the door; in the optimistic (MVCC) mode, it takes the previous version and
+                        moves on. Step through what each session sees, and when it is allowed to proceed.</span>
+                </p>
+                <div class="viz">
+                    <div class="viz-toolbar">
+                        <div class="tabs" role="tablist" aria-label="Concurrency mode">
+                            <button class="tab" type="button" id="mvTabLock" aria-selected="true">
+                                <span class="fa">بدبینانه — قفل‌ها</span><span class="en">Pessimistic — locks</span>
+                            </button>
+                            <button class="tab" type="button" id="mvTabMvcc" aria-selected="false">
+                                <span class="fa">خوش‌بینانه — نسخه‌بندی</span><span class="en">Optimistic — MVCC</span>
+                            </button>
+                        </div>
+                        <button class="btn sm primary" id="mvNext" type="button">
+                            <span class="fa">قدم بعدی</span><span class="en">Next step</span>
+                        </button>
+                        <button class="btn sm" id="mvPlay" type="button">
+                            <span class="fa">پخش خودکار</span><span class="en">Play all</span>
+                        </button>
+                        <button class="btn sm" id="mvReset" type="button">
+                            <span class="fa">بازنشانی</span><span class="en">Reset</span>
+                        </button>
+                    </div>
+                    <div class="viz-body">
+                        <div class="mv-grid">
+                            <div class="mv-lane t1">
+                                <div class="mv-lane-name"><span>T1 — writer</span><span class="cfl-state" id="mvT1State">idle</span></div>
+                                <div id="mvT1Log" style="display:flex;flex-direction:column;gap:6px"></div>
+                            </div>
+                            <div class="mv-row">
+                                <div class="mv-row-title">Accounts — Id = 1</div>
+                                <div class="mv-val" id="mvVal">500<small>Balance</small><span class="mv-lockbadge"
+                                        id="mvLock" hidden>X LOCK</span></div>
+                                <div class="mv-vs">
+                                    <div class="mv-vs-title"><span class="fa">مخزن نسخه‌ها (tempdb)</span><span class="en">version store (tempdb)</span></div>
+                                    <div class="mv-chips" id="mvChips"><span class="mv-ver gone" id="mvEmpty"><span class="fa">خالی</span><span class="en">empty</span></span></div>
+                                </div>
+                            </div>
+                            <div class="mv-lane t2">
+                                <div class="mv-lane-name"><span>T2 — reader</span><span class="cfl-state" id="mvT2State">idle</span></div>
+                                <div id="mvT2Log" style="display:flex;flex-direction:column;gap:6px"></div>
+                                <div class="mv-waitbar" aria-hidden="true"><i id="mvWaitBar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="viz-status" id="mvStatus" aria-live="polite">
+                        <span class="fa">حالت را انتخاب کنید و با «قدم بعدی» جلو بروید.</span>
+                        <span class="en">Choose a mode and move forward with "Next step".</span>
+                    </div>
+                    <div class="viz-stats">
+                        <div class="viz-stat"><span class="fa">قدم</span><span class="en">step</span><b id="mvStepNo">0 / 0</b></div>
+                        <div class="viz-stat"><span class="fa">حالت</span><span class="en">mode</span><b id="mvMode" class="warn">LOCKS</b></div>
+                        <div class="viz-stat"><span class="fa">T2 معطل شد؟</span><span class="en">T2 waited?</span><b id="mvWaited">—</b></div>
+                        <div class="viz-stat"><span class="fa">مقدارِ دیده‌شده</span><span class="en">value read</span><b id="mvRead">—</b></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ═══════════ S8 — SERIALIZABILITY ═══════════ -->
+        <section class="section reveal" id="s8">
+            <div class="section-heading"><span class="section-number">08</span>
+                <h2><span class="fa">سریال‌پذیری — انتهای قویِ طیف</span><span class="en">Serializability — the strong end
+                        of the spectrum</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/ch08.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 2e · فصل ۸ —
+                        Serializability</span><span class="en">DDIA 2e · Ch. 8 — Serializability</span></a>
+                <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/ch07.html"
+                    target="_blank" rel="noopener"><span>↗</span><span class="fa">DDIA 1e · فصل ۷</span><span class="en">DDIA
+                        1e · Ch. 7</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">بالاترین سطح: <b>سریال‌پذیری</b>. یعنی نتیجهٔ اجرای هم‌زمانِ تراکنش‌ها دقیقاً مثل حالتی
+                    باشد که یکی‌یکی اجرا شده باشند — بدون هیچ استثنایی، از جمله انحراف نوشتاری. کتاب سه راه برای رسیدن به آن
+                    بررسی می‌کند:</span>
+                <span class="en">The highest level: <b>serializability</b>. It means the outcome of running transactions
+                    concurrently must be exactly as if they had run one after another — with no exceptions, write skew
+                    included. The book examines three roads to get there:</span>
+            </p>
+            <div class="grid-3">
+                <article class="card">
+                    <h3><span class="icon-box green">1</span><span class="fa">اجرای واقعاً سریالی</span><span class="en">Actual serial execution</span></h3>
+                    <p><span class="fa">ساده‌ترین راه: اصلاً موازی نکنید. دیتابیس‌هایی مثل VoltDB همهٔ تراکنش‌ها را روی یک
+                            رشتهٔ تنها اجرا می‌کنند. چون رم امروز ارزان است و تراکنش‌های کوچک در حافظه جا می‌شوند، این ایدهٔ
+                            قدیمی دوباره زنده شده. قیمتش: توانِ عملیاتی محدود به یک هسته.</span><span class="en">The
+                            simplest road: don't parallelize at all. Databases like VoltDB run every transaction on a
+                            single thread. Since RAM is cheap today and small transactions fit in memory, this old idea has
+                            come back to life. Its price: throughput limited to one core.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box amber">2</span><span class="fa">قفل دوفازی (2PL)</span><span class="en">Two-Phase Locking (2PL)</span></h3>
+                    <p><span class="fa">استانداردِ واقعی برای چند دهه. قانونش از قفل‌های معمولی سخت‌گیرانه‌تر است:
+                            تراکنش‌ها همهٔ قفل‌ها را در «فازِ اول» می‌گیرند و فقط در «فازِ دوم» — لحظهٔ کامیت — آزاد
+                            می‌کنند. هیچ قفلی وسطِ کار رها نمی‌شود. نتیجه: هیچ تعارضی ممکن نیست، اما بلاک‌شدن و بن‌بست زیاد
+                            می‌شود و یک تراکنشِ کند می‌تواند همه را معطل کند. <code>SERIALIZABLE</code> در SQL Server از
+                            همین خانواده است.</span><span class="en">The real standard for decades. Its rule is stricter
+                            than ordinary locking: transactions acquire all locks in the "first phase" and release them only
+                            in the "second phase" — at commit time. No lock is dropped mid-way. The result: no conflict is
+                            possible, but blocking and deadlocks grow common, and one slow transaction can hold everyone up.
+                            SQL Server's <code>SERIALIZABLE</code> comes from this family.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box blue">3</span><span class="fa">ایزوله‌سازیِ اسنپ‌شاتِ سریال‌پذیر (SSI)</span><span class="en">Serializable Snapshot Isolation (SSI)</span></h3>
+                    <p><span class="fa">رویکردِ مدرن و خوش‌بینانه: بگذارید تراکنش‌ها آزادانه روی اسنپ‌شاتِ خودشان اجرا شوند
+                            و تعارض‌ها را موقعِ کامیت تشخیص بدهید؛ اگر تعارضی بود، تراکنشِ خطاکار را برگردانید. چون بدبینیِ
+                            قفل را ندارد معمولاً سریع‌تر است — ولی تراکنش‌های برگشت‌خورده باید دوباره اجرا شوند. (در SQL
+                            Server چیزی به اسم SSI نداریم؛ نزدیک‌ترین معادلش همان <code>SERIALIZABLE</code> قفل‌محور
+                            است.)</span><span class="en">The modern, optimistic approach: let transactions run freely on
+                            their snapshots and detect conflicts at commit time; if there is one, abort the offending
+                            transaction. Without the pessimism of locks it is usually faster — but aborted transactions
+                            must be re-run. (SQL Server has no SSI; its closest equivalent is lock-based
+                            <code>SERIALIZABLE</code>.)</span></p>
+                </article>
+            </div>
+            <div class="callout"><strong class="label fa">چرا پیش‌فرض نیست؟</strong><strong class="label en">Why isn't it the default?</strong>
+                <p><span class="fa">چون هزینه دارد: بلاک‌شدنِ بیشتر (2PL)، اجرای مجددِ تراکنش‌های برگشت‌خورده (SSI)، یا
+                        توانِ تک‌هسته‌ای (اجرای سریالی). برای اکثرِ برنامه‌ها، سطح‌های ضعیف‌تر به‌علاوهٔ چند حرکتِ هوشمند در
+                        کد — مثل همان <code>UPDATE ... WHERE Stock &gt; 0</code> بخشِ موجودی — کافی و بسیار سریع‌ترند. کتاب
+                        توصیه می‌کند: اول درست فکر کنید، بعد اگر لازم بود سطح را بالا ببرید.</span><span class="en">Because
+                        it costs: more blocking (2PL), re-running aborted transactions (SSI), or single-core throughput
+                        (serial execution). For most applications, weaker levels plus a few smart moves in the code — like
+                        the <code>UPDATE ... WHERE Stock &gt; 0</code> from the inventory section — are enough, and much
+                        faster. The book's advice: think it through first, then raise the level only if needed.</span></p>
+            </div>
+        </section>
+
+        <!-- ═══════════ S9 — CHOOSING IN PRACTICE ═══════════ -->
+        <section class="section reveal" id="s9">
+            <div class="section-heading"><span class="section-number">09</span>
+                <h2><span class="fa">انتخابِ سطح در عمل — استراتژیِ تراکنش</span><span class="en">Choosing a level in
+                        practice — designing a transaction strategy</span></h2>
+            </div>
+            <div class="source-row">
+                <a href="https://aboutsqlserver.com/publications/" target="_blank" rel="noopener"><span>↗</span><span
+                        class="fa">Pro SQL Server Internals 2e · فصل ۲۴ — طراحی استراتژی تراکنش</span><span class="en">Pro
+                        SQL Server Internals 2e · Ch. 24 — Designing transaction strategies</span></a>
+            </div>
+            <p class="lead">
+                <span class="fa">فصل ۲۴ کتابِ اینترنالز، بحث را به زمین می‌آورد: طراحیِ <b>استراتژیِ تراکنش</b> برای یک
+                    اپلیکیشنِ واقعی. خلاصهٔ عملی‌اش برای یک توسعه‌دهندهٔ دات‌نت، در چهار اصل:</span>
+                <span class="en">Chapter 24 of the internals book brings the discussion down to earth: designing a
+                    <b>transaction strategy</b> for a real application. Its practical summary, for a .NET developer, fits
+                    in four principles:</span>
+            </p>
+            <div class="grid-2">
+                <article class="card">
+                    <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg></span><span
+                            class="fa">۱ · پیش‌فرض را عاقلانه انتخاب کنید</span><span class="en">1 · Pick a sane default</span></h3>
+                    <p><span class="fa">برای اکثرِ سیستم‌های تراکنشی: <code>READ COMMITTED</code> — و ترجیحاً طعمِ
+                            اسنپ‌شاتش (<code>READ_COMMITTED_SNAPSHOT ON</code>) تا خواننده‌ها بلاک نشوند. این ترکیب، بدونِ
+                            حتی یک خط تغییر در کد، بیشترِ دردهای بلاک‌شدن را از بین می‌برد.</span><span class="en">For
+                            most transactional systems: <code>READ COMMITTED</code> — preferably its snapshot flavor
+                            (<code>READ_COMMITTED_SNAPSHOT ON</code>) so readers don't block. This combination removes most
+                            blocking pain without a single line of code change.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v8M8 7l4 4 4-4" /><path d="M4 14h16M4 18h16M4 22h16" /></svg></span><span
+                            class="fa">۲ · مورد به مورد بالا بروید</span><span class="en">2 · Escalate case by case</span></h3>
+                    <p><span class="fa">فقط برای عملیات‌هایی که درستی‌شان به چند نوشتن وابسته است (کم‌کردنِ موجودی، برداشتنِ
+                            کشیک) سطح را بالا ببرید — یا اصلاً منطق را اتمیک کنید: یک <code>UPDATE ... WHERE</code> هوشمند
+                            به‌جای خواندن-تغییردادن-نوشتن. سریال‌پذیر را فقط وقتی بیاورید که هیچ‌کدام کافی نبود.</span><span
+                            class="en">Raise the level only for operations whose correctness depends on several writes
+                            (reducing stock, removing on-call duty) — or better, make the logic atomic: one smart
+                            <code>UPDATE ... WHERE</code> instead of read-modify-write. Reach for Serializable only when
+                            nothing else is enough.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box blue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg></span><span
+                            class="fa">۳ · تراکنش‌ها را کوتاه نگه دارید</span><span class="en">3 · Keep transactions short</span></h3>
+                    <p><span class="fa">هیچ تراکنشی نباید منتظرِ کاربر، فراخوانیِ شبکه یا سرویسِ بیرونی بماند. قفل‌ها و
+                            نسخه‌ها هر چه زودتر آزاد شوند، سیستم نفس می‌کشد. یک تراکنشِ چند ثانیه‌ای در ساعتِ اوج، یک بمبِ
+                            ساعتیِ بلاک است — و در حالتِ نسخه‌بندی، عاملِ خطای ۳۹۶۰.</span><span class="en">No transaction
+                            should wait for a user, a network call, or an external service. The sooner locks and versions
+                            are released, the more the system can breathe. A multi-second transaction at peak time is a
+                            blocking time bomb — and under versioning, the cause of error 3960.</span></p>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box violet"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.56" /><path d="M21 3v6h-6" /></svg></span><span
+                            class="fa">۴ · برای شکست برنامه داشته باشید</span><span class="en">4 · Plan for failure</span></h3>
+                    <p><span class="fa">بن‌بست و خطاهای اسنپ‌شات بخشی از زندگی‌اند. برای خطاهای ۱۲۰۵ و ۳۹۶۰ ری‌ترای خودکار
+                            با تأخیرِ تصادفی بگذارید و تا شکستِ قطعی، چیزی به کاربر نشان ندهید. لاگ‌کردنِ قربانیانِ بن‌بست هم
+                            برای پیدا کردنِ الگوهای تکراری ضروری است.</span><span class="en">Deadlocks and snapshot errors
+                            are part of life. Add automatic retry with a random delay for errors 1205 and 3960, and show
+                            users nothing until a request truly fails. Logging deadlock victims is essential for spotting
+                            repeated patterns.</span></p>
+                </article>
+            </div>
+            <div class="codebox">
+                <div class="code-title">C# — EF Core: atomic decrement beats read-modify-write</div>
+                <pre><code><span class="cm">// One atomic statement instead of: read stock → if → write stock</span>
+<span class="kw">var</span> updated = <span class="kw">await</span> db.Database.ExecuteSqlRawAsync(
+    <span class="str">"UPDATE Products SET Stock = Stock - 1 WHERE Id = {0} AND Stock &gt; 0"</span>,
+    productId);
+
+<span class="kw">if</span> (updated == 0)
+    <span class="kw">throw new</span> <span class="fn">SoldOutException</span>(productId);  <span class="cm">// compare-and-set did its job</span>
+
+<span class="cm">// Only if several tables must move together, wrap explicitly:</span>
+<span class="kw">await using var</span> tx = <span class="kw">await</span> db.Database.BeginTransactionAsync(
+    IsolationLevel.Serializable);
+<span class="cm">/* ... writes ... */</span>
+<span class="kw">await</span> tx.CommitAsync();</code></pre>
+            </div>
+            <div class="net-note"><span class="badge">.NET</span>
+                <p><span class="fa">یک چک‌لیستِ ساده برای هر تغییرِ مهم: <b>(۱)</b> آیا دو درخواست می‌توانند هم‌زمان این را
+                        اجرا کنند؟ <b>(۲)</b> اگر بله، آیا الگوی خواندن-تغییردادن-نوشتن داریم؟ <b>(۳)</b> می‌شود آن را در یک
+                        دستورِ اتمیک خلاصه کرد؟ <b>(۴)</b> اگر نه، کدام سطحِ ایزوله‌سازی تعارض را می‌گیرد؟ همین چهار سؤال،
+                        بیشترِ باگ‌های همروندی را قبل از پروداکشن شکار می‌کند.</span><span class="en">A simple checklist
+                        for every important change: <b>(1)</b> can two requests run this at the same time? <b>(2)</b> if
+                        yes, do we have a read-modify-write? <b>(3)</b> can we collapse it into one atomic statement?
+                        <b>(4)</b> if not, which isolation level catches the conflict? These four questions catch most
+                        concurrency bugs before production does.</span></p>
+            </div>
+        </section>
+
+        <!-- ═══════════ S10 — READING ROADMAP ═══════════ -->
+        <section class="section reveal" id="s10">
+            <div class="section-heading"><span class="section-number">10</span>
+                <h2><span class="fa">نقشهٔ مطالعه — از کجا عمیق‌تر بخوانید</span><span class="en">A short reading
+                        roadmap</span></h2>
+            </div>
+            <p class="lead">
+                <span class="fa">این صفحه «چرا و کجا»ی تراکنش‌ها و همروندی را ساخت. دو منبعِ اصلیِ عمقِ بیشتر — همان‌هایی
+                    که محتوای این صفحه از آن‌ها آمده — این‌ها هستند:</span>
+                <span class="en">This page built the "why and where" of transactions and concurrency. For more depth, two
+                    main sources — the same ones this content came from:</span>
+            </p>
+            <div class="grid-2">
+                <article class="card">
+                    <h3><span class="icon-box green"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z" /><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20" /></svg></span><span
+                            class="fa">DDIA (ویرایش دوم) — فصل ۸: تراکنش‌ها · لازم</span><span class="en">DDIA (2nd Ed.) —
+                            Ch. 8: Transactions · required</span></h3>
+                    <p><span class="fa">تئوریِ مستقل از فروشنده: معنای دقیقِ ACID، سطح‌های ایزوله‌سازیِ ضعیف، انحراف
+                            نوشتاری و شبح‌ها، و سه راهِ رسیدن به سریال‌پذیری. این فصل را <b>کامل بخوانید</b> — پایهٔ کلِ این
+                            صفحه است. نکته: در ویرایشِ اول، همین فصل شمارهٔ ۷ داشت؛ در ویرایشِ دوم با اضافه‌شدنِ فصلِ
+                            شاردینگ، تراکنش‌ها به فصل ۸ رفته‌اند. لینکِ هر دو اینجاست.</span><span class="en">The
+                            vendor-neutral theory: the precise meaning of ACID, weak isolation levels, write skew and
+                            phantoms, and the three roads to serializability. <b>Read it in full</b> — it is the foundation
+                            of this whole page. Note: in the first edition this was chapter 7; the second edition added a
+                            sharding chapter and transactions moved to chapter 8. Both are linked.</span></p>
+                    <div class="source-row" style="margin:14px 0 0">
+                        <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/ch08.html"
+                            target="_blank" rel="noopener"><span>↗</span><span class="en">O'Reilly · DDIA 2e Ch. 8</span></a>
+                        <a href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/ch07.html"
+                            target="_blank" rel="noopener"><span>↗</span><span class="en">O'Reilly · DDIA 1e Ch. 7</span></a>
+                    </div>
+                </article>
+                <article class="card">
+                    <h3><span class="icon-box amber"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z" /><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20" /></svg></span><span
+                            class="fa">Pro SQL Server Internals (ویرایش ۲) — بخش ۳، فصل‌های ۱۷، ۱۹، ۲۰، ۲۱ و ۲۴ ·
+                            لازم</span><span class="en">Pro SQL Server Internals (2nd Ed.) — Part 3, Ch. 17, 19, 20, 21 &amp;
+                            24 · required</span></h3>
+                    <p><span class="fa">«چطور در دیتابیسِ خودتان واقعاً کار می‌کند»: انواع قفل و نگاشتشان به سطح‌ها (۱۷)،
+                            بن‌بست‌ها (۱۹)، تشدید قفل (۲۰)، سطح‌های خوش‌بینانه و مخزنِ نسخه‌ها (۲۱)، و طراحی استراتژیِ
+                            تراکنش (۲۴). فصل ۱۸ — عیب‌یابیِ بلاک — هم در همین راستاست؛ اگر در پروداکشن بلاک دارید، آن را هم
+                            بخوانید.</span><span class="en">"How it actually works in your database": lock types and how
+                            they map to isolation levels (17), deadlocks (19), lock escalation (20), optimistic isolation
+                            levels and the version store (21), and designing transaction strategies (24). Chapter 18 —
+                            troubleshooting blocking — fits right in; read it too if blocking hurts in production.</span></p>
+                    <div class="source-row" style="margin:14px 0 0">
+                        <a href="https://aboutsqlserver.com/publications/" target="_blank"
+                            rel="noopener"><span>↗</span><span class="en">aboutsqlserver.com · Publications</span></a>
+                    </div>
+                </article>
+            </div>
+            <div class="callout"><strong class="label fa">ترتیبِ پیشنهادی</strong><strong class="label en">Suggested order</strong>
+                <p><span class="fa">اول فصلِ تراکنش‌های DDIA، تا نقشهٔ ذهنیِ کامل بسازید. بعد فصل ۱۷ اینترنالز، که همان
+                        مفاهیم را به قفل‌های واقعی ترجمه می‌کند. سپس فصل ۲۱ (نسخه‌بندی) تا نیمهٔ خوش‌بینانه کامل شود، و در
+                        آخر فصل ۲۴ برای جمع‌بندیِ تصمیم‌ها. فصل‌های ۱۹ و ۲۰ را می‌توانید هر وقت در پروداکشن به مشکل خوردید،
+                        به‌عنوان مرجع برگردید.</span><span class="en">Start with DDIA's transactions chapter to build the
+                        full mental map. Then internals Ch. 17, which translates those concepts into real locks. Then Ch. 21
+                        (versioning) to complete the optimistic half, and finally Ch. 24 to tie the decisions together.
+                        Chapters 19 and 20 work as reference material to return to whenever production hurts.</span></p>
+            </div>
+        </section>
+
+        <!-- ═══════════ SELF-CHECK ═══════════ -->
+        <section class="section reveal" id="self">
+            <div class="section-heading"><span class="section-number">✓</span>
+                <h2><span class="fa">خودآزمایی — بعد از این صفحه جواب بدهید</span><span class="en">Self-check — answer
+                        after this page</span></h2>
+            </div>
+            <p class="lead"><span class="fa">اگر پاسخی را نمی‌دانید، به همان بخش برگردید. هدف حفظِ اسم‌ها نیست؛ باید بتوانید
+                    بگویید هر مکانیزم <b>کدام</b> خرابکاری را می‌بندد و قیمتش چیست.</span><span class="en">If you cannot
+                    answer one, return to that section. The goal is not memorizing names; you should be able to say which
+                    failure each mechanism prevents — and what it costs.</span></p>
+            <button class="btn sm" id="toggleAllQuestions" type="button" style="margin-bottom:15px"><span
+                    class="fa">باز/بسته‌کردن همه</span><span class="en">Toggle all</span></button>
+            <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span
+                        class="qa-number">Q1</span><span class="fa">چرا «سازگاری» در ACID یک ویژگیِ اپلیکیشن است، نه
+                        دیتابیس؟ و با سازگاریِ قضیهٔ CAP چه فرقی دارد؟</span><span class="en">Why is "consistency" in ACID
+                        an application property rather than a database property — and how does it differ from CAP
+                        consistency?</span></button>
+                <div class="qa-answer">
+                    <div><span class="fa">چون دیتابیس قانونِ کسب‌وکارِ شما را نمی‌داند — مثلاً «مجموعِ دو حساب بعد از
+                            انتقال ثابت بماند» یا «همیشه حداقل یک پزشک کشیک باشد» را خودتان باید ضمانت کنید. دیتابیس فقط
+                            قیدهای ساختاری مثل کلیدها و نوعِ ستون‌ها را نگه می‌دارد. در CAP، سازگاری یعنی همهٔ گره‌ها در یک
+                            لحظه جوابِ یکسان بدهند — بحثِ کاملاً متفاوتی دربارهٔ سیستم‌های توزیع‌شده.</span><span
+                            class="en">Because the database does not know your business rules — you must guarantee yourself
+                            that "the total of two accounts stays the same after a transfer" or "at least one doctor stays
+                            on call". The database only enforces structural constraints like keys and column types. In CAP,
+                            consistency means all nodes return the same answer at the same moment — a completely different
+                            discussion about distributed systems.</span></div>
+                </div>
+            </div>
+            <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span
+                        class="qa-number">Q2</span><span class="fa">به‌روزرسانیِ گم‌شده دقیقاً چطور رخ می‌دهد و دو راهِ
+                        جلوگیری از آن چیست؟</span><span class="en">How exactly does a lost update happen, and what are two
+                        ways to prevent it?</span></button>
+                <div class="qa-answer">
+                    <div><span class="fa">دو تراکنش یک مقدار را می‌خوانند، هر کدام بر اساس همان مقدارِ قدیمی نتیجه‌ای
+                            می‌سازند و کل مقدار را بازنویسی می‌کنند؛ نوشتنِ دوم، اولی را می‌پوشاند — بدون هیچ خطایی.
+                            راه‌حل‌ها: نوشتنِ اتمیک با شرط (مقایسه-و-تنظیم، مثل <code>Stock = Stock - 1 WHERE Stock &gt;
+                                0</code>)، یا سطحِ ایزوله‌سازی‌ای که نوشتن‌های هم‌زمان را سریال کند — مثل سریال‌پذیر با
+                            2PL.</span><span class="en">Two transactions read a value, each computes from that same stale
+                            value, and both rewrite the whole thing; the second write covers the first — with no error. The
+                            fixes: an atomic conditional write (compare-and-set, e.g. <code>Stock = Stock - 1 WHERE Stock
+                                &gt; 0</code>), or an isolation level that serializes concurrent writes — such as
+                            Serializable with 2PL.</span></div>
+                </div>
+            </div>
+            <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span
+                        class="qa-number">Q3</span><span class="fa">چرا دو پزشکِ بخشِ کشیک، هر دو با تصمیمِ «درست» خارج
+                        می‌شوند و سیستم صفر پزشک می‌ماند؟ این باگ با کدام مکانیزم گرفته می‌شود؟</span><span class="en">Why
+                        do both on-call doctors leave with individually "correct" decisions, leaving zero doctors on call?
+                        Which mechanism catches this bug?</span></button>
+                <div class="qa-answer">
+                    <div><span class="fa">چون هر تراکنش در اسنپ‌شاتِ خودش «حداقل یکی دیگر هست» را دید و فقط سطرِ خودش را
+                            نوشت — هیچ تعارضِ نوشتن-نوشتنی نبود که سطحِ اسنپ‌شات ببیند. این انحراف نوشتاری است. راه‌حل‌ها:
+                            سریال‌پذیری (قفل یا تشخیصِ تعارض در کامیت)، چکِ «حداقل یک کشیک» در لحظهٔ کامیت با قید یا تریگر،
+                            یا هماهنگی در سطحِ اپلیکیشن.</span><span class="en">Because each transaction saw "at least one
+                            other is there" in its own snapshot and wrote only its own row — no write-write conflict for the
+                            snapshot level to notice. That is write skew. The fixes: serializability (locking or commit-time
+                            detection), an "at least one on call" check enforced at commit via a constraint or trigger, or
+                            coordination at the application level.</span></div>
+                </div>
+            </div>
+            <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span
+                        class="qa-number">Q4</span><span class="fa">تفاوتِ <code>READ COMMITTED</code> قفل‌محور با
+                        <code>READ COMMITTED SNAPSHOT</code> در یک جمله چیست، و هزینهٔ هر کدام چیست؟</span><span
+                        class="en">What is the difference between lock-based <code>READ COMMITTED</code> and
+                        <code>READ COMMITTED SNAPSHOT</code> in one sentence — and what does each one cost?</span></button>
+                <div class="qa-answer">
+                    <div><span class="fa">اولی خواننده را با قفلِ مشترک نگه می‌دارد تا نویسنده تمام شود — قیمتش
+                            بلاک‌شدن است؛ دومی نسخهٔ قبلیِ سطر را از مخزنِ نسخه‌ها می‌دهد — قیمتش فضای <code>tempdb</code>
+                            و خطرِ خطای ۳۹۶۰ برای تراکنش‌های خیلی طولانی. و هیچ‌کدام تعارضِ نوشتن بین دو تراکنش را حل
+                            نمی‌کنند.</span><span class="en">The first holds the reader with a shared lock until the writer
+                            finishes — its cost is blocking; the second hands over the row's previous version from the
+                            version store — its cost is <code>tempdb</code> space and the risk of error 3960 for very long
+                            transactions. And neither one solves write conflicts between two transactions.</span></div>
+                </div>
+            </div>
+            <div class="qa"><button class="qa-question" type="button" aria-expanded="false"><span
+                        class="qa-number">Q5</span><span class="fa">تشدید قفل کِی رخ می‌دهد، و چرا یک <code>UPDATE</code>
+                        بزرگ می‌تواند بقیهٔ سیستم را همان لحظه متوقف کند؟</span><span class="en">When does lock escalation
+                        happen, and why can one big <code>UPDATE</code> stop the rest of the system right then?</span></button>
+                <div class="qa-answer">
+                    <div><span class="fa">وقتی یک دستور حدود ۵۰۰۰ قفلِ سطری بزند — یا حافظهٔ دیتابیس تحت فشار باشد — موتور
+                            همهٔ آن‌ها را با یک قفلِ انحصاری روی کلِ جدول عوض می‌کند. از آن لحظه، هر تراکنشِ دیگری که حتی یک
+                            سطرِ آن جدول را بخواهد بلاک می‌شود، تا آپدیت تمام شود. راه‌حل: دسته‌بندیِ تغییراتِ بزرگ در
+                            تراکنش‌های کوچک‌تر.</span><span class="en">When one statement takes roughly 5,000 row locks —
+                            or the database is under memory pressure — the engine swaps them all for one exclusive lock on
+                            the whole table. From that moment, any other transaction that needs even one row of that table
+                            is blocked until the update finishes. The fix: chunk large changes into smaller
+                            transactions.</span></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer style="margin-top:64px;padding:42px 0;border-top:1px dashed var(--line-strong)">
+        <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap">
+            <div><strong><span class="fa">Backend Deep Dives</span><span class="en">Backend Deep Dives</span></strong>
+                <p style="margin-top:4px;color:var(--muted);font-size:12px"><span class="fa">برای توسعه‌دهندگانی که
+                        می‌خواهند «چرا» را بفهمند.</span><span class="en">For developers who want to understand
+                        why.</span></p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <a class="btn sm" href="./index.html"><span class="fa">موضوعات</span><span class="en">Topics</span></a>
+                <a class="btn sm" href="./StreamProcessing.html"><span class="fa">پردازش جریانی</span><span
+                        class="en">Streaming</span></a>
+                <a class="btn sm" href="./DataSharding.html"><span class="fa">شاردینگ</span><span
+                        class="en">Sharding</span></a>
+                <a class="btn sm" href="https://github.com/alireza-haeri/BackendDeepDives" target="_blank"
+                    rel="noopener"><span class="fa">ریپازیتوری گیت‌هاب</span><span class="en">Repository</span></a>
+            </div>
+        </div>
+    </footer>
+    <script>
+        (() => {
+            'use strict';
+            const $ = (s, r = document) => r.querySelector(s);
+            const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            function setBilingual(el, fa, en) {
+                if (!el) return;
+                const f = $('.fa', el), e = $('.en', el);
+                if (f) f.textContent = fa;
+                if (e) e.textContent = en;
+            }
+            function setDocumentLanguage(lang) {
+                document.documentElement.lang = lang;
+                document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+                localStorage.setItem('bd-lang', lang);
+            }
+            function setTheme(theme) {
+                document.documentElement.dataset.theme = theme;
+                localStorage.setItem('bd-theme', theme);
+            }
+            const savedLang = localStorage.getItem('bd-lang');
+            if (savedLang === 'fa' || savedLang === 'en') setDocumentLanguage(savedLang);
+            const savedTheme = localStorage.getItem('bd-theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') setTheme(savedTheme);
+            else if (window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+            $('#themeButton').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+            $('#languageButton').addEventListener('click', () => setDocumentLanguage(document.documentElement.lang === 'fa' ? 'en' : 'fa'));
+            const progress = $('#progress');
+            function updateProgress() {
+                const r = document.documentElement;
+                const a = Math.max(1, r.scrollHeight - r.clientHeight);
+                progress.style.width = `${Math.min(100, (r.scrollTop / a) * 100)}%`;
+            }
+            window.addEventListener('scroll', updateProgress, { passive: true });
+            updateProgress();
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+            }, { threshold: .08 });
+            $$('.reveal').forEach(el => obs.observe(el));
+
+            /* ===== Hero: all-or-nothing transfer loop ===== */
+            const hsStage = $('#hsStage');
+            if (hsStage) {
+                const A = $('#hsA'), B = $('#hsB'), arrow = $('#hsArrow');
+                const aBal = $('#hsABal'), bBal = $('#hsBBal'), op = $('#hsOp'), cap = $('#heroCaption');
+                function resetHs() {
+                    aBal.textContent = '1000'; bBal.textContent = '300';
+                    A.className = 'hs-acct'; B.className = 'hs-acct';
+                    arrow.className = 'hs-arrow'; arrow.textContent = '→ $100';
+                }
+                async function heroLoop() {
+                    while (true) {
+                        if (document.hidden) { await sleep(900); continue; }
+                        resetHs();
+                        op.innerHTML = '<span class="kw">BEGIN TRAN</span>; -- one transfer, two writes';
+                        setBilingual(cap, 'یک انتقال، دو نوشتن. تراکنش می‌گوید: یا هر دو انجام می‌شوند، یا هیچ‌کدام.', 'One transfer, two writes. The transaction says: either both happen, or neither does.');
+                        await sleep(1900);
+                        A.classList.add('pending'); aBal.textContent = '900';
+                        arrow.classList.add('hot');
+                        op.innerHTML = '<span class="kw">UPDATE</span> Accounts SET Balance = Balance - 100; <span class="cm">-- A: ok</span>';
+                        setBilingual(cap, 'کم‌شدن از حسابِ اول انجام شد — ولی هنوز کامیت نشده. این تغییر «موقتی» است.', 'The debit happened — but nothing is committed yet. The change is provisional.');
+                        await sleep(1700);
+                        op.innerHTML = '<span class="kw">UPDATE</span> Accounts SET Balance = Balance + 100; <span class="cm">-- B: …</span>';
+                        setBilingual(cap, 'حالا نوبتِ اضافه‌شدن به حسابِ دوم است…', 'Now it is time to credit the second account…');
+                        await sleep(1000);
+                        A.className = 'hs-acct crash';
+                        arrow.className = 'hs-arrow zap'; arrow.textContent = '✗ CRASH';
+                        op.innerHTML = '<span class="bad">CRASH before commit!</span>';
+                        setBilingual(cap, 'اپلیکیشن وسطِ کار مُرد — قبل از کامیت. حسابِ اول ۱۰۰ تا کم شده، حسابِ دوم هیچ.', 'The app died mid-way — before commit. Account A lost 100; account B got nothing.');
+                        await sleep(1800);
+                        resetHs();
+                        A.classList.add('restored');
+                        op.innerHTML = '<span class="kw">ROLLBACK</span>; <span class="ok">-- the debit is undone</span>';
+                        setBilingual(cap, 'دیتابیس عقب‌نشینی می‌کند: تغییرِ نیمه‌کاره پاک شد. یا همه، یا هیچ.', 'The database rolls back: the half-done change is undone. All, or nothing.');
+                        await sleep(2400);
+                    }
+                }
+                if (!prefersReducedMotion.matches) heroLoop();
+            }
+
+            /* ===== Demo 1: conflict simulator ===== */
+            const conflictDemo = $('#conflictDemo');
+            if (conflictDemo) {
+                const invSteps = [
+                    {
+                        level: 'READ COMMITTED', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Products #7 · headphones · Stock: <b>1</b></span><span class="cfl-dbrow">sold today: <b>0</b></span>',
+                        s1: { name: 'SESSION 1 — Sara', sql: '<span class="cm">-- Sara clicks "BUY"</span>', state: 'idle', sees: [] },
+                        s2: { name: 'SESSION 2 — Arman', sql: '<span class="cm">-- Arman clicks "BUY" — same second</span>', state: 'idle', sees: [] },
+                        fa: 'یک هدفون مانده، دو خریدار هم‌زمان. موجودی: ۱.',
+                        en: 'One pair of headphones left, two buyers at the same second. Stock: 1.'
+                    },
+                    {
+                        level: 'READ COMMITTED', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Products #7 · Stock: <b>1</b></span><span class="cfl-dbrow">sold today: <b>0</b></span>',
+                        s1: { sql: '<span class="kw">BEGIN TRAN;\nSELECT</span> Stock <span class="kw">FROM</span> Products\n<span class="kw">WHERE</span> Id = 7;', state: 'read', lane: 'act', sees: [{ t: 'sees Stock = 1', c: 'ok' }] },
+                        s2: { sql: '<span class="cm">-- waiting to click…</span>', state: 'idle', sees: [] },
+                        fa: 'سشن ۱ موجودی را می‌خواند: ۱ عدد. تا اینجا همه‌چیز درست است.',
+                        en: 'Session 1 reads the stock: 1. So far everything is fine.'
+                    },
+                    {
+                        level: 'READ COMMITTED', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Products #7 · Stock: <b>1</b></span><span class="cfl-dbrow">sold today: <b>0</b></span>',
+                        s1: { sql: '<span class="cm">-- still open, not committed</span>', state: 'read', sees: [{ t: 'sees Stock = 1', c: 'ok' }] },
+                        s2: { sql: '<span class="kw">BEGIN TRAN;\nSELECT</span> Stock <span class="kw">FROM</span> Products\n<span class="kw">WHERE</span> Id = 7;', state: 'read', lane: 'act', sees: [{ t: 'sees Stock = 1', c: 'ok' }] },
+                        fa: 'سشن ۲ هم می‌خواند: ۱ عدد. هیچ‌کس هنوز چیزی ننوشته — هر دو، عددِ درست را دیدند.',
+                        en: 'Session 2 reads too: 1. Nobody has written yet — both saw the correct number.'
+                    },
+                    {
+                        level: 'READ COMMITTED', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow dirty">Products #7 · Stock: <b>0</b> (uncommitted)</span><span class="cfl-dbrow">sold today: <b>0</b></span>',
+                        s1: { sql: '<span class="cm">-- app: "1 left → sell it"</span>\n<span class="kw">UPDATE</span> Products <span class="kw">SET</span> Stock = <span class="str">0</span>\n<span class="kw">WHERE</span> Id = 7;', state: 'write', lane: 'act-write', sees: [{ t: 'writes Stock = 0', c: 'ok' }, { t: 'holds X lock', c: 'stale' }] },
+                        s2: { sql: '<span class="cm">-- decides the same…</span>', state: 'idle', sees: [{ t: 'sees Stock = 1', c: 'stale' }] },
+                        fa: 'سشن ۱ می‌نویسد: موجودی = ۰. یک قفلِ انحصاری (X) روی سطر می‌گیرد — ولی هنوز کامیت نکرده.',
+                        en: 'Session 1 writes: Stock = 0. It takes an exclusive (X) lock on the row — but has not committed yet.'
+                    },
+                    {
+                        level: 'READ COMMITTED', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow dirty">Products #7 · Stock: <b>0</b> (uncommitted)</span><span class="cfl-dbrow">sold today: <b>0</b></span>',
+                        s1: { sql: '<span class="cm">-- waiting for COMMIT…</span>', state: 'write', sees: [{ t: 'holds X lock', c: 'stale' }] },
+                        s2: { sql: '<span class="cm">-- app: "1 left → sell it"</span>\n<span class="kw">UPDATE</span> Products <span class="kw">SET</span> Stock = <span class="str">0</span>\n<span class="kw">WHERE</span> Id = 7;', state: 'wait', lane: 'act-bad', sees: [{ t: 'needs X lock… BLOCKED', c: 'bad' }] },
+                        fa: 'سشن ۲ می‌خواهد همان سطر را بنویسد → پشتِ قفلِ انحصاریِ سشن ۱ می‌ماند. نوشتنِ کثیف اتفاق نمی‌افتد… ولی مشکل جای دیگری است.',
+                        en: 'Session 2 wants to write the same row → it waits behind session 1\'s exclusive lock. No dirty write happens… but the real problem is elsewhere.'
+                    },
+                    {
+                        level: 'READ COMMITTED', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Products #7 · Stock: <b>0</b></span><span class="cfl-dbrow">sold today: <b>1</b></span>',
+                        s1: { sql: '<span class="kw">COMMIT</span>; <span class="cm">-- lock released ✓</span>', state: 'done', lane: 'act-write', sees: [{ t: 'committed Stock = 0', c: 'ok' }] },
+                        s2: { sql: '<span class="cm">-- still waiting for the lock…</span>', state: 'wait', sees: [{ t: 'blocked…', c: 'bad' }] },
+                        fa: 'سشن ۱ کامیت می‌کند: فروشِ اول ثبت شد، موجودی ۰. قفل آزاد می‌شود.',
+                        en: 'Session 1 commits: the first sale is recorded, stock is 0. The lock is released.'
+                    },
+                    {
+                        level: 'READ COMMITTED', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow dirty">Products #7 · Stock: <b>0</b> (again!)</span><span class="cfl-dbrow">sold today: <b>1</b></span>',
+                        s1: { sql: '<span class="cm">-- done, order #1 placed</span>', state: 'done', sees: [] },
+                        s2: { sql: '<span class="cm">-- lock free → the UPDATE runs</span>\n<span class="kw">UPDATE</span> Products <span class="kw">SET</span> Stock = <span class="str">0</span>\n<span class="kw">WHERE</span> Id = 7;', state: 'write', lane: 'act-write', sees: [{ t: 'based on stale read (1−1)', c: 'stale' }] },
+                        fa: 'قفل آزاد شد؛ آپدیتِ سشن ۲ بالاخره اجرا می‌شود. ولی آن عددِ ۰ را از کجا آورد؟ از خواندنِ قدیمیِ خودش: ۱ منهای ۱.',
+                        en: 'Lock released; session 2\'s UPDATE finally runs. But where did its 0 come from? From its own stale read: 1 minus 1.'
+                    },
+                    {
+                        level: 'READ COMMITTED', conflict: ['never seen ✗', 'err'], outcome: ['LOST UPDATE', 'err'],
+                        db: '<span class="cfl-dbrow bad">Products #7 · Stock: <b>0</b></span><span class="cfl-dbrow bad">sold today: <b>2 ✗</b></span>',
+                        s1: { sql: '<span class="cm">-- order #1: fine</span>', state: 'done', sees: [] },
+                        s2: { sql: '<span class="kw">COMMIT</span>; <span class="cm">-- order #2: "fine" too?!</span>', state: 'done', lane: 'act-bad', sees: [{ t: 'overwrote session 1\'s sale', c: 'bad' }] },
+                        fa: 'کامیت شد — بدون هیچ خطایی. موجودی ۰ است ولی ۲ سفارش ثبت شده. نوشتنِ دوم، فروشِ اول را بی‌صدا گم کرد: به‌روزرسانیِ گم‌شده.',
+                        en: 'Committed — with no error at all. Stock is 0 but 2 orders were placed. The second write silently lost the first sale: a lost update.'
+                    },
+                    {
+                        level: 'READ COMMITTED', conflict: ['caught by WHERE ✓', 'ok'], outcome: ['SAFE ✓', 'ok'],
+                        db: '<span class="cfl-dbrow fix">Products #7 · Stock: <b>0</b></span><span class="cfl-dbrow fix">sold today: <b>1 ✓</b></span>',
+                        s1: { sql: '<span class="kw">UPDATE</span> Products\n<span class="kw">SET</span> Stock = Stock - 1\n<span class="kw">WHERE</span> Id = 7 <span class="kw">AND</span> Stock &gt; 0;\n<span class="cm">-- 1 row affected ✓</span>', state: 'done', lane: 'act-write', sees: [{ t: 'atomic decrement', c: 'ok' }] },
+                        s2: { sql: '<span class="cm">-- the same statement:</span>\n<span class="kw">UPDATE</span> Products\n<span class="kw">SET</span> Stock = Stock - 1\n<span class="kw">WHERE</span> Id = 7 <span class="kw">AND</span> Stock &gt; 0;\n<span class="cm">-- 0 rows affected → sold out</span>', state: 'done', sees: [{ t: 'app says: sold out', c: 'ok' }] },
+                        fa: 'راه‌حل: به‌جای بازنویسیِ کلِ مقدار، کاهِشِ اتمیک با شرط. خریدارِ دوم «۰ سطر تأثیرگرفته» می‌گیرد و اپ می‌فهمد کالا تمام شده. همین الگوی مقایسه-و-تنظیم است.',
+                        en: 'The fix: instead of rewriting the whole value, an atomic decrement with a guard. The second buyer gets "0 rows affected" and the app knows the item is gone. That is the compare-and-set pattern.'
+                    }
+                ];
+                const docSteps = [
+                    {
+                        level: 'SNAPSHOT', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Sara · on_call: <b>1</b></span><span class="cfl-dbrow">Ben · on_call: <b>1</b></span><span class="cfl-dbrow">on call tonight: <b>2</b></span>',
+                        s1: { name: 'SESSION 1 — Dr. Sara', sql: '<span class="cm">-- Sara requests to go off call</span>', state: 'idle', sees: [] },
+                        s2: { name: 'SESSION 2 — Dr. Ben', sql: '<span class="cm">-- Ben requests it at the same time</span>', state: 'idle', sees: [] },
+                        fa: 'قانون بیمارستان: همیشه حداقل یک پزشک کشیک باشد. الان ۲ نفر کشیک‌اند.',
+                        en: 'Hospital rule: at least one doctor must be on call. Right now, 2 are.'
+                    },
+                    {
+                        level: 'SNAPSHOT', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Sara · on_call: <b>1</b></span><span class="cfl-dbrow">Ben · on_call: <b>1</b></span><span class="cfl-dbrow">on call tonight: <b>2</b></span>',
+                        s1: { sql: '<span class="kw">BEGIN TRAN;\nSELECT COUNT</span>(*) <span class="kw">FROM</span> Doctors\n<span class="kw">WHERE</span> OnCall = 1;', state: 'read', lane: 'act', sees: [{ t: 'snapshot: count = 2', c: 'snap' }] },
+                        s2: { sql: '<span class="cm">-- next…</span>', state: 'idle', sees: [] },
+                        fa: 'تراکنشِ سارا شروع شد و اسنپ‌شاتِ خودش را گرفت: ۲ پزشک کشیک.',
+                        en: 'Sara\'s transaction starts and takes its own snapshot: 2 doctors on call.'
+                    },
+                    {
+                        level: 'SNAPSHOT', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Sara · on_call: <b>1</b></span><span class="cfl-dbrow">Ben · on_call: <b>1</b></span><span class="cfl-dbrow">on call tonight: <b>2</b></span>',
+                        s1: { sql: '<span class="cm">-- snapshot taken</span>', state: 'read', sees: [{ t: 'snapshot: count = 2', c: 'snap' }] },
+                        s2: { sql: '<span class="kw">BEGIN TRAN;\nSELECT COUNT</span>(*) <span class="kw">FROM</span> Doctors\n<span class="kw">WHERE</span> OnCall = 1;', state: 'read', lane: 'act', sees: [{ t: 'its own snapshot: 2', c: 'snap' }] },
+                        fa: 'تراکنشِ بن هم اسنپ‌شاتِ خودش را می‌گیرد — لحظهٔ شروعِ خودش. او هم ۲ می‌بیند.',
+                        en: 'Ben\'s transaction takes its own snapshot too — from its own start time. It also sees 2.'
+                    },
+                    {
+                        level: 'SNAPSHOT', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow dirty">Sara · on_call: <b>0</b> (uncommitted)</span><span class="cfl-dbrow">Ben · on_call: <b>1</b></span><span class="cfl-dbrow">on call tonight: <b>2 → ?</b></span>',
+                        s1: { sql: '<span class="cm">-- check: 2 ≥ 2 → safe to leave</span>\n<span class="kw">UPDATE</span> Doctors <span class="kw">SET</span> OnCall = 0\n<span class="kw">WHERE</span> Name = <span class="str">\'Sara\'</span>;', state: 'write', lane: 'act-write', sees: [{ t: 'writes own row only', c: 'ok' }] },
+                        s2: { sql: '<span class="cm">-- checking…</span>', state: 'idle', sees: [{ t: 'its own snapshot: 2', c: 'snap' }] },
+                        fa: 'سارا بررسی می‌کند: «یکی دیگر هست» → فقط سطرِ خودش را صفر می‌کند. تعارضی در کار نیست.',
+                        en: 'Sara checks: "someone else is there" → she zeroes only her own row. No conflict involved.'
+                    },
+                    {
+                        level: 'SNAPSHOT', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow dirty">Sara · on_call: <b>0</b> (uncommitted)</span><span class="cfl-dbrow dirty">Ben · on_call: <b>0</b> (uncommitted)</span><span class="cfl-dbrow">on call tonight: <b>2 → ?</b></span>',
+                        s1: { sql: '<span class="cm">-- waiting to commit…</span>', state: 'write', sees: [{ t: 'own row written', c: 'ok' }] },
+                        s2: { sql: '<span class="cm">-- check: snapshot still says 2!</span>\n<span class="kw">UPDATE</span> Doctors <span class="kw">SET</span> OnCall = 0\n<span class="kw">WHERE</span> Name = <span class="str">\'Ben\'</span>;', state: 'write', lane: 'act-bad', sees: [{ t: 'stale snapshot: 2', c: 'stale' }, { t: 'writes own row — no blocking', c: 'bad' }] },
+                        fa: 'اینجا نقطهٔ شکست است: اسنپ‌شاتِ بن هنوز می‌گوید ۲ — تغییرِ کامیت‌نشدهٔ سارا را نمی‌بیند. چون سطرها متفاوت‌اند، هیچ بلاک‌شدنی هم نیست.',
+                        en: 'Here is the breaking point: Ben\'s snapshot still says 2 — it does not see Sara\'s uncommitted change. Since the rows differ, there is no blocking either.'
+                    },
+                    {
+                        level: 'SNAPSHOT', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Sara · on_call: <b>0</b></span><span class="cfl-dbrow dirty">Ben · on_call: <b>0</b> (uncommitted)</span><span class="cfl-dbrow">on call tonight: <b>?</b></span>',
+                        s1: { sql: '<span class="kw">COMMIT</span>; <span class="cm">-- fine on its own</span>', state: 'done', lane: 'act-write', sees: [{ t: 'committed', c: 'ok' }] },
+                        s2: { sql: '<span class="cm">-- preparing to commit…</span>', state: 'write', sees: [] },
+                        fa: 'تراکنشِ سارا به‌تنهایی کاملاً درست بود و کامیت شد. نوبتِ بن است.',
+                        en: 'Sara\'s transaction was perfectly correct on its own, and it committed. Now it is Ben\'s turn.'
+                    },
+                    {
+                        level: 'SNAPSHOT', conflict: '—', outcome: ['…', ''],
+                        db: '<span class="cfl-dbrow">Sara · on_call: <b>0</b></span><span class="cfl-dbrow">Ben · on_call: <b>0</b></span><span class="cfl-dbrow">on call tonight: <b>?</b></span>',
+                        s1: { sql: '<span class="cm">-- done</span>', state: 'done', sees: [] },
+                        s2: { sql: '<span class="kw">COMMIT</span>; <span class="cm">-- engine checks:</span>\n<span class="cm">-- write-write conflict? rows differ → none</span>', state: 'write', lane: 'act-write', sees: [{ t: 'no conflict detected', c: 'stale' }] },
+                        fa: 'موتور موقعِ کامیت فقط تعارضِ نوشتن-نوشتن را چک می‌کند: سطرها متفاوت‌اند → مشکلی نیست. کامیت اجازه می‌گیرد.',
+                        en: 'At commit time the engine only checks for write-write conflicts: the rows differ → no problem. The commit is allowed.'
+                    },
+                    {
+                        level: 'SNAPSHOT', conflict: ['never seen ✗', 'err'], outcome: ['WRITE SKEW', 'err'],
+                        db: '<span class="cfl-dbrow bad">Sara · on_call: <b>0</b></span><span class="cfl-dbrow bad">Ben · on_call: <b>0</b></span><span class="cfl-dbrow bad">on call tonight: <b>0 ✗</b></span>',
+                        s1: { sql: '<span class="cm">-- "correct" decision</span>', state: 'done', sees: [] },
+                        s2: { sql: '<span class="cm">-- "correct" decision</span>', state: 'done', lane: 'act-bad', sees: [{ t: 'rule broken: 0 on call', c: 'bad' }] },
+                        fa: 'نتیجه: صفر پزشکِ کشیک. هر دو تراکنش به‌تنهایی درست بودند، هیچ خطایی هم نیامد — ولی قانونِ سیستم شکست. این انحراف نوشتاری است.',
+                        en: 'Result: zero doctors on call. Each transaction was correct on its own, no error was raised — yet the system rule broke. This is write skew.'
+                    },
+                    {
+                        level: 'SERIALIZABLE', conflict: ['caught at commit ✓', 'ok'], outcome: ['SAFE ✓', 'ok'],
+                        db: '<span class="cfl-dbrow fix">Sara · on_call: <b>0</b></span><span class="cfl-dbrow fix">Ben · on_call: <b>1</b></span><span class="cfl-dbrow fix">on call tonight: <b>1 ✓</b></span>',
+                        s1: { sql: '<span class="cm">-- same as before</span>\n<span class="kw">COMMIT</span>; <span class="cm">-- ok</span>', state: 'done', lane: 'act-write', sees: [{ t: 'committed', c: 'ok' }] },
+                        s2: { sql: '<span class="kw">COMMIT</span>; <span class="cm">-- engine detects:</span>\n<span class="cm">-- my decision depended on rows</span>\n<span class="cm">-- Sara changed → ABORT Ben</span>', state: 'wait', sees: [{ t: 'aborted — retry or deny', c: 'ok' }] },
+                        fa: 'با سریال‌پذیری (قفل یا تشخیصِ تعارض در کامیت، مثلِ SSI)، وابستگیِ تصمیمِ بن به تغییرِ سارا دیده می‌شود: تراکنشِ بن برگشت می‌خورد و حداقل یک کشیک سالم می‌ماند. بن می‌تواند بعداً دوباره تلاش کند.',
+                        en: 'With serializability (locking or commit-time detection, like SSI), the dependency of Ben\'s decision on Sara\'s change is seen: Ben\'s transaction is aborted and at least one doctor stays on call. Ben can retry later.'
+                    }
+                ];
+                const scenarios = {
+                    inv: { steps: invSteps, level: 'READ COMMITTED' },
+                    doc: { steps: docSteps, level: 'SNAPSHOT' }
+                };
+                let scKey = 'inv', cflIdx = 0, cflRun = 0, cflPlaying = false;
+                const dbEl = $('#cflDb'), laneS1 = $('#cflLaneS1'), laneS2 = $('#cflLaneS2');
+                const nameS1 = $('#cflS1Name'), nameS2 = $('#cflS2Name');
+                const stS1 = $('#cflS1State'), stS2 = $('#cflS2State');
+                const sqlS1 = $('#cflS1Sql'), sqlS2 = $('#cflS2Sql');
+                const seesS1 = $('#cflS1Sees'), seesS2 = $('#cflS2Sees');
+                const cflStatus = $('#cflStatus'), cflStepNo = $('#cflStepNo');
+                const cflLevel = $('#cflLevel'), cflConflict = $('#cflConflict'), cflOutcome = $('#cflOutcome');
+                const btnNext = $('#cflNext'), btnPlay = $('#cflPlay'), btnReset = $('#cflReset');
+                function paintLane(lane, stEl, sqlEl, seesEl, data, fallbackName) {
+                    lane.className = lane.className.replace(/\s*act(-write|-bad)?/, '');
+                    if (data.lane) lane.classList.add(data.lane);
+                    stEl.textContent = data.state || 'idle';
+                    stEl.className = 'cfl-state ' + (data.state || 'idle');
+                    sqlEl.innerHTML = data.sql || '';
+                    let html = '<span class="cfl-sees-label">' + (document.documentElement.lang === 'fa' ? 'این سشن چه می‌بیند؟' : 'what this session sees') + '</span>';
+                    (data.sees || []).forEach(c => { html += `<span class="cfl-chip ${c.c || ''}">${c.t}</span>`; });
+                    seesEl.innerHTML = html;
+                }
+                function renderCfl() {
+                    const sc = scenarios[scKey];
+                    const st = sc.steps[cflIdx];
+                    dbEl.innerHTML = st.db;
+                    nameS1.textContent = st.s1.name || (scKey === 'inv' ? 'SESSION 1 — Sara' : 'SESSION 1 — Dr. Sara');
+                    nameS2.textContent = st.s2.name || (scKey === 'inv' ? 'SESSION 2 — Arman' : 'SESSION 2 — Dr. Ben');
+                    paintLane(laneS1, stS1, sqlS1, seesS1, st.s1);
+                    paintLane(laneS2, stS2, sqlS2, seesS2, st.s2);
+                    setBilingual(cflStatus, st.fa, st.en);
+                    cflStepNo.textContent = `${cflIdx + 1} / ${sc.steps.length}`;
+                    cflLevel.textContent = st.level || sc.level;
+                    if (Array.isArray(st.conflict)) { cflConflict.textContent = st.conflict[0]; cflConflict.className = st.conflict[1]; }
+                    else { cflConflict.textContent = st.conflict; cflConflict.className = ''; }
+                    if (Array.isArray(st.outcome)) { cflOutcome.textContent = st.outcome[0]; cflOutcome.className = st.outcome[1]; }
+                    else { cflOutcome.textContent = st.outcome; cflOutcome.className = ''; }
+                }
+                function cflReset(hard) {
+                    cflRun++;
+                    cflPlaying = false;
+                    btnPlay.disabled = false;
+                    cflIdx = 0;
+                    renderCfl();
+                }
+                function cflNextStep() {
+                    const sc = scenarios[scKey];
+                    if (cflIdx >= sc.steps.length - 1) { cflPlaying = false; btnPlay.disabled = false; return false; }
+                    cflIdx++;
+                    renderCfl();
+                    return true;
+                }
+                async function cflPlayAll() {
+                    if (cflPlaying) return;
+                    cflPlaying = true;
+                    btnPlay.disabled = true;
+                    const run = ++cflRun;
+                    if (cflIdx >= scenarios[scKey].steps.length - 1) cflIdx = 0;
+                    renderCfl();
+                    while (cflPlaying && run === cflRun && cflNextStep()) {
+                        await sleep(1800);
+                        if (run !== cflRun) break;
+                    }
+                    if (run === cflRun) { cflPlaying = false; btnPlay.disabled = false; }
+                }
+                btnNext.addEventListener('click', () => { cflRun++; cflPlaying = false; btnPlay.disabled = false; cflNextStep(); });
+                btnPlay.addEventListener('click', cflPlayAll);
+                btnReset.addEventListener('click', () => cflReset(true));
+                $('#cflTabInv').addEventListener('click', () => {
+                    scKey = 'inv';
+                    $('#cflTabInv').setAttribute('aria-selected', 'true');
+                    $('#cflTabDoc').setAttribute('aria-selected', 'false');
+                    cflReset(true);
+                });
+                $('#cflTabDoc').addEventListener('click', () => {
+                    scKey = 'doc';
+                    $('#cflTabDoc').setAttribute('aria-selected', 'true');
+                    $('#cflTabInv').setAttribute('aria-selected', 'false');
+                    cflReset(true);
+                });
+                renderCfl();
+            }
+
+            /* ===== Demo 2: locking vs MVCC ===== */
+            const mvccDemo = $('#mvccDemo');
+            if (mvccDemo) {
+                const lockSteps = [
+                    {
+                        t1: [], t2: [], t1st: 'idle', t2st: 'idle',
+                        val: '500', note: 'Balance', un: false, lock: false, chips: [],
+                        wait: 0, waited: '—', read: '—',
+                        fa: 'حساب ۱ با موجودی ۵۰۰. تراکنشِ ۱ می‌خواهد ۱۰۰ اضافه کند؛ تراکنشِ ۲ می‌خواهد همین حالا موجودی را بخواند.',
+                        en: 'Account 1 with balance 500. Transaction 1 wants to add 100; transaction 2 wants to read the balance right now.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }],
+                        t2: [], t1st: 'write', t2st: 'idle',
+                        val: '600', note: 'Balance — T1 uncommitted', un: true, lock: true, chips: [],
+                        wait: 0, waited: '—', read: '—',
+                        fa: 'تراکنشِ ۱ سطر را تغییر داد و یک قفلِ انحصاری (X) رویش گرفت. عددِ ۶۰۰ هنوز کامیت نشده.',
+                        en: 'Transaction 1 changed the row and took an exclusive (X) lock on it. The 600 is not committed yet.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: 'holds X lock…' }],
+                        t2: [{ h: '<b>SELECT</b> Balance → wants S lock', c: 'wait' }],
+                        t1st: 'write', t2st: 'wait',
+                        val: '600', note: 'Balance — T1 uncommitted', un: true, lock: true, chips: [],
+                        wait: 35, waited: 'so far…', read: '—',
+                        fa: 'تراکنشِ ۲ برای خواندن به قفلِ مشترک (S) نیاز دارد — ولی قفلِ انحصاری دستِ تراکنشِ ۱ است. پس بلاک می‌شود و می‌ماند.',
+                        en: 'Transaction 2 needs a shared (S) lock to read — but the exclusive lock belongs to transaction 1. So it is blocked, and it waits.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: '… still working (slow service call)' }],
+                        t2: [{ h: '<b>SELECT</b> Balance → wants S lock', c: 'wait' }, { h: 'still waiting ⏳', c: 'wait' }],
+                        t1st: 'write', t2st: 'wait',
+                        val: '600', note: 'Balance — T1 uncommitted', un: true, lock: true, chips: [],
+                        wait: 75, waited: 'still…', read: '—',
+                        fa: 'تراکنشِ ۱ هنوز مشغول است — شاید یک فراخوانیِ کند. تراکنشِ ۲ هیچ کاری نمی‌تواند بکند جز صبر. این هزینهٔ پنهانِ قفل‌هاست: افتِ توان.',
+                        en: 'Transaction 1 is still busy — maybe a slow call. Transaction 2 can do nothing but wait. This is the hidden cost of locks: lost throughput.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: '<b>COMMIT</b> → X lock released ✓' }],
+                        t2: [{ h: '<b>SELECT</b> Balance → wants S lock', c: 'wait' }],
+                        t1st: 'done', t2st: 'wait',
+                        val: '600', note: 'Balance — committed', un: false, lock: false, chips: [],
+                        wait: 90, waited: 'almost', read: '—',
+                        fa: 'تراکنشِ ۱ کامیت شد و قفل آزاد شد. حالا نوبتِ تراکنشِ ۲ است.',
+                        en: 'Transaction 1 committed and the lock was released. Now it is transaction 2\'s turn.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: '<b>COMMIT</b> → X lock released ✓' }],
+                        t2: [{ h: '<b>SELECT</b> Balance → wants S lock', c: 'wait' }, { h: 'proceeds → reads <b>600</b> ✓' }],
+                        t1st: 'done', t2st: 'done',
+                        val: '600', note: 'Balance — committed', un: false, lock: false, chips: [],
+                        wait: 100, waited: ['YES — full T1 time', 'err'], read: '600',
+                        fa: 'تراکنشِ ۲ بالاخره ۶۰۰ را خواند. خطایی نبود، ولی تا آخرِ کارِ تراکنشِ ۱ معطل ماند. با صدها خواننده، یعنی یک صفِ طولانی.',
+                        en: 'Transaction 2 finally reads 600. No error — but it waited for the whole of transaction 1. With hundreds of readers, that means a long queue.'
+                    }
+                ];
+                const mvccSteps = [
+                    {
+                        t1: [], t2: [], t1st: 'idle', t2st: 'idle',
+                        val: '500', note: 'Balance', un: false, lock: false, chips: [],
+                        wait: 0, waited: '—', read: '—',
+                        fa: 'همان حساب، ولی دیتابیس با نسخه‌بندی فعال (مثلاً READ_COMMITTED_SNAPSHOT). همان دو تراکنش، یک نتیجهٔ کاملاً متفاوت.',
+                        en: 'Same account, but the database runs with versioning on (e.g. READ_COMMITTED_SNAPSHOT). Same two transactions, a very different outcome.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: 'old row copied → version store' }],
+                        t2: [], t1st: 'write', t2st: 'idle',
+                        val: '600', note: 'Balance — T1 uncommitted', un: true, lock: false,
+                        chips: [{ t: 'v1: 500 (before T1)', c: 'old' }],
+                        wait: 0, waited: '—', read: '—',
+                        fa: 'تراکنشِ ۱ سطر را تغییر می‌دهد؛ اما به‌جای اینکه راهِ خواننده‌ها را ببندد، نسخهٔ قبلی (۵۰۰) در مخزنِ نسخه‌ها کپی می‌شود. زنجیرهٔ نسخه‌ها شکل گرفت.',
+                        en: 'Transaction 1 changes the row; but instead of closing the road on readers, the previous version (500) is copied to the version store. The version chain is born.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: 'old row copied → version store' }],
+                        t2: [{ h: '<b>SELECT</b> Balance → newest is uncommitted…' }, { h: 'walking the version chain ←', c: 'ver' }],
+                        t1st: 'write', t2st: 'read',
+                        val: '600', note: 'Balance — T1 uncommitted', un: true, lock: false,
+                        chips: [{ t: 'v1: 500 (before T1)', c: 'old' }],
+                        wait: 0, waited: 'NO', read: '—',
+                        fa: 'تراکنشِ ۲ می‌رسد. نسخهٔ فعلی برایش «خیلی تازه» است (کامیت نشده) — پس بلاک نمی‌شود؛ روی زنجیره عقب می‌رود.',
+                        en: 'Transaction 2 arrives. The newest version is "too new" for it (uncommitted) — so it is not blocked; it walks back along the chain.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: 'old row copied → version store' }],
+                        t2: [{ h: '<b>SELECT</b> Balance → newest is uncommitted…' }, { h: 'walking the version chain ←', c: 'ver' }, { h: 'reads <b>v1 = 500</b> immediately ✓', c: 'ver' }],
+                        t1st: 'write', t2st: 'done',
+                        val: '600', note: 'Balance — T1 uncommitted', un: true, lock: false,
+                        chips: [{ t: 'v1: 500 (before T1)', c: 'old' }],
+                        wait: 0, waited: ['NO ✓', 'ok'], read: '500',
+                        fa: 'تراکنشِ ۲ نسخهٔ ۵۰۰ را — که برایش معنادار است — فوراً می‌خواند و می‌رود. نه بلاکی، صبری، صفی. نویسنده و خواننده به هم گیر نمی‌دهند.',
+                        en: 'Transaction 2 reads the 500 version — the one that makes sense for it — instantly, and moves on. No blocking, no waiting, no queue. Writer and reader never collide.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: 'old row copied → version store' }, { h: '<b>COMMIT</b> ✓' }],
+                        t2: [{ h: '<b>SELECT</b> Balance → newest is uncommitted…' }, { h: 'walking the version chain ←', c: 'ver' }, { h: 'reads <b>v1 = 500</b> immediately ✓', c: 'ver' }],
+                        t1st: 'done', t2st: 'done',
+                        val: '600', note: 'Balance — committed', un: false, lock: false,
+                        chips: [{ t: 'v2: 600 (committed)', c: 'cur' }, { t: 'v1: 500 → cleanup', c: 'old' }],
+                        wait: 0, waited: ['NO ✓', 'ok'], read: '500',
+                        fa: 'تراکنشِ ۱ کامیت می‌شود: نسخهٔ ۶۰۰ حالا نسخهٔ رسمی است. وقتی هیچ تراکنشی به نسخهٔ ۵۰۰ نیاز نداشته باشد، موتور آن را پاک می‌کند.',
+                        en: 'Transaction 1 commits: the 600 version becomes official. Once no transaction needs the 500 version anymore, the engine cleans it up.'
+                    },
+                    {
+                        t1: [{ h: '<b>BEGIN TRAN; UPDATE</b> Balance = 600' }, { h: 'old row copied → version store' }, { h: '<b>COMMIT</b> ✓' }],
+                        t2: [{ h: 'done — consistent read, zero waiting' }],
+                        t1st: 'done', t2st: 'done',
+                        val: '600', note: 'Balance — committed', un: false, lock: false,
+                        chips: [{ t: 'v2: 600 (committed)', c: 'cur' }],
+                        wait: 0, waited: ['NO ✓', 'ok'], read: '500',
+                        fa: 'جمع‌بندی: خواننده‌ها نویسنده را بلاک نمی‌کنند و برعکس. قیمتش کجاست؟ فضای مخزنِ نسخه‌ها در tempdb — و تراکنش‌های خیلی طولانی که نگذارند نسخه‌ها پاک شوند.',
+                        en: 'The summary: readers never block writers, and vice versa. The price? Version-store space in tempdb — and very long transactions that stop versions from being cleaned.'
+                    }
+                ];
+                const modes = { lock: lockSteps, mvcc: mvccSteps };
+                let mvKey = 'lock', mvIdx = 0, mvRun = 0, mvPlaying = false;
+                const t1Log = $('#mvT1Log'), t2Log = $('#mvT2Log');
+                const t1st = $('#mvT1State'), t2st = $('#mvT2State');
+                const mvVal = $('#mvVal'), mvLock = $('#mvLock'), mvChips = $('#mvChips');
+                const mvStatus = $('#mvStatus'), mvWaitBar = $('#mvWaitBar');
+                const mvStepNo = $('#mvStepNo'), mvMode = $('#mvMode');
+                const mvWaited = $('#mvWaited'), mvRead = $('#mvRead');
+                const mvNext = $('#mvNext'), mvPlay = $('#mvPlay'), mvResetBtn = $('#mvReset');
+                function paintLog(el, items) {
+                    el.innerHTML = '';
+                    items.forEach(it => {
+                        const d = document.createElement('div');
+                        d.className = 'mv-ev' + (it.c ? ' ' + it.c : '');
+                        d.innerHTML = it.h;
+                        el.appendChild(d);
+                    });
+                }
+                function renderMv() {
+                    const st = modes[mvKey][mvIdx];
+                    paintLog(t1Log, st.t1); paintLog(t2Log, st.t2);
+                    t1st.textContent = st.t1st; t1st.className = 'cfl-state ' + st.t1st;
+                    t2st.textContent = st.t2st; t2st.className = 'cfl-state ' + st.t2st;
+                    mvVal.innerHTML = `${st.val}<small>${st.note}</small>`;
+                    mvVal.className = 'mv-val' + (st.un ? ' uncommitted' : '');
+                    mvVal.appendChild(mvLock);
+                    mvLock.hidden = !st.lock;
+                    if (st.chips.length === 0) {
+                        mvChips.innerHTML = '<span class="mv-ver gone"><span class="fa">خالی</span><span class="en">empty</span></span>';
+                    } else {
+                        mvChips.innerHTML = st.chips.map(c => `<span class="mv-ver ${c.c}">${c.t}</span>`).join('');
+                    }
+                    mvWaitBar.style.width = st.wait + '%';
+                    setBilingual(mvStatus, st.fa, st.en);
+                    mvStepNo.textContent = `${mvIdx + 1} / ${modes[mvKey].length}`;
+                    mvMode.textContent = mvKey === 'lock' ? 'LOCKS' : 'VERSIONS';
+                    if (Array.isArray(st.waited)) { mvWaited.textContent = st.waited[0]; mvWaited.className = st.waited[1]; }
+                    else { mvWaited.textContent = st.waited; mvWaited.className = ''; }
+                    mvRead.textContent = st.read;
+                }
+                function mvReset() { mvRun++; mvPlaying = false; mvPlay.disabled = false; mvIdx = 0; renderMv(); }
+                function mvNextStep() {
+                    if (mvIdx >= modes[mvKey].length - 1) { mvPlaying = false; mvPlay.disabled = false; return false; }
+                    mvIdx++; renderMv(); return true;
+                }
+                async function mvPlayAll() {
+                    if (mvPlaying) return;
+                    mvPlaying = true; mvPlay.disabled = true;
+                    const run = ++mvRun;
+                    if (mvIdx >= modes[mvKey].length - 1) mvIdx = 0;
+                    renderMv();
+                    while (mvPlaying && run === mvRun && mvNextStep()) {
+                        await sleep(1900);
+                        if (run !== mvRun) break;
+                    }
+                    if (run === mvRun) { mvPlaying = false; mvPlay.disabled = false; }
+                }
+                mvNext.addEventListener('click', () => { mvRun++; mvPlaying = false; mvPlay.disabled = false; mvNextStep(); });
+                mvPlay.addEventListener('click', mvPlayAll);
+                mvResetBtn.addEventListener('click', mvReset);
+                $('#mvTabLock').addEventListener('click', () => {
+                    mvKey = 'lock';
+                    $('#mvTabLock').setAttribute('aria-selected', 'true');
+                    $('#mvTabMvcc').setAttribute('aria-selected', 'false');
+                    mvReset();
+                });
+                $('#mvTabMvcc').addEventListener('click', () => {
+                    mvKey = 'mvcc';
+                    $('#mvTabMvcc').setAttribute('aria-selected', 'true');
+                    $('#mvTabLock').setAttribute('aria-selected', 'false');
+                    mvReset();
+                });
+                renderMv();
+            }
+
+            /* ===== Escalation micro-demo ===== */
+            const escRange = $('#escRange');
+            if (escRange) {
+                const count = $('#escCount'), dots = $('#escDots'), more = $('#escMore');
+                const table = $('#escTable'), lockSub = $('#escLockSub');
+                const bar = $('#escBar'), mem = $('#escMem');
+                const session = $('#escSession'), goFa = $('#escGo'), goEn = $('#escGoEn');
+                function paintEsc() {
+                    const v = +escRange.value;
+                    const escalated = v >= 5000;
+                    count.textContent = v.toLocaleString('en-US') + ' row locks';
+                    const dotCount = Math.min(Math.round(v / 150), 56);
+                    dots.innerHTML = '';
+                    for (let i = 0; i < dotCount; i++) dots.appendChild(document.createElement('i'));
+                    more.textContent = v > dotCount * 150 ? '+' + (v - dotCount * 150).toLocaleString('en-US') + ' more rows' : '';
+                    table.classList.toggle('escalated', escalated);
+                    lockSub.textContent = '≈ ' + v.toLocaleString('en-US') + ' row locks → 1';
+                    bar.style.width = Math.min(100, v / 8000 * 100) + '%';
+                    bar.className = escalated ? 'over' : (v >= 3000 ? 'hot' : '');
+                    mem.textContent = escalated ? '1 table lock — escalated!' : '≈ ' + Math.round(v * 96 / 1024) + ' KB — row locks';
+                    session.classList.toggle('blocked', escalated);
+                    goFa.textContent = escalated ? 'بلاک شد ✗' : 'می‌تواند ✓';
+                    goFa.className = escalated ? 'stop' : 'go';
+                    goEn.textContent = escalated ? 'BLOCKED ✗' : 'it can ✓';
+                    goEn.className = escalated ? 'stop' : 'go';
+                }
+                escRange.addEventListener('input', paintEsc);
+                paintEsc();
+            }
+
+            /* ===== Q&A ===== */
+            $$('.qa-question').forEach(q => {
+                q.addEventListener('click', () => {
+                    const item = q.closest('.qa');
+                    const open = item.classList.toggle('open');
+                    q.setAttribute('aria-expanded', String(open));
+                });
+            });
+            $('#toggleAllQuestions').addEventListener('click', () => {
+                const qs = $$('.qa-question');
+                const openAll = qs.some(q => q.getAttribute('aria-expanded') !== 'true');
+                qs.forEach(q => { q.closest('.qa').classList.toggle('open', openAll); q.setAttribute('aria-expanded', String(openAll)); });
+            });
+        })();
+    </script>
+</body>
+
+</html>
